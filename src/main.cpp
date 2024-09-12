@@ -249,6 +249,7 @@ int main() {
 
 	// Variables
 	unsigned int screen = 0;
+	unsigned int minigame = 0; // 0: main game, 1: game 1, etc
 	bool click = false;
 	bool player2mode = false;
 
@@ -664,6 +665,7 @@ int main() {
 		// Player Select [1P or 2P]
 		case 2: {
 			// Reset Game Variables
+			minigame = 0;
 			newhighscore = false;
 
 			// Texts
@@ -1090,6 +1092,9 @@ int main() {
 			    window.getSize().y * 0.05 -
 				bombtext.getLocalBounds().height / 2);
 			window.draw(bombtext);
+
+			switch (minigame) {
+				case 0: {	// Main Game
 
 			// Spawn Enemies / Asteroids
 
@@ -3324,7 +3329,7 @@ int main() {
                                                 window.draw(crater3);
 
 						// Enter Planet
-						if (collect != 0)
+						if (collect != 0) {
 							planetexists = false;
 							// Text
 							texts++;
@@ -3333,6 +3338,7 @@ int main() {
 							texttime.push_back(0);
 							std::cout << "Enter Planet!" << std::endl;
 							// TODO Minigames
+						}
 					} break;
 					}
 
@@ -3434,6 +3440,11 @@ int main() {
 				lazerpositions.clear();
 				lazerrotation.clear();
 				lazervelocity.clear();
+			}
+					} break;
+				default: { // Minigame Planets
+#include "planets.cpp"	// Hacky way to reduce the size of this file	 
+				}
 			}
 
 			// Animate Bomb (Flash on screen)
