@@ -321,6 +321,7 @@ int main() {
 	std::vector<float> enemylazercooldown = {};
 
 	// Powerups && Planets (Big powerups that trigger minigames)
+	bool planetexists = false;
 	int powerups = 0;
 	std::vector<sf::Vector2f> poweruppositions = {};
 	std::vector<enum powertypes> poweruptype = {};
@@ -676,6 +677,7 @@ int main() {
 			bombcooldown = 0;
 
 			// Powerups
+			planetexists = false;
 			powerups = 0;
 			poweruppositions.clear();
 			poweruptype.clear();
@@ -1130,11 +1132,12 @@ int main() {
 				case 3:
 					location.y = window.getSize().y + size;
 				}
-				if (rand() % (int)PLANETSPAWNCHANCE == 0) {
+				if (rand() % (int)PLANETSPAWNCHANCE == 0 && !planetexists) {
+					planetexists = true;
 					powerups++;
 					poweruppositions.push_back(sf::Vector2f(window.getSize().x/2,window.getSize().y/2));
 					poweruptype.push_back(PLANET);
-					powerupsize.push_back(PLANET_SIZE);
+					powerupsize.push_back(0);
 					powerupcollected.push_back(false);
 				} else if (rand() % (int)ENEMYSPAWNCHANCE == 0) {
 					// Spawn enemy
@@ -2924,7 +2927,6 @@ int main() {
 						    i);
 						enemies--;
 						i--;
-						break;
 
 						// Increase Score
 						score += ENEMYPOINTS;
@@ -2937,6 +2939,8 @@ int main() {
 						std::string text = buffer.str();
 						textstring.push_back(text);
 						texttime.push_back(0);
+						
+						break;
 					}
 				}
 
@@ -3166,7 +3170,7 @@ int main() {
 				sf::CircleShape radius;
 			       if (poweruptype.at(i) != PLANET) radius = sf::CircleShape(
 				    COLLECTRADIUS * powerupsize.at(i), 16);
-			       else radius = sf::CircleShape(PLANET_SIZE, 16);
+			       else radius = sf::CircleShape(PLANET_SIZE * powerupsize.at(i), 16);
 				radius.setFillColor(sf::Color::Transparent);
 				radius.setOutlineThickness(2);
 				radius.setOutlineColor(sf::Color::White);
@@ -3264,11 +3268,10 @@ int main() {
 					} break;
 					case PLANET: {
 						// Minigame Planet
-						// TODO Draw Craters
 						sf::CircleShape crater1 =
                                                     sf::CircleShape(
-                                                            powerupsize.at(i)/4,
-                                                        4);
+                                                            PLANET_SIZE*powerupsize.at(i)/4,
+                                                        16);
                                                 crater1.setOutlineThickness(2);
                                                 crater1.setOutlineColor(
                                                     sf::Color::White);
@@ -3281,12 +3284,12 @@ int main() {
                                                     crater1.getLocalBounds()
                                                             .height /
                                                         2);
-                                                crater1.setPosition(pos+sf::Vector2f(powerupsize.at(i)/2,powerupsize.at(i)/2));
+                                                crater1.setPosition(pos+sf::Vector2f(-PLANET_SIZE*powerupsize.at(i)/3,PLANET_SIZE*powerupsize.at(i)/2));
                                                 window.draw(crater1);
 						sf::CircleShape crater2 =
                                                     sf::CircleShape(
-                                                            powerupsize.at(i)/3,
-                                                        4);
+                                                            PLANET_SIZE*powerupsize.at(i)/3,
+                                                        16);
                                                 crater2.setOutlineThickness(2);
                                                 crater2.setOutlineColor(
                                                     sf::Color::White);
@@ -3299,11 +3302,35 @@ int main() {
                                                     crater2.getLocalBounds()
                                                             .height /
                                                         2);
-                                                crater2.setPosition(pos-sf::Vector2f(powerupsize.at(i)/3,powerupsize.at(i)/3));
+                                                crater2.setPosition(pos-sf::Vector2f(PLANET_SIZE*powerupsize.at(i)/3,PLANET_SIZE*powerupsize.at(i)/3));
                                                 window.draw(crater2);
+						sf::CircleShape crater3 =
+                                                    sf::CircleShape(
+                                                            PLANET_SIZE*powerupsize.at(i)/5,
+                                                        16);
+                                                crater3.setOutlineThickness(2);
+                                                crater3.setOutlineColor(
+                                                    sf::Color::White);
+                                                crater3.setFillColor(
+                                                    sf::Color::Transparent);
+                                                crater3.setOrigin(
+                                                    crater3.getLocalBounds()
+                                                            .width /
+                                                        2,
+                                                    crater3.getLocalBounds()
+                                                            .height /
+                                                        2);
+                                                crater3.setPosition(pos+sf::Vector2f(PLANET_SIZE*powerupsize.at(i)/2,0));
+                                                window.draw(crater3);
 
 						// Enter Planet
 						if (collect != 0)
+							planetexists = false;
+							// Text
+							texts++;
+							textpositions.push_back(pos);
+							textstring.push_back("Minigame Planet!");
+							texttime.push_back(0);
 							std::cout << "Enter Planet!" << std::endl;
 							// TODO Minigames
 					} break;
