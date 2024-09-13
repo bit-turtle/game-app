@@ -34,6 +34,7 @@
 #define INITIALBOMBS 1
 
 // Powerups
+#define PLANETANIMLENGTH 5
 #define PLANET_SIZE 80
 #define PLANETSPAWNCHANCE 16	// 1/x chance 
 #define COLLECTRADIUS 40
@@ -232,6 +233,10 @@ int main() {
 	// Home screen animation variables
 	float animtime = 0;
 	int animstage = 0;
+
+	// Planet Animation Variables
+	unsigned int nextminigame = 0;
+	float planetanimtime = 0;
 
 	// Create Clock
 	sf::Clock clock;
@@ -665,6 +670,7 @@ int main() {
 		// Player Select [1P or 2P]
 		case 2: {
 			// Reset Game Variables
+			nextminigame = 0;
 			minigame = 0;
 			newhighscore = false;
 
@@ -1375,7 +1381,6 @@ int main() {
 							    player1velocity;
 					}
 				}
-
 				// Update Position & Rotation
 				player1position +=
 				    player1velocity * (deltatime);
@@ -1562,6 +1567,7 @@ int main() {
 						}
 						break;
 					}
+				
 				}
 				// Gameover if lazer hit
 				if (player1lazercooldown <
@@ -1833,8 +1839,8 @@ int main() {
 			}
 			// Player 2
 			if (!player2gameover && player2mode) {
-				player2lazercooldown -= deltatime;
 				bool engine = false;
+				player2lazercooldown -= deltatime;
 				if (player2mode) {
 					// 2-player mode player 2 controls arrow
 					if (sf::Keyboard::isKeyPressed(
@@ -2666,7 +2672,6 @@ int main() {
 				// Save physics
 				asteroidpositions.at(i) = tapos;
 				asteroidvelocity.at(i) = tavel;
-
 				// Delete small asteroids
 				if (asteroidsize.at(i) <
 				    MINASTEROIDSIZE) { // Delete Asteroid if it
@@ -2896,7 +2901,7 @@ int main() {
 				enemyvelocity.at(i) = evel;
 				enemyrotation.at(i) = erot;
 				enemyrotationvelocity.at(i) = ervl;
-
+				
 				// Asteroid destroy enemy
 				for (int a = 0; a < asteroids; a++) {
 					sf::Vector2f apos =
@@ -3172,6 +3177,7 @@ int main() {
                                            PLANET_SIZE) {
 					collect = 2;
 				}
+				if (powerupsize.at(i) != 1) collect = 0;	// Only collectable at full size
 				sf::CircleShape radius;
 			       if (poweruptype.at(i) != PLANET) radius = sf::CircleShape(
 				    COLLECTRADIUS * powerupsize.at(i), 16);
@@ -3329,7 +3335,8 @@ int main() {
                                                 window.draw(crater3);
 
 						// Enter Planet
-						if (collect != 0) {
+						if (collect != 0 && !powerupcollected.at(i)) {
+							powerupcollected.at(i) = true;
 							planetexists = false;
 							// Text
 							texts++;
@@ -3337,7 +3344,9 @@ int main() {
 							textstring.push_back("Minigame Planet!");
 							texttime.push_back(0);
 							std::cout << "Enter Planet!" << std::endl;
-							// TODO Minigames
+							// Minigame
+							nextminigame = 1;
+							planetanimtime = 0;
 						}
 					} break;
 					}
@@ -3458,6 +3467,23 @@ int main() {
 				bombexplosion.setFillColor(color);
 				bombexplosion.setPosition(sf::Vector2f(0, 0));
 				window.draw(bombexplosion);
+			}
+
+			// Animate Minigame Switch
+			if (nextminigame != minigame) {
+				planetanimtime += deltatime;
+				if (planetanimtime >= PLANETANIMLENGTH) minigame = nextminigame;
+				// Fade Animation	
+				sf::RectangleShape fade =
+				    sf::RectangleShape(
+					sf::Vector2f(window.getSize().x,
+						     window.getSize().y));
+				sf::Color color = sf::Color::Black;
+				color.a = (planetanimtime / PLANETANIMLENGTH) * 256;
+				fade.setFillColor(color);
+				fade.setPosition(sf::Vector2f(0, 0));
+				window.draw(fade);
+
 			}
 
 		} break;

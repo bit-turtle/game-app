@@ -1,2 +1,3 @@
 # TODO
-1. Create Planet Mingames
+1. Fix Planet Animation
+2. Create Planet Mingames

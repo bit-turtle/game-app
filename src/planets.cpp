@@ -4,7 +4,11 @@
 
 switch (minigame) {
 
-	case 1: {} break;
+	case 1: {
+		sf::Text bob = sf::Text("Bob the fish", roboto, 80);
+		bob.setPosition(500,500);
+		window.draw(bob);
+	} break;
 
 	case 2: {} break;
 
