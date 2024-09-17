@@ -34,9 +34,9 @@
 #define INITIALBOMBS 1
 
 // Powerups
-#define PLANETANIMLENGTH 5
+#define PLANETANIMLENGTH 2
 #define PLANET_SIZE 80
-#define PLANETSPAWNCHANCE 16	// 1/x chance 
+#define PLANETSPAWNCHANCE 16 // 1/x chance
 #define COLLECTRADIUS 40
 #define POWERUPCHANCE 20 // 1/ (x/2) chance
 #define BOMBCHANCE 5	 // 1/x chance
@@ -110,6 +110,10 @@ float distance(float x, float y) { // Pythagorean Theorem
 #include "logo.h"
 
 enum powertypes { SHEILD, BOMB, PLANET };
+
+// Functions For Planets
+#define PLANET_FUNC
+#include "planets.cpp"
 
 int main() {
 	// Create Window
@@ -224,6 +228,11 @@ int main() {
 	if (!backgroundmusic.openFromFile("sounds/backgroundmusic.wav")) {
 		std::cout << "Failed to load Background Music!";
 	}
+
+// Import Planet Minigame Assets
+#define PLANET_ASSETS
+#include "planets.cpp"
+
 	backgroundmusic.setLoop(true);
 	backgroundmusic.play();
 
@@ -337,6 +346,11 @@ int main() {
 	bool enter = false;
 	bool tabused = false;
 	bool tab = false;
+
+	// Planet Variables
+#define PLANET_VARS
+#include "planets.cpp"
+
 	// Bit turtle sound
 	bitturtlesound.play();
 
@@ -1100,508 +1114,502 @@ int main() {
 			window.draw(bombtext);
 
 			switch (minigame) {
-				case 0: {	// Main Game
+			case 0: { // Main Game
 
-			// Spawn Enemies / Asteroids
+				// Spawn Enemies / Asteroids
 
-			// Update Enemy Delay Clock
-			enemyDelayClock += (deltatime);
+				// Update Enemy Delay Clock
+				enemyDelayClock += (deltatime);
 
-			// Spawn if no enemies/asteroids or timer over
-			if (enemies == 0 && asteroids == 0)
-				enemyDelayClock = 10000;
-			if (enemyDelayClock >
-			    ENEMYDELAYBASE /
-				(clock.getElapsedTime().asSeconds() *
-				 ENEMYDELAYSCALE)) {
-				// Play Enemy Spawn Sound
-				dangerdetected.play();
+				// Spawn if no enemies/asteroids or timer over
+				if (enemies == 0 && asteroids == 0)
+					enemyDelayClock = 10000;
+				if (enemyDelayClock >
+				    ENEMYDELAYBASE /
+					(clock.getElapsedTime().asSeconds() *
+					 ENEMYDELAYSCALE)) {
+					// Play Enemy Spawn Sound
+					dangerdetected.play();
 
-				// Spawning
-				sf::Vector2f location = sf::Vector2f(
-				    rand() % window.getSize().x,
-				    rand() %
-					window.getSize().y); // Random Location
-				float size =
-				    rand() % (int)(BASEASTEROIDSIZE +
-						   (clock.getElapsedTime()
-							.asSeconds() *
-						    ASTEROIDSIZESCALE)) +
-				    MINASTEROIDSIZE;
-				size = (int)size %
-				       MAXASTEROIDSIZE; // Keep size reasonable
-				switch (rand() % 4) {
-				case 0:
-					location.x = -size;
-					break;
-				case 1:
-					location.y = -size;
-					break;
-				case 2:
-					location.x = window.getSize().x + size;
-					break;
-				case 3:
-					location.y = window.getSize().y + size;
-				}
-				if (rand() % (int)PLANETSPAWNCHANCE == 0 && !planetexists) {
-					planetexists = true;
-					powerups++;
-					poweruppositions.push_back(sf::Vector2f(window.getSize().x/2,window.getSize().y/2));
-					poweruptype.push_back(PLANET);
-					powerupsize.push_back(0);
-					powerupcollected.push_back(false);
-				} else if (rand() % (int)ENEMYSPAWNCHANCE == 0) {
-					// Spawn enemy
-					enemies++;
-					enemypositions.push_back(location);
-					enemyvelocity.push_back(
-					    sf::Vector2f(0, 0));
-					enemyrotation.push_back(0);
-					enemyrotationvelocity.push_back(0);
-					enemylazercooldown.push_back(
-					    ENEMYINITIALCOOLDOWN);
-				} else {
-					sf::Vector2f velocity = sf::Vector2f(
-					    (rand() %
-					     (int)(clock.getElapsedTime()
-						       .asSeconds() +
-						   1)) *
-						    ASTEROIDSPEEDSCALE +
-						BASEVELOCITY,
-					    (rand() %
-					     (int)(clock.getElapsedTime()
-						       .asSeconds() +
-						   1)) *
-						    ASTEROIDSPEEDSCALE +
-						BASEVELOCITY);
-					asteroids++;
-					asteroidsize.push_back(size);
-					asteroidpositions.push_back(location);
-					asteroidvelocity.push_back(velocity);
-					asteroidrotation.push_back(rand() %
-								   360);
-					asteroidrotationvelocity.push_back(
-					    (rand() %
-					     (int)(clock.getElapsedTime()
-						       .asSeconds() +
-						   1)) +
-					    BASEVELOCITY);
-					if (rand() % 2 == 0)
-						asteroidrotationvelocity.at(
-						    asteroids - 1) *= -1;
-				}
-
-				enemyDelayClock = 0;
-			}
-
-			// Player 1
-			if (!player1gameover) {
-				// Player Controls
-				player1lazercooldown -= deltatime;
-				bool engine = false;
-				if (!player2mode) {
-					// 1-Player Mode Player 1 Controls WASD
-					// or arrow
-					if (sf::Keyboard::isKeyPressed(
-						sf::Keyboard::W) |
-					    sf::Keyboard::isKeyPressed(
-						sf::Keyboard::Up)) {
-						// Go Forwards Acceleration
-						engine = true;
-						player1velocity.x -=
-						    sin(player1rotation * PI /
-							180) *
-						    (deltatime)*MOVEMENTVEL;
-						player1velocity.y +=
-						    cos(player1rotation * PI /
-							180) *
-						    (deltatime)*MOVEMENTVEL;
-					}
-					float direction = 0;
-					if (sf::Keyboard::isKeyPressed(
-						sf::Keyboard::A) |
-					    sf::Keyboard::isKeyPressed(
-						sf::Keyboard::Left)) {
-						direction -= 1;
-					}
-					if (sf::Keyboard::isKeyPressed(
-						sf::Keyboard::D) |
-					    sf::Keyboard::isKeyPressed(
-						sf::Keyboard::Right)) {
-						direction += 1;
-					}
-					if (sf::Keyboard::isKeyPressed(
-						sf::Keyboard::A) |
-						sf::Keyboard::isKeyPressed(
-						    sf::Keyboard::Left) &&
-					    sf::Keyboard::isKeyPressed(
-						sf::Keyboard::D) |
-						sf::Keyboard::isKeyPressed(
-						    sf::Keyboard::Right)) {
-						if (player1rotationVelocity > 0)
-							direction = -1;
-						else if (
-						    player1rotationVelocity < 0)
-							direction = 1;
-					}
-					player1rotationVelocity +=
-					    direction * (deltatime)*ROTATIONVEL;
-					// Shoot Lazer
-					if (player1lazercooldown <= 0 &&
-					    (sf::Keyboard::isKeyPressed(
-						 sf::Keyboard::S) |
-					     sf::Keyboard::isKeyPressed(
-						 sf::Keyboard::Down))) {
-						lazerfire.play();
-						lazers++;
-						player1lazercooldown =
-						    LAZERCOOLDOWN;
-						lazerpositions.push_back(
-						    player1position);
-						lazerrotation.push_back(
-						    player1rotation);
-						lazervelocity.push_back(
-						    sf::Vector2f(
-							sin(-player1rotation *
-							    PI / 180) *
-							    LAZERSPEED,
-							cos(-player1rotation *
-							    PI / 180) *
-							    LAZERSPEED));
-						lazervelocity.at(
-						    lazervelocity.size() - 1) +=
-						    player1velocity; // Adds
-								     // player
-								     // speed to
-								     // lazer
-								     // velocity
-						if (distance(
-							lazervelocity
-							    .at(lazervelocity
-								    .size() -
-								1)
-							    .x,
-							lazervelocity
-							    .at(lazervelocity
-								    .size() -
-								1)
-							    .y) < LAZERSPEED)
-							lazervelocity.at(
-							    lazervelocity
-								.size() -
-							    1) -=
-							    player1velocity;
-						lazerpositions.at(
-						    lazerpositions.size() -
-						    1) +=
-						    sf::Vector2f(
-							sin(-player1rotation *
-							    PI / 180),
-							cos(-player1rotation *
-							    PI / 180)) *
-						    (float)
-							HITRADIUS; // Get Lazer
-								   // out of hit
-								   // radius
-					}
-				} else {
-					// 2-player mode player 1 controls WASD
-					if (sf::Keyboard::isKeyPressed(
-						sf::Keyboard::W)) {
-						// Go Forwards Acceleration
-						engine = true;
-						player1velocity.x -=
-						    sin(player1rotation * PI /
-							180) *
-						    (deltatime)*MOVEMENTVEL;
-						player1velocity.y +=
-						    cos(player1rotation * PI /
-							180) *
-						    (deltatime)*MOVEMENTVEL;
-					}
-					float direction = 0;
-					if (sf::Keyboard::isKeyPressed(
-						sf::Keyboard::A)) {
-						direction -= 1;
-					}
-					if (sf::Keyboard::isKeyPressed(
-						sf::Keyboard::D)) {
-						direction += 1;
-					}
-					if (sf::Keyboard::isKeyPressed(
-						sf::Keyboard::A) &&
-					    sf::Keyboard::isKeyPressed(
-						sf::Keyboard::D)) {
-						if (player1rotationVelocity > 0)
-							direction = -1;
-						else if (
-						    player1rotationVelocity < 0)
-							direction = 1;
-					}
-					player1rotationVelocity +=
-					    direction * (deltatime)*ROTATIONVEL;
-					// Shoot Lazer
-					if (player1lazercooldown <= 0 &&
-					    sf::Keyboard::isKeyPressed(
-						sf::Keyboard::S)) {
-						lazerfire.play();
-						lazers++;
-						player1lazercooldown =
-						    LAZERCOOLDOWN;
-						lazerpositions.push_back(
-						    player1position);
-						lazerrotation.push_back(
-						    player1rotation);
-						lazervelocity.push_back(
-						    sf::Vector2f(
-							sin(-player1rotation *
-							    PI / 180) *
-							    LAZERSPEED,
-							cos(-player1rotation *
-							    PI / 180) *
-							    LAZERSPEED));
-						lazervelocity.at(
-						    lazervelocity.size() - 1) +=
-						    player1velocity;
-						if (distance(
-							lazervelocity
-							    .at(lazervelocity
-								    .size() -
-								1)
-							    .x,
-							lazervelocity
-							    .at(lazervelocity
-								    .size() -
-								1)
-							    .y) < LAZERSPEED)
-							lazervelocity.at(
-							    lazervelocity
-								.size() -
-							    1) -=
-							    player1velocity;
-					}
-				}
-				// Update Position & Rotation
-				player1position +=
-				    player1velocity * (deltatime);
-				player1rotation +=
-				    player1rotationVelocity * (deltatime);
-
-				// Use next sheild if timer over
-				if (!player1sheild && player1sheilds > 0 &&
-				    clock.getElapsedTime().asSeconds() -
-					    player1time >=
-					SHEILDINVULNERABILITYPERIOD) {
-					player1sheild = true;
-					player1sheilds--;
-				}
-
-				// GameOver if colision
-				for (int a = 0; a < asteroids; a++) {
-					sf::Vector2f apos =
-					    asteroidpositions.at(a);
-					float size = asteroidsize.at(a);
-					if (distance(player1position.x - apos.x,
-						     player1position.y -
-							 apos.y) < size) {
-						// Collision!
-						if (player1sheild ||
-						    clock.getElapsedTime()
-								.asSeconds() -
-							    player1time <
-							SHEILDINVULNERABILITYPERIOD) { // Bounce with sheild
-							// Get New Angle
-							float movangle = atan2(
-							    player1velocity.x,
-							    player1velocity.y);
-							float posangle =
-							    atan2(
-								player1position
-									.x -
-								    apos.x,
-								player1position
-									.y -
-								    apos.y) -
-							    PI /
-								2; // Get
-								   // Perpendicular
-							float newangle =
-							    2 * posangle -
-							    movangle; // New
-								      // angle
-								      // after
-								      // bounce
-							float velocity =
-							    distance(
-								player1velocity
-								    .x,
-								player1velocity
-								    .y) *
-							    SHEILDSPEEDMULTIPLIER;
-
-							// Bounce
-							player1velocity.x =
-							    sin(newangle) *
-							    velocity;
-							player1velocity.y =
-							    cos(newangle) *
-							    velocity;
-
-							// Repel
-							player1velocity += sf::Vector2f(
-							    (player1position.x -
-							     apos.x) /
-								asteroidsize.at(
-								    a) *
-								SHEILDREPELSTRENGTH,
-							    (player1position.y -
-							     apos.y) /
-								asteroidsize.at(
-								    a) *
-								SHEILDREPELSTRENGTH);
-
-							// Push out if in
-							// asteroid
-							if (distance(
-								player1position
-									.x -
-								    apos.x,
-								player1position
-									.y -
-								    apos.y) <
-							    asteroidsize.at(
-								a)) {
-								player1position
-								    .x +=
-								    (player1position
-									 .x -
-								     apos.x) /
-								    asteroidsize
-									.at(a) *
-								    (asteroidsize
-									 .at(a) -
-								     distance(
-									 player1position
-										 .x -
-									     apos.x,
-									 player1position
-										 .y -
-									     apos.y));
-								player1position
-								    .y +=
-								    (player1position
-									 .y -
-								     apos.y) /
-								    asteroidsize
-									.at(a) *
-								    (asteroidsize
-									 .at(a) -
-								     distance(
-									 player1position
-										 .x -
-									     apos.x,
-									 player1position
-										 .y -
-									     apos.y));
-							}
-
-							// Push if in tragectory
-							// of asteroid
-							float amovangle = atan2(
-							    asteroidvelocity
-								.at(a)
-								.x,
-							    asteroidvelocity
-								.at(a)
-								.y);
-							if (posangle >=
-								amovangle -
-								    PI / 2 &&
-							    posangle <=
-								amovangle +
-								    PI / 2)
-								player1velocity +=
-								    asteroidvelocity
-									.at(a);
-
-							// Text
-							if (player1sheild) {
-								texts++;
-								textpositions
-								    .push_back(
-									player1position);
-								textstring.push_back(
-								    SHEILDPOPMESSAGE);
-								texttime
-								    .push_back(
-									0);
-							}
-							// Pop Sheild
-							player1sheild = false;
-							powerdownsound.play();
-							player1time =
-							    clock
-								.getElapsedTime()
-								.asSeconds();
-							;
-						} else {
-							player1gameover = true;
-							// Explosion
-							explosionsound.play();
-							explosions++;
-							explosionpositions
-							    .push_back(
-								player1position);
-							explosiontime.push_back(
-							    EXPLOSIONTIME);
-							explosionsize.push_back(
-							    PLAYEREXPLOSIONSIZE);
-
-							// Text
-							texts++;
-							textpositions.push_back(
-							    player1position);
-							textstring.push_back(
-							    GAMEOVERMESSAGE);
-							texttime.push_back(0);
-						}
+					// Spawning
+					sf::Vector2f location = sf::Vector2f(
+					    rand() % window.getSize().x,
+					    rand() % window.getSize()
+							 .y); // Random Location
+					float size =
+					    rand() %
+						(int)(BASEASTEROIDSIZE +
+						      (clock.getElapsedTime()
+							   .asSeconds() *
+						       ASTEROIDSIZESCALE)) +
+					    MINASTEROIDSIZE;
+					size = (int)size %
+					       MAXASTEROIDSIZE; // Keep size
+								// reasonable
+					switch (rand() % 4) {
+					case 0:
+						location.x = -size;
 						break;
+					case 1:
+						location.y = -size;
+						break;
+					case 2:
+						location.x =
+						    window.getSize().x + size;
+						break;
+					case 3:
+						location.y =
+						    window.getSize().y + size;
 					}
-				
+					if (rand() % (int)PLANETSPAWNCHANCE ==
+						0 &&
+					    !planetexists) {
+						planetexists = true;
+						powerups++;
+						poweruppositions.push_back(
+						    sf::Vector2f(
+							window.getSize().x / 2,
+							window.getSize().y /
+							    2));
+						poweruptype.push_back(PLANET);
+						powerupsize.push_back(0);
+						powerupcollected.push_back(
+						    false);
+					} else if (rand() %
+						       (int)ENEMYSPAWNCHANCE ==
+						   0) {
+						// Spawn enemy
+						enemies++;
+						enemypositions.push_back(
+						    location);
+						enemyvelocity.push_back(
+						    sf::Vector2f(0, 0));
+						enemyrotation.push_back(0);
+						enemyrotationvelocity.push_back(
+						    0);
+						enemylazercooldown.push_back(
+						    ENEMYINITIALCOOLDOWN);
+					} else {
+						sf::Vector2f velocity = sf::Vector2f(
+						    (rand() %
+						     (int)(clock
+							       .getElapsedTime()
+							       .asSeconds() +
+							   1)) *
+							    ASTEROIDSPEEDSCALE +
+							BASEVELOCITY,
+						    (rand() %
+						     (int)(clock
+							       .getElapsedTime()
+							       .asSeconds() +
+							   1)) *
+							    ASTEROIDSPEEDSCALE +
+							BASEVELOCITY);
+						asteroids++;
+						asteroidsize.push_back(size);
+						asteroidpositions.push_back(
+						    location);
+						asteroidvelocity.push_back(
+						    velocity);
+						asteroidrotation.push_back(
+						    rand() % 360);
+						asteroidrotationvelocity.push_back(
+						    (rand() %
+						     (int)(clock
+							       .getElapsedTime()
+							       .asSeconds() +
+							   1)) +
+						    BASEVELOCITY);
+						if (rand() % 2 == 0)
+							asteroidrotationvelocity
+							    .at(asteroids -
+								1) *= -1;
+					}
+
+					enemyDelayClock = 0;
 				}
-				// Gameover if lazer hit
-				if (player1lazercooldown <
-				    LAZERCOOLDOWN - LAZERINVULNERABILITYPERIOD)
-					for (int l = 0; l < lazers; l++) {
-						if (distance(
-							lazerpositions.at(l).x -
-							    player1position.x,
-							lazerpositions.at(l).y -
-							    player1position
-								.y) <=
-						    HITRADIUS) {
 
-							// Delete Lazer
-							lazerpositions.erase(
-							    lazerpositions
-								.begin() +
-							    l);
-							lazerrotation.erase(
-							    lazerrotation
-								.begin() +
-							    l);
-							lazervelocity.erase(
+				// Player 1
+				if (!player1gameover) {
+					// Player Controls
+					player1lazercooldown -= deltatime;
+					bool engine = false;
+					if (!player2mode) {
+						// 1-Player Mode Player 1
+						// Controls WASD or arrow
+						if (sf::Keyboard::isKeyPressed(
+							sf::Keyboard::W) |
+						    sf::Keyboard::isKeyPressed(
+							sf::Keyboard::Up)) {
+							// Go Forwards
+							// Acceleration
+							engine = true;
+							player1velocity.x -=
+							    sin(player1rotation *
+								PI / 180) *
+							    (deltatime)*MOVEMENTVEL;
+							player1velocity.y +=
+							    cos(player1rotation *
+								PI / 180) *
+							    (deltatime)*MOVEMENTVEL;
+						}
+						float direction = 0;
+						if (sf::Keyboard::isKeyPressed(
+							sf::Keyboard::A) |
+						    sf::Keyboard::isKeyPressed(
+							sf::Keyboard::Left)) {
+							direction -= 1;
+						}
+						if (sf::Keyboard::isKeyPressed(
+							sf::Keyboard::D) |
+						    sf::Keyboard::isKeyPressed(
+							sf::Keyboard::Right)) {
+							direction += 1;
+						}
+						if (sf::Keyboard::isKeyPressed(
+							sf::Keyboard::A) |
+							sf::Keyboard::
+							    isKeyPressed(
+								sf::Keyboard::
+								    Left) &&
+						    sf::Keyboard::isKeyPressed(
+							sf::Keyboard::D) |
+							sf::Keyboard::
+							    isKeyPressed(
+								sf::Keyboard::
+								    Right)) {
+							if (player1rotationVelocity >
+							    0)
+								direction = -1;
+							else if (
+							    player1rotationVelocity <
+							    0)
+								direction = 1;
+						}
+						player1rotationVelocity +=
+						    direction *
+						    (deltatime)*ROTATIONVEL;
+						// Shoot Lazer
+						if (player1lazercooldown <= 0 &&
+						    (sf::Keyboard::isKeyPressed(
+							 sf::Keyboard::S) |
+						     sf::Keyboard::isKeyPressed(
+							 sf::Keyboard::Down))) {
+							lazerfire.play();
+							lazers++;
+							player1lazercooldown =
+							    LAZERCOOLDOWN;
+							lazerpositions.push_back(
+							    player1position);
+							lazerrotation.push_back(
+							    player1rotation);
+							lazervelocity.push_back(
+							    sf::Vector2f(
+								sin(-player1rotation *
+								    PI / 180) *
+								    LAZERSPEED,
+								cos(-player1rotation *
+								    PI / 180) *
+								    LAZERSPEED));
+							lazervelocity.at(
 							    lazervelocity
-								.begin() +
-							    l);
-							lazers--;
-							l--;
+								.size() -
+							    1) +=
+							    player1velocity; // Adds
+									     // player
+									     // speed to
+									     // lazer
+									     // velocity
+							if (distance(
+								lazervelocity
+								    .at(lazervelocity
+									    .size() -
+									1)
+								    .x,
+								lazervelocity
+								    .at(lazervelocity
+									    .size() -
+									1)
+								    .y) <
+							    LAZERSPEED)
+								lazervelocity.at(
+								    lazervelocity
+									.size() -
+								    1) -=
+								    player1velocity;
+							lazerpositions.at(
+							    lazerpositions
+								.size() -
+							    1) +=
+							    sf::Vector2f(
+								sin(-player1rotation *
+								    PI / 180),
+								cos(-player1rotation *
+								    PI / 180)) *
+							    (float)
+								HITRADIUS; // Get
+									   // Lazer
+									   // out
+									   // of
+									   // hit
+									   // radius
+						}
+					} else {
+						// 2-player mode player 1
+						// controls WASD
+						if (sf::Keyboard::isKeyPressed(
+							sf::Keyboard::W)) {
+							// Go Forwards
+							// Acceleration
+							engine = true;
+							player1velocity.x -=
+							    sin(player1rotation *
+								PI / 180) *
+							    (deltatime)*MOVEMENTVEL;
+							player1velocity.y +=
+							    cos(player1rotation *
+								PI / 180) *
+							    (deltatime)*MOVEMENTVEL;
+						}
+						float direction = 0;
+						if (sf::Keyboard::isKeyPressed(
+							sf::Keyboard::A)) {
+							direction -= 1;
+						}
+						if (sf::Keyboard::isKeyPressed(
+							sf::Keyboard::D)) {
+							direction += 1;
+						}
+						if (sf::Keyboard::isKeyPressed(
+							sf::Keyboard::A) &&
+						    sf::Keyboard::isKeyPressed(
+							sf::Keyboard::D)) {
+							if (player1rotationVelocity >
+							    0)
+								direction = -1;
+							else if (
+							    player1rotationVelocity <
+							    0)
+								direction = 1;
+						}
+						player1rotationVelocity +=
+						    direction *
+						    (deltatime)*ROTATIONVEL;
+						// Shoot Lazer
+						if (player1lazercooldown <= 0 &&
+						    sf::Keyboard::isKeyPressed(
+							sf::Keyboard::S)) {
+							lazerfire.play();
+							lazers++;
+							player1lazercooldown =
+							    LAZERCOOLDOWN;
+							lazerpositions.push_back(
+							    player1position);
+							lazerrotation.push_back(
+							    player1rotation);
+							lazervelocity.push_back(
+							    sf::Vector2f(
+								sin(-player1rotation *
+								    PI / 180) *
+								    LAZERSPEED,
+								cos(-player1rotation *
+								    PI / 180) *
+								    LAZERSPEED));
+							lazervelocity.at(
+							    lazervelocity
+								.size() -
+							    1) +=
+							    player1velocity;
+							if (distance(
+								lazervelocity
+								    .at(lazervelocity
+									    .size() -
+									1)
+								    .x,
+								lazervelocity
+								    .at(lazervelocity
+									    .size() -
+									1)
+								    .y) <
+							    LAZERSPEED)
+								lazervelocity.at(
+								    lazervelocity
+									.size() -
+								    1) -=
+								    player1velocity;
+						}
+					}
+					// Update Position & Rotation
+					player1position +=
+					    player1velocity * (deltatime);
+					player1rotation +=
+					    player1rotationVelocity *
+					    (deltatime);
 
+					// Use next sheild if timer over
+					if (!player1sheild &&
+					    player1sheilds > 0 &&
+					    clock.getElapsedTime().asSeconds() -
+						    player1time >=
+						SHEILDINVULNERABILITYPERIOD) {
+						player1sheild = true;
+						player1sheilds--;
+					}
+
+					// GameOver if colision
+					for (int a = 0; a < asteroids; a++) {
+						sf::Vector2f apos =
+						    asteroidpositions.at(a);
+						float size = asteroidsize.at(a);
+						if (distance(player1position.x -
+								 apos.x,
+							     player1position.y -
+								 apos.y) <
+						    size) {
+							// Collision!
 							if (player1sheild ||
 							    clock.getElapsedTime()
 									.asSeconds() -
 								    player1time <
 								SHEILDINVULNERABILITYPERIOD) { // Bounce with sheild
+								// Get New Angle
+								float movangle =
+								    atan2(
+									player1velocity
+									    .x,
+									player1velocity
+									    .y);
+								float posangle =
+								    atan2(
+									player1position
+										.x -
+									    apos.x,
+									player1position
+										.y -
+									    apos.y) -
+								    PI /
+									2; // Get
+									   // Perpendicular
+								float newangle =
+								    2 * posangle -
+								    movangle; // New
+									      // angle
+									      // after
+									      // bounce
+								float velocity =
+								    distance(
+									player1velocity
+									    .x,
+									player1velocity
+									    .y) *
+								    SHEILDSPEEDMULTIPLIER;
+
+								// Bounce
+								player1velocity
+								    .x =
+								    sin(newangle) *
+								    velocity;
+								player1velocity
+								    .y =
+								    cos(newangle) *
+								    velocity;
+
+								// Repel
+								player1velocity += sf::Vector2f(
+								    (player1position
+									 .x -
+								     apos.x) /
+									asteroidsize
+									    .at(a) *
+									SHEILDREPELSTRENGTH,
+								    (player1position
+									 .y -
+								     apos.y) /
+									asteroidsize
+									    .at(a) *
+									SHEILDREPELSTRENGTH);
+
+								// Push out if
+								// in asteroid
+								if (distance(
+									player1position
+										.x -
+									    apos.x,
+									player1position
+										.y -
+									    apos.y) <
+								    asteroidsize
+									.at(a)) {
+									player1position
+									    .x +=
+									    (player1position
+										 .x -
+									     apos.x) /
+									    asteroidsize
+										.at(a) *
+									    (asteroidsize
+										 .at(a) -
+									     distance(
+										 player1position
+											 .x -
+										     apos.x,
+										 player1position
+											 .y -
+										     apos.y));
+									player1position
+									    .y +=
+									    (player1position
+										 .y -
+									     apos.y) /
+									    asteroidsize
+										.at(a) *
+									    (asteroidsize
+										 .at(a) -
+									     distance(
+										 player1position
+											 .x -
+										     apos.x,
+										 player1position
+											 .y -
+										     apos.y));
+								}
+
+								// Push if in
+								// tragectory of
+								// asteroid
+								float amovangle =
+								    atan2(
+									asteroidvelocity
+									    .at(a)
+									    .x,
+									asteroidvelocity
+									    .at(a)
+									    .y);
+								if (posangle >=
+									amovangle -
+									    PI /
+										2 &&
+								    posangle <=
+									amovangle +
+									    PI /
+										2)
+									player1velocity +=
+									    asteroidvelocity
+										.at(a);
+
+								// Text
+								if (player1sheild) {
+									texts++;
+									textpositions
+									    .push_back(
+										player1position);
+									textstring
+									    .push_back(
+										SHEILDPOPMESSAGE);
+									texttime
+									    .push_back(
+										0);
+								}
 								// Pop Sheild
 								player1sheild =
 								    false;
@@ -1611,16 +1619,7 @@ int main() {
 								    clock
 									.getElapsedTime()
 									.asSeconds();
-								// Text
-								texts++;
-								textpositions
-								    .push_back(
-									player1position);
-								textstring.push_back(
-								    SHEILDPOPMESSAGE);
-								texttime
-								    .push_back(
-									0);
+								;
 							} else {
 								player1gameover =
 								    true;
@@ -1652,172 +1651,228 @@ int main() {
 							break;
 						}
 					}
+					// Gameover if lazer hit
+					if (player1lazercooldown <
+					    LAZERCOOLDOWN -
+						LAZERINVULNERABILITYPERIOD)
+						for (int l = 0; l < lazers;
+						     l++) {
+							if (distance(
+								lazerpositions
+									.at(l)
+									.x -
+								    player1position
+									.x,
+								lazerpositions
+									.at(l)
+									.y -
+								    player1position
+									.y) <=
+							    HITRADIUS) {
 
-				bool bounce = false;
-				// Bounce on edge of screen
-				if (player1position.x < 0 &&
-					player1velocity.x < 0 ||
-				    player1position.x > window.getSize().x &&
-					player1velocity.x > 0) {
-					player1velocity.x *=
-					    -1 * EDGEBOUNCESCALE;
-					bounce = true;
-				}
-				if (player1position.y < 0 &&
-					player1velocity.y < 0 ||
-				    player1position.y > window.getSize().y &&
-					player1velocity.y > 0) {
-					player1velocity.y *=
-					    -1 * EDGEBOUNCESCALE;
-					bounce = true;
-				}
-				if (bounce) {
-					// Text
-					texts++;
-					textpositions.push_back(
-					    player1position);
-					textstring.push_back(BOUNCEMESSAGE);
-					texttime.push_back(0);
-				}
+								// Delete Lazer
+								lazerpositions.erase(
+								    lazerpositions
+									.begin() +
+								    l);
+								lazerrotation.erase(
+								    lazerrotation
+									.begin() +
+								    l);
+								lazervelocity.erase(
+								    lazervelocity
+									.begin() +
+								    l);
+								lazers--;
+								l--;
 
-				// Draw Player
-				sf::ConvexShape player(
-				    6); // Triangle shaped player with
-					// rectangular tip
-				player.setPoint(0,
-						sf::Vector2f(-2, 10)); //     **
-				player.setPoint(1,
-						sf::Vector2f(-2, 15)); //     **
-				player.setPoint(2,
-						sf::Vector2f(2, 15)); //     **
-				player.setPoint(3,
-						sf::Vector2f(2, 10)); //    *  *
-				player.setPoint(4,
-						sf::Vector2f(10, -10)); //   * *
-				player.setPoint(
-				    5, sf::Vector2f(-10, -10)); //  ********
-				player.setFillColor(
-				    sf::Color::Transparent); // Transparent Fill
-				player.setOutlineColor(
-				    sf::Color::White); // White Outline
-				player.setOutlineThickness(2);
+								if (player1sheild ||
+								    clock.getElapsedTime()
+										.asSeconds() -
+									    player1time <
+									SHEILDINVULNERABILITYPERIOD) { // Bounce with sheild
+									// Pop
+									// Sheild
+									player1sheild =
+									    false;
+									powerdownsound
+									    .play();
+									player1time =
+									    clock
+										.getElapsedTime()
+										.asSeconds();
+									// Text
+									texts++;
+									textpositions
+									    .push_back(
+										player1position);
+									textstring
+									    .push_back(
+										SHEILDPOPMESSAGE);
+									texttime
+									    .push_back(
+										0);
+								} else {
+									player1gameover =
+									    true;
+									// Explosion
+									explosionsound
+									    .play();
+									explosions++;
+									explosionpositions
+									    .push_back(
+										player1position);
+									explosiontime
+									    .push_back(
+										EXPLOSIONTIME);
+									explosionsize
+									    .push_back(
+										PLAYEREXPLOSIONSIZE);
 
-				player.setPosition(player1position); // Position
-				player.setRotation(player1rotation); // Rotate
+									// Text
+									texts++;
+									textpositions
+									    .push_back(
+										player1position);
+									textstring
+									    .push_back(
+										GAMEOVERMESSAGE);
+									texttime
+									    .push_back(
+										0);
+								}
+								break;
+							}
+						}
 
-				// Draw
-				window.draw(player);
+					bool bounce = false;
+					// Bounce on edge of screen
+					if (player1position.x < 0 &&
+						player1velocity.x < 0 ||
+					    player1position.x >
+						    window.getSize().x &&
+						player1velocity.x > 0) {
+						player1velocity.x *=
+						    -1 * EDGEBOUNCESCALE;
+						bounce = true;
+					}
+					if (player1position.y < 0 &&
+						player1velocity.y < 0 ||
+					    player1position.y >
+						    window.getSize().y &&
+						player1velocity.y > 0) {
+						player1velocity.y *=
+						    -1 * EDGEBOUNCESCALE;
+						bounce = true;
+					}
+					if (bounce) {
+						// Text
+						texts++;
+						textpositions.push_back(
+						    player1position);
+						textstring.push_back(
+						    BOUNCEMESSAGE);
+						texttime.push_back(0);
+					}
 
-				// Draw Fire
-				sf::ConvexShape fire(5);
-				fire.setPoint(0, sf::Vector2f(-8, -15));
-				fire.setPoint(1, sf::Vector2f(-5, -20));
-				fire.setPoint(2, sf::Vector2f(0, -18));
-				fire.setPoint(3, sf::Vector2f(5, -20));
-				fire.setPoint(4, sf::Vector2f(8, -15));
-
-				fire.setFillColor(sf::Color::Transparent);
-				fire.setOutlineColor(sf::Color::White);
-				fire.setOutlineThickness(2);
-
-				fire.setPosition(player1position); // Position
-				fire.setRotation(player1rotation); // Rotate
-
-				if (engine)
-					window.draw(fire);
-
-				if (player2mode) {
-					// Player indicator
-					sf::RectangleShape indicator(
-					    sf::Vector2f(4, 4));
-
-					indicator.setOrigin(
-					    indicator.getLocalBounds().width /
-						2,
-					    indicator.getLocalBounds().height /
-						    2 +
-						2); // Shift 2px down from
-						    // center
-					indicator.setPosition(player1position);
-					indicator.setRotation(player1rotation);
-
-					indicator.setFillColor(
-					    sf::Color::Black); // Black Fill
-					indicator.setOutlineColor(
+					// Draw Player
+					sf::ConvexShape player(
+					    6); // Triangle shaped player with
+						// rectangular tip
+					player.setPoint(
+					    0, sf::Vector2f(-2, 10)); //     **
+					player.setPoint(
+					    1, sf::Vector2f(-2, 15)); //     **
+					player.setPoint(
+					    2, sf::Vector2f(2, 15)); //     **
+					player.setPoint(
+					    3, sf::Vector2f(2, 10)); //    *  *
+					player.setPoint(
+					    4, sf::Vector2f(10, -10)); //   * *
+					player.setPoint(
+					    5, sf::Vector2f(-10,
+							    -10)); //  ********
+					player.setFillColor(
+					    sf::Color::
+						Transparent); // Transparent
+							      // Fill
+					player.setOutlineColor(
 					    sf::Color::White); // White Outline
-					indicator.setOutlineThickness(2);
+					player.setOutlineThickness(2);
+
+					player.setPosition(
+					    player1position); // Position
+					player.setRotation(
+					    player1rotation); // Rotate
 
 					// Draw
-					window.draw(indicator);
-				}
+					window.draw(player);
 
-				// Draw sheild
-				float ptime =
-				    clock.getElapsedTime().asSeconds() -
-				    player1time;
-				sf::CircleShape sheild;
-				float sheildThickness = 2;
-				for (int i = 0; i < player1sheilds; i++) {
-					sheild = sf::CircleShape(
-					    SHEILDSIZE + SHEILDSPACE * i, 16);
-					sheild.setFillColor(
+					// Draw Fire
+					sf::ConvexShape fire(5);
+					fire.setPoint(0, sf::Vector2f(-8, -15));
+					fire.setPoint(1, sf::Vector2f(-5, -20));
+					fire.setPoint(2, sf::Vector2f(0, -18));
+					fire.setPoint(3, sf::Vector2f(5, -20));
+					fire.setPoint(4, sf::Vector2f(8, -15));
+
+					fire.setFillColor(
 					    sf::Color::Transparent);
-					sheild.setOutlineThickness(
-					    sheildThickness);
-					sheild.setOutlineColor(
-					    sf::Color::White);
-					sheild.setOrigin(
-					    sheild.getLocalBounds().width / 2,
-					    sheild.getLocalBounds().height / 2);
-					sheild.setPosition(player1position);
-					window.draw(sheild);
-				}
-				if (player1sheild) {
-					if (ptime > SHEILDANIMATIONLENGTH) {
-						sheild = sf::CircleShape(
-						    SHEILDSIZE +
-							(SHEILDSPACE *
-							 player1sheilds),
-						    16);
-					} else {
-						sheild = sf::CircleShape(
-						    SHEILDSIZE +
-							(SHEILDSPACE *
-							 player1sheilds) +
-							SHEILDRANGE *
-							    ((SHEILDANIMATIONLENGTH -
-							      ptime) /
-							     SHEILDANIMATIONLENGTH),
-						    16);
-						sheildThickness =
-						    ptime /
-						    SHEILDANIMATIONLENGTH * 2;
+					fire.setOutlineColor(sf::Color::White);
+					fire.setOutlineThickness(2);
+
+					fire.setPosition(
+					    player1position); // Position
+					fire.setRotation(
+					    player1rotation); // Rotate
+
+					if (engine)
+						window.draw(fire);
+
+					if (player2mode) {
+						// Player indicator
+						sf::RectangleShape indicator(
+						    sf::Vector2f(4, 4));
+
+						indicator.setOrigin(
+						    indicator.getLocalBounds()
+							    .width /
+							2,
+						    indicator.getLocalBounds()
+								.height /
+							    2 +
+							2); // Shift 2px down
+							    // from center
+						indicator.setPosition(
+						    player1position);
+						indicator.setRotation(
+						    player1rotation);
+
+						indicator.setFillColor(
+						    sf::Color::Black); // Black
+								       // Fill
+						indicator.setOutlineColor(
+						    sf::Color::
+							White); // White Outline
+						indicator.setOutlineThickness(
+						    2);
+
+						// Draw
+						window.draw(indicator);
 					}
-					sheild.setFillColor(
-					    sf::Color::Transparent);
-					sheild.setOutlineThickness(
-					    sheildThickness);
-					sheild.setOutlineColor(
-					    sf::Color::White);
-					sheild.setOrigin(
-					    sheild.getLocalBounds().width / 2,
-					    sheild.getLocalBounds().height / 2);
-					sheild.setPosition(player1position);
-					window.draw(sheild);
-				} else {
-					if (ptime <= SHEILDANIMATIONLENGTH) {
+
+					// Draw sheild
+					float ptime =
+					    clock.getElapsedTime().asSeconds() -
+					    player1time;
+					sf::CircleShape sheild;
+					float sheildThickness = 2;
+					for (int i = 0; i < player1sheilds;
+					     i++) {
 						sheild = sf::CircleShape(
 						    SHEILDSIZE +
-							SHEILDSPACE *
-							    player1sheilds +
-							SHEILDRANGE *
-							    (ptime /
-							     SHEILDANIMATIONLENGTH),
+							SHEILDSPACE * i,
 						    16);
-						sheildThickness =
-						    (SHEILDANIMATIONLENGTH -
-						     ptime) /
-						    SHEILDANIMATIONLENGTH * 2;
 						sheild.setFillColor(
 						    sf::Color::Transparent);
 						sheild.setOutlineThickness(
@@ -1835,325 +1890,348 @@ int main() {
 						    player1position);
 						window.draw(sheild);
 					}
+					if (player1sheild) {
+						if (ptime >
+						    SHEILDANIMATIONLENGTH) {
+							sheild = sf::CircleShape(
+							    SHEILDSIZE +
+								(SHEILDSPACE *
+								 player1sheilds),
+							    16);
+						} else {
+							sheild = sf::CircleShape(
+							    SHEILDSIZE +
+								(SHEILDSPACE *
+								 player1sheilds) +
+								SHEILDRANGE *
+								    ((SHEILDANIMATIONLENGTH -
+								      ptime) /
+								     SHEILDANIMATIONLENGTH),
+							    16);
+							sheildThickness =
+							    ptime /
+							    SHEILDANIMATIONLENGTH *
+							    2;
+						}
+						sheild.setFillColor(
+						    sf::Color::Transparent);
+						sheild.setOutlineThickness(
+						    sheildThickness);
+						sheild.setOutlineColor(
+						    sf::Color::White);
+						sheild.setOrigin(
+						    sheild.getLocalBounds()
+							    .width /
+							2,
+						    sheild.getLocalBounds()
+							    .height /
+							2);
+						sheild.setPosition(
+						    player1position);
+						window.draw(sheild);
+					} else {
+						if (ptime <=
+						    SHEILDANIMATIONLENGTH) {
+							sheild = sf::CircleShape(
+							    SHEILDSIZE +
+								SHEILDSPACE *
+								    player1sheilds +
+								SHEILDRANGE *
+								    (ptime /
+								     SHEILDANIMATIONLENGTH),
+							    16);
+							sheildThickness =
+							    (SHEILDANIMATIONLENGTH -
+							     ptime) /
+							    SHEILDANIMATIONLENGTH *
+							    2;
+							sheild.setFillColor(
+							    sf::Color::
+								Transparent);
+							sheild
+							    .setOutlineThickness(
+								sheildThickness);
+							sheild.setOutlineColor(
+							    sf::Color::White);
+							sheild.setOrigin(
+							    sheild.getLocalBounds()
+								    .width /
+								2,
+							    sheild.getLocalBounds()
+								    .height /
+								2);
+							sheild.setPosition(
+							    player1position);
+							window.draw(sheild);
+						}
+					}
 				}
-			}
-			// Player 2
-			if (!player2gameover && player2mode) {
-				bool engine = false;
-				player2lazercooldown -= deltatime;
-				if (player2mode) {
-					// 2-player mode player 2 controls arrow
-					if (sf::Keyboard::isKeyPressed(
-						sf::Keyboard::Up)) {
-						// Go Forwards Acceleration
-						engine = true;
-						player2velocity.x -=
-						    sin(player2rotation * PI /
-							180) *
-						    (deltatime)*MOVEMENTVEL;
-						player2velocity.y +=
-						    cos(player2rotation * PI /
-							180) *
-						    (deltatime)*MOVEMENTVEL;
-					}
-					float direction = 0;
-					if (sf::Keyboard::isKeyPressed(
-						sf::Keyboard::Left)) {
-						direction -= 1;
-					}
-					if (sf::Keyboard::isKeyPressed(
-						sf::Keyboard::Right)) {
-						direction += 1;
-					}
-					if (sf::Keyboard::isKeyPressed(
-						sf::Keyboard::Left) &&
-					    sf::Keyboard::isKeyPressed(
-						sf::Keyboard::Right)) {
-						if (player2rotationVelocity > 0)
-							direction = -1;
-						else if (
-						    player2rotationVelocity < 0)
-							direction = 1;
-					}
-					player2rotationVelocity +=
-					    direction * (deltatime)*ROTATIONVEL;
-					// Shoot Lazer
-					if (player2lazercooldown <= 0 &&
-					    sf::Keyboard::isKeyPressed(
-						sf::Keyboard::Down)) {
-						lazerfire.play();
-						lazers++;
-						player2lazercooldown =
-						    LAZERCOOLDOWN;
-						lazerpositions.push_back(
-						    player2position);
-						lazerrotation.push_back(
-						    player2rotation);
-						lazervelocity.push_back(
-						    sf::Vector2f(
-							sin(-player2rotation *
-							    PI / 180) *
-							    LAZERSPEED,
-							cos(-player2rotation *
-							    PI / 180) *
-							    LAZERSPEED));
-						lazervelocity.at(
-						    lazervelocity.size() - 1) +=
-						    player2velocity; // Adds
-								     // player
-								     // speed to
-								     // lazer
-								     // velocity
-						if (distance(
-							lazervelocity
-							    .at(lazervelocity
-								    .size() -
-								1)
-							    .x,
-							lazervelocity
-							    .at(lazervelocity
-								    .size() -
-								1)
-							    .y) < LAZERSPEED)
+				// Player 2
+				if (!player2gameover && player2mode) {
+					bool engine = false;
+					player2lazercooldown -= deltatime;
+					if (player2mode) {
+						// 2-player mode player 2
+						// controls arrow
+						if (sf::Keyboard::isKeyPressed(
+							sf::Keyboard::Up)) {
+							// Go Forwards
+							// Acceleration
+							engine = true;
+							player2velocity.x -=
+							    sin(player2rotation *
+								PI / 180) *
+							    (deltatime)*MOVEMENTVEL;
+							player2velocity.y +=
+							    cos(player2rotation *
+								PI / 180) *
+							    (deltatime)*MOVEMENTVEL;
+						}
+						float direction = 0;
+						if (sf::Keyboard::isKeyPressed(
+							sf::Keyboard::Left)) {
+							direction -= 1;
+						}
+						if (sf::Keyboard::isKeyPressed(
+							sf::Keyboard::Right)) {
+							direction += 1;
+						}
+						if (sf::Keyboard::isKeyPressed(
+							sf::Keyboard::Left) &&
+						    sf::Keyboard::isKeyPressed(
+							sf::Keyboard::Right)) {
+							if (player2rotationVelocity >
+							    0)
+								direction = -1;
+							else if (
+							    player2rotationVelocity <
+							    0)
+								direction = 1;
+						}
+						player2rotationVelocity +=
+						    direction *
+						    (deltatime)*ROTATIONVEL;
+						// Shoot Lazer
+						if (player2lazercooldown <= 0 &&
+						    sf::Keyboard::isKeyPressed(
+							sf::Keyboard::Down)) {
+							lazerfire.play();
+							lazers++;
+							player2lazercooldown =
+							    LAZERCOOLDOWN;
+							lazerpositions.push_back(
+							    player2position);
+							lazerrotation.push_back(
+							    player2rotation);
+							lazervelocity.push_back(
+							    sf::Vector2f(
+								sin(-player2rotation *
+								    PI / 180) *
+								    LAZERSPEED,
+								cos(-player2rotation *
+								    PI / 180) *
+								    LAZERSPEED));
 							lazervelocity.at(
 							    lazervelocity
 								.size() -
-							    1) -=
-							    player2velocity;
-						lazerpositions.at(
-						    lazerpositions.size() -
-						    1) +=
-						    sf::Vector2f(
-							sin(-player2rotation *
-							    PI / 180),
-							cos(-player2rotation *
-							    PI / 180)) *
-						    (float)
-							HITRADIUS; // Get Lazer
-								   // out of hit
-								   // radius
-					}
-				}
-
-				// Update Position & Rotation
-				player2position +=
-				    player2velocity * (deltatime);
-				player2rotation +=
-				    player2rotationVelocity * (deltatime);
-
-				// Use next sheild if timer over
-				if (!player2sheild && player2sheilds > 0 &&
-				    clock.getElapsedTime().asSeconds() -
-					    player2time >=
-					SHEILDINVULNERABILITYPERIOD) {
-					player2sheild = true;
-					player2sheilds--;
-				}
-
-				// GameOver if colision
-				for (int a = 0; a < asteroids; a++) {
-					sf::Vector2f apos =
-					    asteroidpositions.at(a);
-					float size = asteroidsize.at(a);
-					if (distance(player2position.x - apos.x,
-						     player2position.y -
-							 apos.y) < size) {
-						// Collision!
-						if (player2sheild ||
-						    clock.getElapsedTime()
-								.asSeconds() -
-							    player2time <
-							SHEILDINVULNERABILITYPERIOD) { // Bounce with sheild
-							// Get New Angle
-							float movangle = atan2(
-							    player2velocity.x,
-							    player2velocity.y);
-							float posangle =
-							    atan2(
-								player2position
-									.x -
-								    apos.x,
-								player2position
-									.y -
-								    apos.y) -
-							    PI /
-								2; // Get
-								   // Perpendicular
-							float newangle =
-							    2 * posangle -
-							    movangle; // New
-								      // angle
-								      // after
-								      // bounce
-							float velocity =
-							    distance(
-								player2velocity
-								    .x,
-								player2velocity
-								    .y) *
-							    SHEILDSPEEDMULTIPLIER;
-
-							// Bounce
-							player2velocity.x =
-							    sin(newangle) *
-							    velocity;
-							player2velocity.y =
-							    cos(newangle) *
-							    velocity;
-
-							// Repel
-							player2velocity += sf::Vector2f(
-							    (player2position.x -
-							     apos.x) /
-								asteroidsize.at(
-								    a) *
-								SHEILDREPELSTRENGTH,
-							    (player2position.y -
-							     apos.y) /
-								asteroidsize.at(
-								    a) *
-								SHEILDREPELSTRENGTH);
-
-							// Push out if in
-							// asteroid
+							    1) +=
+							    player2velocity; // Adds
+									     // player
+									     // speed to
+									     // lazer
+									     // velocity
 							if (distance(
-								player2position
-									.x -
-								    apos.x,
-								player2position
-									.y -
-								    apos.y) <
-							    asteroidsize.at(
-								a)) {
-								player2position
-								    .x +=
-								    (player2position
-									 .x -
-								     apos.x) /
-								    asteroidsize
-									.at(a) *
-								    (asteroidsize
-									 .at(a) -
-								     distance(
-									 player2position
-										 .x -
-									     apos.x,
-									 player2position
-										 .y -
-									     apos.y));
-								player2position
-								    .y +=
-								    (player2position
-									 .y -
-								     apos.y) /
-								    asteroidsize
-									.at(a) *
-								    (asteroidsize
-									 .at(a) -
-								     distance(
-									 player2position
-										 .x -
-									     apos.x,
-									 player2position
-										 .y -
-									     apos.y));
-							}
-							// Push if in tragectory
-							// of asteroid
-							float amovangle = atan2(
-							    asteroidvelocity
-								.at(a)
-								.x,
-							    asteroidvelocity
-								.at(a)
-								.y);
-							if (posangle >=
-								amovangle -
-								    PI / 2 &&
-							    posangle <=
-								amovangle +
-								    PI / 2)
-								player2velocity +=
-								    asteroidvelocity
-									.at(a);
-							// Text
-							if (player2sheild) {
-								texts++;
-								textpositions
-								    .push_back(
-									player2position);
-								textstring.push_back(
-								    SHEILDPOPMESSAGE);
-								texttime
-								    .push_back(
-									0);
-							}
-							// Pop Sheild
-							player2sheild = false;
-							powerdownsound.play();
-							player2time =
-							    clock
-								.getElapsedTime()
-								.asSeconds();
-						} else {
-							player2gameover = true;
-							// Explosion
-							explosionsound.play();
-							explosions++;
-							explosionpositions
-							    .push_back(
-								player2position);
-							explosiontime.push_back(
-							    EXPLOSIONTIME);
-							explosionsize.push_back(
-							    PLAYEREXPLOSIONSIZE);
-
-							// Text
-							texts++;
-							textpositions.push_back(
-							    player2position);
-							textstring.push_back(
-							    GAMEOVERMESSAGE);
-							texttime.push_back(0);
-						}
-						break;
-					}
-				}
-
-				// Gameover if lazer hit
-				if (player2lazercooldown <
-				    LAZERCOOLDOWN - LAZERINVULNERABILITYPERIOD)
-					for (int l = 0; l < lazers; l++) {
-						if (distance(
-							lazerpositions.at(l).x -
-							    player2position.x,
-							lazerpositions.at(l).y -
-							    player2position
-								.y) <=
-						    HITRADIUS) {
-
-							// Delete Lazer
-							lazerpositions.erase(
+								lazervelocity
+								    .at(lazervelocity
+									    .size() -
+									1)
+								    .x,
+								lazervelocity
+								    .at(lazervelocity
+									    .size() -
+									1)
+								    .y) <
+							    LAZERSPEED)
+								lazervelocity.at(
+								    lazervelocity
+									.size() -
+								    1) -=
+								    player2velocity;
+							lazerpositions.at(
 							    lazerpositions
-								.begin() +
-							    l);
-							lazerrotation.erase(
-							    lazerrotation
-								.begin() +
-							    l);
-							lazervelocity.erase(
-							    lazervelocity
-								.begin() +
-							    l);
-							lazers--;
-							l--;
+								.size() -
+							    1) +=
+							    sf::Vector2f(
+								sin(-player2rotation *
+								    PI / 180),
+								cos(-player2rotation *
+								    PI / 180)) *
+							    (float)
+								HITRADIUS; // Get
+									   // Lazer
+									   // out
+									   // of
+									   // hit
+									   // radius
+						}
+					}
 
+					// Update Position & Rotation
+					player2position +=
+					    player2velocity * (deltatime);
+					player2rotation +=
+					    player2rotationVelocity *
+					    (deltatime);
+
+					// Use next sheild if timer over
+					if (!player2sheild &&
+					    player2sheilds > 0 &&
+					    clock.getElapsedTime().asSeconds() -
+						    player2time >=
+						SHEILDINVULNERABILITYPERIOD) {
+						player2sheild = true;
+						player2sheilds--;
+					}
+
+					// GameOver if colision
+					for (int a = 0; a < asteroids; a++) {
+						sf::Vector2f apos =
+						    asteroidpositions.at(a);
+						float size = asteroidsize.at(a);
+						if (distance(player2position.x -
+								 apos.x,
+							     player2position.y -
+								 apos.y) <
+						    size) {
+							// Collision!
 							if (player2sheild ||
 							    clock.getElapsedTime()
 									.asSeconds() -
 								    player2time <
 								SHEILDINVULNERABILITYPERIOD) { // Bounce with sheild
+								// Get New Angle
+								float movangle =
+								    atan2(
+									player2velocity
+									    .x,
+									player2velocity
+									    .y);
+								float posangle =
+								    atan2(
+									player2position
+										.x -
+									    apos.x,
+									player2position
+										.y -
+									    apos.y) -
+								    PI /
+									2; // Get
+									   // Perpendicular
+								float newangle =
+								    2 * posangle -
+								    movangle; // New
+									      // angle
+									      // after
+									      // bounce
+								float velocity =
+								    distance(
+									player2velocity
+									    .x,
+									player2velocity
+									    .y) *
+								    SHEILDSPEEDMULTIPLIER;
 
+								// Bounce
+								player2velocity
+								    .x =
+								    sin(newangle) *
+								    velocity;
+								player2velocity
+								    .y =
+								    cos(newangle) *
+								    velocity;
+
+								// Repel
+								player2velocity += sf::Vector2f(
+								    (player2position
+									 .x -
+								     apos.x) /
+									asteroidsize
+									    .at(a) *
+									SHEILDREPELSTRENGTH,
+								    (player2position
+									 .y -
+								     apos.y) /
+									asteroidsize
+									    .at(a) *
+									SHEILDREPELSTRENGTH);
+
+								// Push out if
+								// in asteroid
+								if (distance(
+									player2position
+										.x -
+									    apos.x,
+									player2position
+										.y -
+									    apos.y) <
+								    asteroidsize
+									.at(a)) {
+									player2position
+									    .x +=
+									    (player2position
+										 .x -
+									     apos.x) /
+									    asteroidsize
+										.at(a) *
+									    (asteroidsize
+										 .at(a) -
+									     distance(
+										 player2position
+											 .x -
+										     apos.x,
+										 player2position
+											 .y -
+										     apos.y));
+									player2position
+									    .y +=
+									    (player2position
+										 .y -
+									     apos.y) /
+									    asteroidsize
+										.at(a) *
+									    (asteroidsize
+										 .at(a) -
+									     distance(
+										 player2position
+											 .x -
+										     apos.x,
+										 player2position
+											 .y -
+										     apos.y));
+								}
+								// Push if in
+								// tragectory of
+								// asteroid
+								float amovangle =
+								    atan2(
+									asteroidvelocity
+									    .at(a)
+									    .x,
+									asteroidvelocity
+									    .at(a)
+									    .y);
+								if (posangle >=
+									amovangle -
+									    PI /
+										2 &&
+								    posangle <=
+									amovangle +
+									    PI /
+										2)
+									player2velocity +=
+									    asteroidvelocity
+										.at(a);
 								// Text
 								if (player2sheild) {
 									texts++;
@@ -2167,7 +2245,6 @@ int main() {
 									    .push_back(
 										0);
 								}
-
 								// Pop Sheild
 								player2sheild =
 								    false;
@@ -2209,159 +2286,215 @@ int main() {
 						}
 					}
 
-				bool bounce = false;
-				// Bounce on edge
-				if (player2position.x < 0 &&
-					player2velocity.x < 0 ||
-				    player2position.x > window.getSize().x &&
-					player2velocity.x > 0) {
-					player2velocity.x *=
-					    -1 * EDGEBOUNCESCALE;
-					bounce = true;
-				}
-				if (player2position.y < 0 &&
-					player2velocity.y < 0 ||
-				    player2position.y > window.getSize().y &&
-					player2velocity.y > 0) {
-					player2velocity.y *=
-					    -1 * EDGEBOUNCESCALE;
-					bounce = true;
-				}
-				if (bounce) {
-					// Text
-					texts++;
-					textpositions.push_back(
-					    player2position);
-					textstring.push_back(BOUNCEMESSAGE);
-					texttime.push_back(0);
-				}
-				// Draw Player
-				sf::ConvexShape player(
-				    6); // Triangle shaped player with
-					// rectangular tip
-				player.setPoint(0,
-						sf::Vector2f(-2, 10)); //     **
-				player.setPoint(1,
-						sf::Vector2f(-2, 15)); //     **
-				player.setPoint(2,
-						sf::Vector2f(2, 15)); //     **
-				player.setPoint(3,
-						sf::Vector2f(2, 10)); //    *  *
-				player.setPoint(4,
-						sf::Vector2f(10, -10)); //   * *
-				player.setPoint(
-				    5, sf::Vector2f(-10, -10)); //  ********
-				player.setFillColor(
-				    sf::Color::Transparent); // Black Fill
-				player.setOutlineColor(
-				    sf::Color::White); // White Outline
-				player.setOutlineThickness(2);
+					// Gameover if lazer hit
+					if (player2lazercooldown <
+					    LAZERCOOLDOWN -
+						LAZERINVULNERABILITYPERIOD)
+						for (int l = 0; l < lazers;
+						     l++) {
+							if (distance(
+								lazerpositions
+									.at(l)
+									.x -
+								    player2position
+									.x,
+								lazerpositions
+									.at(l)
+									.y -
+								    player2position
+									.y) <=
+							    HITRADIUS) {
 
-				player.setPosition(player2position); // Position
-				player.setRotation(player2rotation); // Rotate
+								// Delete Lazer
+								lazerpositions.erase(
+								    lazerpositions
+									.begin() +
+								    l);
+								lazerrotation.erase(
+								    lazerrotation
+									.begin() +
+								    l);
+								lazervelocity.erase(
+								    lazervelocity
+									.begin() +
+								    l);
+								lazers--;
+								l--;
 
-				// Draw
-				window.draw(player);
+								if (player2sheild ||
+								    clock.getElapsedTime()
+										.asSeconds() -
+									    player2time <
+									SHEILDINVULNERABILITYPERIOD) { // Bounce with sheild
 
-				// Draw Fire
-				sf::ConvexShape fire(5);
-				fire.setPoint(0, sf::Vector2f(-8, -15));
-				fire.setPoint(1, sf::Vector2f(-5, -20));
-				fire.setPoint(2, sf::Vector2f(0, -18));
-				fire.setPoint(3, sf::Vector2f(5, -20));
-				fire.setPoint(4, sf::Vector2f(8, -15));
+									// Text
+									if (player2sheild) {
+										texts++;
+										textpositions
+										    .push_back(
+											player2position);
+										textstring
+										    .push_back(
+											SHEILDPOPMESSAGE);
+										texttime
+										    .push_back(
+											0);
+									}
 
-				fire.setFillColor(sf::Color::Transparent);
-				fire.setOutlineColor(sf::Color::White);
-				fire.setOutlineThickness(2);
+									// Pop
+									// Sheild
+									player2sheild =
+									    false;
+									powerdownsound
+									    .play();
+									player2time =
+									    clock
+										.getElapsedTime()
+										.asSeconds();
+								} else {
+									player2gameover =
+									    true;
+									// Explosion
+									explosionsound
+									    .play();
+									explosions++;
+									explosionpositions
+									    .push_back(
+										player2position);
+									explosiontime
+									    .push_back(
+										EXPLOSIONTIME);
+									explosionsize
+									    .push_back(
+										PLAYEREXPLOSIONSIZE);
 
-				fire.setPosition(player2position); // Position
-				fire.setRotation(player2rotation); // Rotate
+									// Text
+									texts++;
+									textpositions
+									    .push_back(
+										player2position);
+									textstring
+									    .push_back(
+										GAMEOVERMESSAGE);
+									texttime
+									    .push_back(
+										0);
+								}
+								break;
+							}
+						}
 
-				if (engine)
-					window.draw(fire);
-
-				// Player indicator
-				sf::RectangleShape indicator(
-				    sf::Vector2f(2, 8));
-
-				indicator.setOrigin(
-				    indicator.getLocalBounds().width / 2,
-				    indicator.getLocalBounds().height / 2 +
-					2); // Shift 2px down from center
-				indicator.setPosition(player2position);
-				indicator.setRotation(player2rotation);
-
-				// Draw
-				window.draw(indicator);
-
-				// Draw sheild
-				float ptime =
-				    clock.getElapsedTime().asSeconds() -
-				    player2time;
-				sf::CircleShape sheild;
-				float sheildThickness = 2;
-				for (int i = 0; i < player2sheilds; i++) {
-					sheild = sf::CircleShape(
-					    SHEILDSIZE + SHEILDSPACE * i, 16);
-					sheild.setFillColor(
-					    sf::Color::Transparent);
-					sheild.setOutlineThickness(
-					    sheildThickness);
-					sheild.setOutlineColor(
-					    sf::Color::White);
-					sheild.setOrigin(
-					    sheild.getLocalBounds().width / 2,
-					    sheild.getLocalBounds().height / 2);
-					sheild.setPosition(player2position);
-					window.draw(sheild);
-				}
-				if (player2sheild) {
-					if (ptime > SHEILDANIMATIONLENGTH) {
-						sheild = sf::CircleShape(
-						    SHEILDSIZE +
-							(SHEILDSPACE *
-							 player2sheilds),
-						    16);
-					} else {
-						sheild = sf::CircleShape(
-						    SHEILDSIZE +
-							(SHEILDSPACE *
-							 player2sheilds) +
-							SHEILDRANGE *
-							    ((SHEILDANIMATIONLENGTH -
-							      ptime) /
-							     SHEILDANIMATIONLENGTH),
-						    16);
-						sheildThickness =
-						    ptime /
-						    SHEILDANIMATIONLENGTH * 2;
+					bool bounce = false;
+					// Bounce on edge
+					if (player2position.x < 0 &&
+						player2velocity.x < 0 ||
+					    player2position.x >
+						    window.getSize().x &&
+						player2velocity.x > 0) {
+						player2velocity.x *=
+						    -1 * EDGEBOUNCESCALE;
+						bounce = true;
 					}
-					sheild.setFillColor(
+					if (player2position.y < 0 &&
+						player2velocity.y < 0 ||
+					    player2position.y >
+						    window.getSize().y &&
+						player2velocity.y > 0) {
+						player2velocity.y *=
+						    -1 * EDGEBOUNCESCALE;
+						bounce = true;
+					}
+					if (bounce) {
+						// Text
+						texts++;
+						textpositions.push_back(
+						    player2position);
+						textstring.push_back(
+						    BOUNCEMESSAGE);
+						texttime.push_back(0);
+					}
+					// Draw Player
+					sf::ConvexShape player(
+					    6); // Triangle shaped player with
+						// rectangular tip
+					player.setPoint(
+					    0, sf::Vector2f(-2, 10)); //     **
+					player.setPoint(
+					    1, sf::Vector2f(-2, 15)); //     **
+					player.setPoint(
+					    2, sf::Vector2f(2, 15)); //     **
+					player.setPoint(
+					    3, sf::Vector2f(2, 10)); //    *  *
+					player.setPoint(
+					    4, sf::Vector2f(10, -10)); //   * *
+					player.setPoint(
+					    5, sf::Vector2f(-10,
+							    -10)); //  ********
+					player.setFillColor(
+					    sf::Color::Transparent); // Black
+								     // Fill
+					player.setOutlineColor(
+					    sf::Color::White); // White Outline
+					player.setOutlineThickness(2);
+
+					player.setPosition(
+					    player2position); // Position
+					player.setRotation(
+					    player2rotation); // Rotate
+
+					// Draw
+					window.draw(player);
+
+					// Draw Fire
+					sf::ConvexShape fire(5);
+					fire.setPoint(0, sf::Vector2f(-8, -15));
+					fire.setPoint(1, sf::Vector2f(-5, -20));
+					fire.setPoint(2, sf::Vector2f(0, -18));
+					fire.setPoint(3, sf::Vector2f(5, -20));
+					fire.setPoint(4, sf::Vector2f(8, -15));
+
+					fire.setFillColor(
 					    sf::Color::Transparent);
-					sheild.setOutlineThickness(
-					    sheildThickness);
-					sheild.setOutlineColor(
-					    sf::Color::White);
-					sheild.setOrigin(
-					    sheild.getLocalBounds().width / 2,
-					    sheild.getLocalBounds().height / 2);
-					sheild.setPosition(player2position);
-					window.draw(sheild);
-				} else {
-					if (ptime <= SHEILDANIMATIONLENGTH) {
+					fire.setOutlineColor(sf::Color::White);
+					fire.setOutlineThickness(2);
+
+					fire.setPosition(
+					    player2position); // Position
+					fire.setRotation(
+					    player2rotation); // Rotate
+
+					if (engine)
+						window.draw(fire);
+
+					// Player indicator
+					sf::RectangleShape indicator(
+					    sf::Vector2f(2, 8));
+
+					indicator.setOrigin(
+					    indicator.getLocalBounds().width /
+						2,
+					    indicator.getLocalBounds().height /
+						    2 +
+						2); // Shift 2px down from
+						    // center
+					indicator.setPosition(player2position);
+					indicator.setRotation(player2rotation);
+
+					// Draw
+					window.draw(indicator);
+
+					// Draw sheild
+					float ptime =
+					    clock.getElapsedTime().asSeconds() -
+					    player2time;
+					sf::CircleShape sheild;
+					float sheildThickness = 2;
+					for (int i = 0; i < player2sheilds;
+					     i++) {
 						sheild = sf::CircleShape(
 						    SHEILDSIZE +
-							SHEILDSPACE *
-							    player2sheilds +
-							SHEILDRANGE *
-							    (ptime /
-							     SHEILDANIMATIONLENGTH),
+							SHEILDSPACE * i,
 						    16);
-						sheildThickness =
-						    (SHEILDANIMATIONLENGTH -
-						     ptime) /
-						    SHEILDANIMATIONLENGTH * 2;
 						sheild.setFillColor(
 						    sf::Color::Transparent);
 						sheild.setOutlineThickness(
@@ -2379,149 +2512,110 @@ int main() {
 						    player2position);
 						window.draw(sheild);
 					}
+					if (player2sheild) {
+						if (ptime >
+						    SHEILDANIMATIONLENGTH) {
+							sheild = sf::CircleShape(
+							    SHEILDSIZE +
+								(SHEILDSPACE *
+								 player2sheilds),
+							    16);
+						} else {
+							sheild = sf::CircleShape(
+							    SHEILDSIZE +
+								(SHEILDSPACE *
+								 player2sheilds) +
+								SHEILDRANGE *
+								    ((SHEILDANIMATIONLENGTH -
+								      ptime) /
+								     SHEILDANIMATIONLENGTH),
+							    16);
+							sheildThickness =
+							    ptime /
+							    SHEILDANIMATIONLENGTH *
+							    2;
+						}
+						sheild.setFillColor(
+						    sf::Color::Transparent);
+						sheild.setOutlineThickness(
+						    sheildThickness);
+						sheild.setOutlineColor(
+						    sf::Color::White);
+						sheild.setOrigin(
+						    sheild.getLocalBounds()
+							    .width /
+							2,
+						    sheild.getLocalBounds()
+							    .height /
+							2);
+						sheild.setPosition(
+						    player2position);
+						window.draw(sheild);
+					} else {
+						if (ptime <=
+						    SHEILDANIMATIONLENGTH) {
+							sheild = sf::CircleShape(
+							    SHEILDSIZE +
+								SHEILDSPACE *
+								    player2sheilds +
+								SHEILDRANGE *
+								    (ptime /
+								     SHEILDANIMATIONLENGTH),
+							    16);
+							sheildThickness =
+							    (SHEILDANIMATIONLENGTH -
+							     ptime) /
+							    SHEILDANIMATIONLENGTH *
+							    2;
+							sheild.setFillColor(
+							    sf::Color::
+								Transparent);
+							sheild
+							    .setOutlineThickness(
+								sheildThickness);
+							sheild.setOutlineColor(
+							    sf::Color::White);
+							sheild.setOrigin(
+							    sheild.getLocalBounds()
+								    .width /
+								2,
+							    sheild.getLocalBounds()
+								    .height /
+								2);
+							sheild.setPosition(
+							    player2position);
+							window.draw(sheild);
+						}
+					}
 				}
-			}
 
-			// Lazers
-			for (int i = 0; i < lazers; i++) {
-				// Update Positions
-				lazerpositions.at(i) +=
-				    lazervelocity.at(i) * (deltatime);
-				// Render Lazer
-				sf::RectangleShape lazer(sf::Vector2f(2, 10));
-				lazer.setOrigin(
-				    lazer.getLocalBounds().width / 2,
-				    lazer.getLocalBounds().height / 2);
-				lazer.setPosition(lazerpositions.at(i));
-				lazer.setRotation(lazerrotation.at(i));
-				lazer.setFillColor(sf::Color::White);
-				window.draw(lazer);
+				// Lazers
+				for (int i = 0; i < lazers; i++) {
+					// Update Positions
+					lazerpositions.at(i) +=
+					    lazervelocity.at(i) * (deltatime);
+					// Render Lazer
+					sf::RectangleShape lazer(
+					    sf::Vector2f(2, 10));
+					lazer.setOrigin(
+					    lazer.getLocalBounds().width / 2,
+					    lazer.getLocalBounds().height / 2);
+					lazer.setPosition(lazerpositions.at(i));
+					lazer.setRotation(lazerrotation.at(i));
+					lazer.setFillColor(sf::Color::White);
+					window.draw(lazer);
 
-				// Delete offscreen lazers
-				if (lazerpositions.at(i).x <
-					0 - LAZERDESPAWNDISTANCE ||
-				    lazerpositions.at(i).x >
-					window.getSize().x +
-					    LAZERDESPAWNDISTANCE ||
-				    lazerpositions.at(i).y <
-					0 - LAZERDESPAWNDISTANCE ||
-				    lazerpositions.at(i).y >
-					window.getSize().y +
-					    LAZERDESPAWNDISTANCE) {
-					lazerrotation.erase(
-					    lazerrotation.begin() + i);
-					lazervelocity.erase(
-					    lazervelocity.begin() + i);
-					lazerpositions.erase(
-					    lazerpositions.begin() + i);
-					i--;
-					lazers--;
-					continue;
-				}
-
-				sf::Vector2f pos = lazerpositions.at(i);
-				// Colide with Asteroids = Split asteroid + 5
-				// point
-				for (int a = 0; a < asteroids; a++) {
-					sf::Vector2f apos =
-					    asteroidpositions.at(a);
-					float size = asteroidsize.at(a);
-					if (distance(pos.x - apos.x,
-						     pos.y - apos.y) <
-					    size) { // Pythagorean Theorem
-						// Collision!
-						score += ASTEROIDPOINTS;
-						// Text
-						texts++;
-						textpositions.push_back(pos);
-						std::stringstream buffer;
-						buffer << "+";
-						buffer << ASTEROIDPOINTS;
-						std::string text = buffer.str();
-						textstring.push_back(text);
-						texttime.push_back(0);
-
-						float speed = distance(
-						    asteroidvelocity.at(a).x,
-						    asteroidvelocity.at(a).y);
-						float angle =
-						    lazerrotation.at(i) * PI /
-						    180;
-						sf::Vector2f vel; // Velocity
-						vel.x -= sin(angle);
-						vel.x *= speed;
-						vel.y = cos(angle);
-						vel.y *= speed;
-
-						// Split Asteroid
-						asteroids++; // 2 Asteroids
-							     // appear from
-							     // split - original
-							     // asteroid
-						asteroidvelocity.push_back(
-						    sf::Vector2f(
-							-vel.x,
-							vel.y)); // Right of
-								 // lazer
-						asteroidvelocity.push_back(
-						    sf::Vector2f(
-							vel.x,
-							-vel.y)); // Left of
-								  // Lazer
-						asteroidpositions.push_back(
-						    apos); // Both asteroids are
-							   // at the original
-							   // location
-						asteroidpositions.push_back(
-						    apos); // For now
-						asteroidrotationvelocity
-						    .push_back(
-							-asteroidrotationvelocity
-							     .at(a)); // Rotate
-								      // opposite
-								      // the
-								      // original
-								      // rotation
-						asteroidrotationvelocity
-						    .push_back(
-							-asteroidrotationvelocity
-							     .at(a));
-						asteroidrotation.push_back(
-						    0); // Start at 0 degrees
-							// rotation
-						asteroidrotation.push_back(0);
-						asteroidsize.push_back(
-						    asteroidsize.at(a) /
-						    2); // Each asteroid is half
-							// the size
-						asteroidsize.push_back(
-						    asteroidsize.at(a) / 2);
-						// Delete Original Asteroid
-						asteroidpositions.erase(
-						    asteroidpositions.begin() +
-						    a);
-						asteroidvelocity.erase(
-						    asteroidvelocity.begin() +
-						    a);
-						asteroidrotation.erase(
-						    asteroidrotation.begin() +
-						    a);
-						asteroidrotationvelocity.erase(
-						    asteroidrotationvelocity
-							.begin() +
-						    a);
-						asteroidsize.erase(
-						    asteroidsize.begin() + a);
-						// Create Explosion
-						destroysound.play();
-						explosions++;
-						explosionpositions.push_back(
-						    pos);
-						explosionsize.push_back(
-						    EXPLOSIONSIZE);
-						explosiontime.push_back(
-						    EXPLOSIONTIME);
-						// Delete Lazer
+					// Delete offscreen lazers
+					if (lazerpositions.at(i).x <
+						0 - LAZERDESPAWNDISTANCE ||
+					    lazerpositions.at(i).x >
+						window.getSize().x +
+						    LAZERDESPAWNDISTANCE ||
+					    lazerpositions.at(i).y <
+						0 - LAZERDESPAWNDISTANCE ||
+					    lazerpositions.at(i).y >
+						window.getSize().y +
+						    LAZERDESPAWNDISTANCE) {
 						lazerrotation.erase(
 						    lazerrotation.begin() + i);
 						lazervelocity.erase(
@@ -2530,456 +2624,633 @@ int main() {
 						    lazerpositions.begin() + i);
 						i--;
 						lazers--;
-						break;
-					}
-				}
-				// Collide with enemy = defeat enemy + some
-				// points
-			}
-			// Explosions
-			// Generate Explosion shape
-			sf::CircleShape explosion(10.f); // Radius 10 circle
-			explosion.setPointCount(16);	 // 16 Points
-			explosion.setFillColor(sf::Color::Transparent);
-			explosion.setOutlineColor(sf::Color::White);
-			explosion.setOutlineThickness(2);
-			for (int i = 0; i < explosions; i++) {
-				explosiontime.at(i) -= deltatime;
-				explosion.setRadius(
-				    explosionsize.at(i) /
-				    (EXPLOSIONTIME /
-				     explosiontime.at(i))); // Grows to size
-				explosion.setPosition(explosionpositions.at(i));
-				explosion.setOrigin(
-				    explosion.getLocalBounds().width / 2,
-				    explosion.getLocalBounds().height / 2);
-				window.draw(explosion);
-				// Delete explosion when timer is done
-				if (explosiontime.at(i) <= 0) {
-					explosionpositions.erase(
-					    explosionpositions.begin() + i);
-					explosiontime.erase(
-					    explosiontime.begin() + i);
-					explosionsize.erase(
-					    explosionsize.begin() + i);
-					i--;
-					explosions--;
-				}
-			}
-			// Asteroids
-			// Generate Asteroid Shape (spinning Square, aka 4 point
-			// circle)
-			for (int i = 0; i < asteroids; i++) {
-				// Render
-				sf::CircleShape asteroid(asteroidsize.at(i), 4);
-				asteroid.setPosition(asteroidpositions.at(i));
-				asteroid.setRotation(asteroidrotation.at(i));
-				asteroid.setFillColor(sf::Color::Transparent);
-				asteroid.setOutlineThickness(2);
-				asteroid.setOutlineColor(sf::Color::White);
-				asteroid.setOrigin(
-				    asteroid.getLocalBounds().width / 2,
-				    asteroid.getLocalBounds().height /
-					2); // Looks funny when this is not here
-				window.draw(asteroid);
-
-				// Move
-				asteroidpositions.at(i) +=
-				    asteroidvelocity.at(i) * (deltatime);
-				asteroidrotation.at(i) +=
-				    asteroidrotationvelocity.at(i) *
-				    (deltatime);
-
-				// Bounce on edge of screen
-				sf::Vector2f pos = asteroidpositions.at(i);
-				sf::Vector2f vel = asteroidvelocity.at(i);
-				if ((pos.x > window.getSize().x && vel.x > 0) ||
-				    (pos.x < 0 && vel.x < 0))
-					asteroidvelocity.at(i).x *= -1;
-				if ((pos.y > window.getSize().y && vel.y > 0) ||
-				    (pos.y < 0 && vel.y < 0))
-					asteroidvelocity.at(i).y *= -1;
-
-				// Asteroid bounce physics
-				sf::Vector2f tapos = asteroidpositions.at(
-				    i); // This Asteroid POSition
-				sf::Vector2f tavel = asteroidvelocity.at(
-				    i); // This Asteroid VELocity
-				float tasize = asteroidsize.at(i);
-
-				for (int a = 0; a < asteroids; a++) {
-					if (a == i)
-						continue; // Skip physics with
-							  // itself
-
-					sf::Vector2f apos =
-					    asteroidpositions.at(a);
-					float size = asteroidsize.at(a);
-
-					if (size < tasize)
-						continue; // Skip smaller
-							  // asteroids
-
-					if (distance(tapos.x - apos.x,
-						     tapos.y - apos.y) <
-					    size + tasize) { // Radius of both
-							     // asteroids added
-							     // together
-
-						// Collision
-
-						// Get New Angle
-						float movangle =
-						    atan2(tavel.x, tavel.y);
-						float posangle =
-						    atan2(tapos.x - apos.x,
-							  tapos.y - apos.y) -
-						    PI / 2; // Get Perpendicular
-						float newangle =
-						    2 * posangle -
-						    movangle; // New angle after
-							      // bounce
-						float velocity =
-						    distance(tavel.x, tavel.y) *
-						    ASTEROIDBOUNCESPEEDSCALE;
-
-						// Bounce
-						tavel.x =
-						    sin(newangle) * velocity;
-						tavel.y =
-						    cos(newangle) * velocity;
-
-						// Push out of asteroid
-						tapos.x +=
-						    (tapos.x - apos.x) /
-						    (size + tasize) *
-						    ((size + tasize) -
-						     distance(tapos.x - apos.x,
-							      tapos.y -
-								  apos.y));
-						tapos.y +=
-						    (tapos.y - apos.y) /
-						    (size + tasize) *
-						    ((size + tasize) -
-						     distance(tapos.x - apos.x,
-							      tapos.y -
-								  apos.y));
-
-						// break;
-					}
-				}
-
-				// Save physics
-				asteroidpositions.at(i) = tapos;
-				asteroidvelocity.at(i) = tavel;
-				// Delete small asteroids
-				if (asteroidsize.at(i) <
-				    MINASTEROIDSIZE) { // Delete Asteroid if it
-						       // is too small
-
-					// Chance to drop powerup
-					if (rand() % POWERUPCHANCE == 0) {
-						powerups++;
-						poweruppositions.push_back(
-						    asteroidpositions.at(i));
-						if (rand() % BOMBCHANCE == 0) {
-							poweruptype.push_back(
-							    BOMB);
-						} else {
-							poweruptype.push_back(
-							    SHEILD);
-						}
-						powerupsize.push_back(0);
-						powerupcollected.push_back(0);
+						continue;
 					}
 
-					// Delete
-					asteroids--;
-					asteroidpositions.erase(
-					    asteroidpositions.begin() + i);
-					asteroidvelocity.erase(
-					    asteroidvelocity.begin() + i);
-					asteroidrotation.erase(
-					    asteroidrotation.begin() + i);
-					asteroidrotationvelocity.erase(
-					    asteroidrotationvelocity.begin() +
-					    i);
-					asteroidsize.erase(
-					    asteroidsize.begin() + i);
-					i--;
-				}
-			}
+					sf::Vector2f pos = lazerpositions.at(i);
+					// Colide with Asteroids = Split
+					// asteroid + 5 point
+					for (int a = 0; a < asteroids; a++) {
+						sf::Vector2f apos =
+						    asteroidpositions.at(a);
+						float size = asteroidsize.at(a);
+						if (distance(pos.x - apos.x,
+							     pos.y - apos.y) <
+						    size) { // Pythagorean
+							    // Theorem
+							// Collision!
+							score += ASTEROIDPOINTS;
+							// Text
+							texts++;
+							textpositions.push_back(
+							    pos);
+							std::stringstream
+							    buffer;
+							buffer << "+";
+							buffer
+							    << ASTEROIDPOINTS;
+							std::string text =
+							    buffer.str();
+							textstring.push_back(
+							    text);
+							texttime.push_back(0);
 
-			// Enemies (Basically the player just not a player)
-			// BTW the enemies are squares
+							float speed = distance(
+							    asteroidvelocity
+								.at(a)
+								.x,
+							    asteroidvelocity
+								.at(a)
+								.y);
+							float angle =
+							    lazerrotation.at(
+								i) *
+							    PI / 180;
+							sf::Vector2f
+							    vel; // Velocity
+							vel.x -= sin(angle);
+							vel.x *= speed;
+							vel.y = cos(angle);
+							vel.y *= speed;
 
-			for (int i = 0; i < enemies; i++) {
-				// Make variables with enemy info
-				sf::Vector2f epos = enemypositions.at(i);
-				sf::Vector2f evel = enemyvelocity.at(i);
-				float erot = enemyrotation.at(i);
-				float ervl = enemyrotationvelocity.at(i);
-				float lazercooldown = enemylazercooldown.at(i);
-
-				// Choose which player to target
-				int closestplayer = 0; // 0: No players alive,
-						       // 1: Player1, 2: Player2
-				{
-					float p1dist = distance(
-					    player1position.x - epos.x,
-					    player1position.x - epos.x);
-					float p2dist = distance(
-					    player2position.x - epos.x,
-					    player2position.y - epos.y);
-					if (!player1gameover &&
-					    (p1dist < p2dist ||
-					     player2gameover))
-						closestplayer = 1;
-					else if (player2mode &&
-						 !player2gameover)
-						closestplayer = 2;
-				}
-
-				// Get targeted player position
-				sf::Vector2f tpos; // Target pos
-				switch (closestplayer) {
-				case 1:
-					tpos = player1position;
-					break;
-				case 2:
-					tpos = player2position;
-					break;
-				default: // If All players gameover, go to
-					 // center
-					tpos = sf::Vector2f(
-					    window.getSize().x / 2.f,
-					    window.getSize().y / 2.f);
-				}
-
-				// Check if player is on the left or right
-				float steer = 0; // 0: Don't steer, -1: steer
-						 // left, 1: steer right
-				bool engine = false; // Engine off by default
-				bool shoot = false;  // Autoshoot off by default
-				{
-					// Enemy AI steering
-					float pi2 = PI * 2;
-					float angle =
-					    fmod(((erot + 90) * PI / 180),
-						 pi2); // Current Angle
-					float want = atan(
-					    (epos.y - tpos.y) /
-					    (epos.x - tpos.x)); // Wanted angle
-					if (tpos.x <= epos.x)
-						want += PI;
-					float distance = fmod(
-					    std::min((float)((2 * PI) -
-							     (want - angle)),
-						     (float)(want - angle)),
-					    pi2); // Distance from Current Angle
-						  // to Wanted Angle
-					if (distance < 0)
-						steer = -1;
-					if (distance > 0)
-						steer = 1;
-
-					// Engine
-					if (want > angle - PI / 8 &&
-					    want < angle + PI / 8) {
-						engine =
-						    true; // Turn on engine if
-							  // target is within 45
-							  // degrees of view
-					}
-					// Disable Engine if already going fast
-					// in that direction
-					if (evel.x - sin(erot * PI / 180) *
-							 (deltatime) *
-							 (MOVEMENTVEL) >=
-						ENEMYMAXVELOCITY ||
-					    evel.x - sin(erot * PI / 180) *
-							 (deltatime) *
-							 (MOVEMENTVEL) <=
-						-ENEMYMAXVELOCITY)
-						engine = false;
-					if (evel.y + cos(erot * PI / 180) *
-							 (deltatime) *
-							 (MOVEMENTVEL) >=
-						ENEMYMAXVELOCITY ||
-					    evel.y + cos(erot * PI / 180) *
-							 (deltatime) *
-							 (MOVEMENTVEL) <=
-						-ENEMYMAXVELOCITY)
-						engine = false;
-
-					// Lazer
-					if (want > angle - PI / 16 &&
-					    want < angle + PI / 16) {
-						shoot = true; // Shoot if player
-							      // within 22.5
-							      // degrees of view
-					}
-				}
-
-				// Process controls
-
-				// Add engine acceleration
-				if (engine) {
-					evel.x -= sin(erot * PI / 180) *
-						  (deltatime) * (MOVEMENTVEL);
-					evel.y += cos(erot * PI / 180) *
-						  (deltatime) * (MOVEMENTVEL);
-				}
-
-				// Steer enemy
-
-				if (steer < 0.f &&
-				    ervl > -ENEMYMAXROTATIONVELOCITY)
-					ervl -= 1 * (deltatime)*ROTATIONVEL;
-				else if (steer > 0.f &&
-					 ervl < ENEMYMAXROTATIONVELOCITY)
-					ervl += 1 * (deltatime)*ROTATIONVEL;
-
-				// Update Lazer Cooldown
-				enemylazercooldown.at(i) -= deltatime;
-				lazercooldown = enemylazercooldown.at(i);
-
-				// Shoot Lazer
-				if (shoot && lazercooldown <= 0) {
-					lazerfire.play();
-					lazers++;
-					lazercooldown = LAZERCOOLDOWN;
-					lazerpositions.push_back(epos);
-					lazerrotation.push_back(erot);
-					lazervelocity.push_back(sf::Vector2f(
-					    sin(-erot * PI / 180) * LAZERSPEED,
-					    cos(-erot * PI / 180) *
-						LAZERSPEED));
-					lazervelocity.at(lazervelocity.size() -
-							 1) +=
-					    evel; // Add enemy velocity to lazer
-					if (distance(
-						lazervelocity
-						    .at(lazervelocity.size() -
-							1)
-						    .x,
-						lazervelocity
-						    .at(lazervelocity.size() -
-							1)
-						    .y) < LAZERSPEED)
-						lazervelocity.at(
-						    lazervelocity.size() - 1) -=
-						    evel;
-					lazerpositions.at(
-					    lazerpositions.size() - 1) +=
-					    sf::Vector2f(
-						sin(-erot * PI / 180),
-						cos(-erot * PI / 180)) *
-					    (float)HITRADIUS; // Get Lazer out
-							      // of hit radius
-					// Update Lazer Cooldown
-					enemylazercooldown.at(i) =
-					    lazercooldown;
-				}
-
-				// Update position
-				epos += evel * (deltatime);
-				erot += ervl * (deltatime);
-
-				// Bounce on edge
-				if (epos.x < 0 && evel.x < 0 ||
-				    epos.x > window.getSize().x && evel.x > 0) {
-					evel.x *= -1 * EDGEBOUNCESCALE;
-				}
-				if (epos.y < 0 && evel.y < 0 ||
-				    epos.y > window.getSize().y && evel.y > 0) {
-					evel.y *= -1 * EDGEBOUNCESCALE;
-				}
-
-				// Update enemy status
-				enemypositions.at(i) = epos;
-				enemyvelocity.at(i) = evel;
-				enemyrotation.at(i) = erot;
-				enemyrotationvelocity.at(i) = ervl;
-				
-				// Asteroid destroy enemy
-				for (int a = 0; a < asteroids; a++) {
-					sf::Vector2f apos =
-					    asteroidpositions.at(a);
-					float size = asteroidsize.at(a);
-					if (distance(epos.x - apos.x,
-						     epos.y - apos.y) < size) {
-						// Collision
-
-						// Explosion
-						destroysound.play();
-						explosions++;
-						explosionpositions.push_back(
-						    epos);
-						explosiontime.push_back(
-						    EXPLOSIONTIME);
-						explosionsize.push_back(
-						    PLAYEREXPLOSIONSIZE);
-
-						// Delete Enemy
-						enemypositions.erase(
-						    enemypositions.begin() + i);
-						enemyvelocity.erase(
-						    enemyvelocity.begin() + i);
-						enemyrotation.erase(
-						    enemyrotation.begin() + i);
-						enemyrotationvelocity.erase(
-						    enemyrotationvelocity
-							.begin() +
-						    i);
-						enemylazercooldown.erase(
-						    enemylazercooldown.begin() +
-						    i);
-						enemies--;
-						i--;
-
-						// Increase Score
-						score += ENEMYPOINTS;
-						// Text
-						texts++;
-						textpositions.push_back(epos);
-						std::stringstream buffer;
-						buffer << "+";
-						buffer << ENEMYPOINTS;
-						std::string text = buffer.str();
-						textstring.push_back(text);
-						texttime.push_back(0);
-						
-						break;
-					}
-				}
-
-				// Destroy enemy if lazer hit
-				if (lazercooldown <
-				    LAZERCOOLDOWN - LAZERINVULNERABILITYPERIOD)
-					for (int l = 0; l < lazers; l++) {
-						if (distance(
-							lazerpositions.at(l).x -
-							    epos.x,
-							lazerpositions.at(l).y -
-							    epos.y) <=
-						    HITRADIUS) {
-
-							// Delete Lazer
-							lazerpositions.erase(
-							    lazerpositions
+							// Split Asteroid
+							asteroids++; // 2
+								     // Asteroids
+								     // appear
+								     // from
+								     // split -
+								     // original
+								     // asteroid
+							asteroidvelocity.push_back(
+							    sf::Vector2f(
+								-vel.x,
+								vel.y)); // Right
+									 // of
+									 // lazer
+							asteroidvelocity.push_back(
+							    sf::Vector2f(
+								vel.x,
+								-vel.y)); // Left
+									  // of
+									  // Lazer
+							asteroidpositions.push_back(
+							    apos); // Both
+								   // asteroids
+								   // are at
+								   // the
+								   // original
+								   // location
+							asteroidpositions
+							    .push_back(
+								apos); // For
+								       // now
+							asteroidrotationvelocity.push_back(
+							    -asteroidrotationvelocity
+								 .at(a)); // Rotate
+									  // opposite
+									  // the
+									  // original
+									  // rotation
+							asteroidrotationvelocity
+							    .push_back(
+								-asteroidrotationvelocity
+								     .at(a));
+							asteroidrotation
+							    .push_back(
+								0); // Start at
+								    // 0 degrees
+								    // rotation
+							asteroidrotation
+							    .push_back(0);
+							asteroidsize.push_back(
+							    asteroidsize.at(a) /
+							    2); // Each asteroid
+								// is half the
+								// size
+							asteroidsize.push_back(
+							    asteroidsize.at(a) /
+							    2);
+							// Delete Original
+							// Asteroid
+							asteroidpositions.erase(
+							    asteroidpositions
 								.begin() +
-							    l);
+							    a);
+							asteroidvelocity.erase(
+							    asteroidvelocity
+								.begin() +
+							    a);
+							asteroidrotation.erase(
+							    asteroidrotation
+								.begin() +
+							    a);
+							asteroidrotationvelocity
+							    .erase(
+								asteroidrotationvelocity
+								    .begin() +
+								a);
+							asteroidsize.erase(
+							    asteroidsize
+								.begin() +
+							    a);
+							// Create Explosion
+							destroysound.play();
+							explosions++;
+							explosionpositions
+							    .push_back(pos);
+							explosionsize.push_back(
+							    EXPLOSIONSIZE);
+							explosiontime.push_back(
+							    EXPLOSIONTIME);
+							// Delete Lazer
 							lazerrotation.erase(
 							    lazerrotation
 								.begin() +
-							    l);
+							    i);
 							lazervelocity.erase(
 							    lazervelocity
 								.begin() +
-							    l);
+							    i);
+							lazerpositions.erase(
+							    lazerpositions
+								.begin() +
+							    i);
+							i--;
 							lazers--;
-							l--;
+							break;
+						}
+					}
+					// Collide with enemy = defeat enemy +
+					// some points
+				}
+				// Explosions
+				// Generate Explosion shape
+				sf::CircleShape explosion(
+				    10.f);		     // Radius 10 circle
+				explosion.setPointCount(16); // 16 Points
+				explosion.setFillColor(sf::Color::Transparent);
+				explosion.setOutlineColor(sf::Color::White);
+				explosion.setOutlineThickness(2);
+				for (int i = 0; i < explosions; i++) {
+					explosiontime.at(i) -= deltatime;
+					explosion.setRadius(
+					    explosionsize.at(i) /
+					    (EXPLOSIONTIME /
+					     explosiontime.at(
+						 i))); // Grows to size
+					explosion.setPosition(
+					    explosionpositions.at(i));
+					explosion.setOrigin(
+					    explosion.getLocalBounds().width /
+						2,
+					    explosion.getLocalBounds().height /
+						2);
+					window.draw(explosion);
+					// Delete explosion when timer is done
+					if (explosiontime.at(i) <= 0) {
+						explosionpositions.erase(
+						    explosionpositions.begin() +
+						    i);
+						explosiontime.erase(
+						    explosiontime.begin() + i);
+						explosionsize.erase(
+						    explosionsize.begin() + i);
+						i--;
+						explosions--;
+					}
+				}
+				// Asteroids
+				// Generate Asteroid Shape (spinning Square, aka
+				// 4 point circle)
+				for (int i = 0; i < asteroids; i++) {
+					// Render
+					sf::CircleShape asteroid(
+					    asteroidsize.at(i), 4);
+					asteroid.setPosition(
+					    asteroidpositions.at(i));
+					asteroid.setRotation(
+					    asteroidrotation.at(i));
+					asteroid.setFillColor(
+					    sf::Color::Transparent);
+					asteroid.setOutlineThickness(2);
+					asteroid.setOutlineColor(
+					    sf::Color::White);
+					asteroid.setOrigin(
+					    asteroid.getLocalBounds().width / 2,
+					    asteroid.getLocalBounds().height /
+						2); // Looks funny when this is
+						    // not here
+					window.draw(asteroid);
+
+					// Move
+					asteroidpositions.at(i) +=
+					    asteroidvelocity.at(i) *
+					    (deltatime);
+					asteroidrotation.at(i) +=
+					    asteroidrotationvelocity.at(i) *
+					    (deltatime);
+
+					// Bounce on edge of screen
+					sf::Vector2f pos =
+					    asteroidpositions.at(i);
+					sf::Vector2f vel =
+					    asteroidvelocity.at(i);
+					if ((pos.x > window.getSize().x &&
+					     vel.x > 0) ||
+					    (pos.x < 0 && vel.x < 0))
+						asteroidvelocity.at(i).x *= -1;
+					if ((pos.y > window.getSize().y &&
+					     vel.y > 0) ||
+					    (pos.y < 0 && vel.y < 0))
+						asteroidvelocity.at(i).y *= -1;
+
+					// Asteroid bounce physics
+					sf::Vector2f tapos =
+					    asteroidpositions.at(
+						i); // This Asteroid POSition
+					sf::Vector2f tavel =
+					    asteroidvelocity.at(
+						i); // This Asteroid VELocity
+					float tasize = asteroidsize.at(i);
+
+					for (int a = 0; a < asteroids; a++) {
+						if (a == i)
+							continue; // Skip
+								  // physics
+								  // with itself
+
+						sf::Vector2f apos =
+						    asteroidpositions.at(a);
+						float size = asteroidsize.at(a);
+
+						if (size < tasize)
+							continue; // Skip
+								  // smaller
+								  // asteroids
+
+						if (distance(tapos.x - apos.x,
+							     tapos.y - apos.y) <
+						    size +
+							tasize) { // Radius
+								  // of both
+								  // asteroids
+								  // added
+								  // together
+
+							// Collision
+
+							// Get New Angle
+							float movangle = atan2(
+							    tavel.x, tavel.y);
+							float posangle =
+							    atan2(tapos.x -
+								      apos.x,
+								  tapos.y -
+								      apos.y) -
+							    PI /
+								2; // Get
+								   // Perpendicular
+							float newangle =
+							    2 * posangle -
+							    movangle; // New
+								      // angle
+								      // after
+								      // bounce
+							float velocity =
+							    distance(tavel.x,
+								     tavel.y) *
+							    ASTEROIDBOUNCESPEEDSCALE;
+
+							// Bounce
+							tavel.x =
+							    sin(newangle) *
+							    velocity;
+							tavel.y =
+							    cos(newangle) *
+							    velocity;
+
+							// Push out of asteroid
+							tapos.x +=
+							    (tapos.x - apos.x) /
+							    (size + tasize) *
+							    ((size + tasize) -
+							     distance(
+								 tapos.x -
+								     apos.x,
+								 tapos.y -
+								     apos.y));
+							tapos.y +=
+							    (tapos.y - apos.y) /
+							    (size + tasize) *
+							    ((size + tasize) -
+							     distance(
+								 tapos.x -
+								     apos.x,
+								 tapos.y -
+								     apos.y));
+
+							// break;
+						}
+					}
+
+					// Save physics
+					asteroidpositions.at(i) = tapos;
+					asteroidvelocity.at(i) = tavel;
+					// Delete small asteroids
+					if (asteroidsize.at(i) <
+					    MINASTEROIDSIZE) { // Delete
+							       // Asteroid if it
+							       // is too small
+
+						// Chance to drop powerup
+						if (rand() % POWERUPCHANCE ==
+						    0) {
+							powerups++;
+							poweruppositions
+							    .push_back(
+								asteroidpositions
+								    .at(i));
+							if (rand() %
+								BOMBCHANCE ==
+							    0) {
+								poweruptype
+								    .push_back(
+									BOMB);
+							} else {
+								poweruptype
+								    .push_back(
+									SHEILD);
+							}
+							powerupsize.push_back(
+							    0);
+							powerupcollected
+							    .push_back(0);
+						}
+
+						// Delete
+						asteroids--;
+						asteroidpositions.erase(
+						    asteroidpositions.begin() +
+						    i);
+						asteroidvelocity.erase(
+						    asteroidvelocity.begin() +
+						    i);
+						asteroidrotation.erase(
+						    asteroidrotation.begin() +
+						    i);
+						asteroidrotationvelocity.erase(
+						    asteroidrotationvelocity
+							.begin() +
+						    i);
+						asteroidsize.erase(
+						    asteroidsize.begin() + i);
+						i--;
+					}
+				}
+
+				// Enemies (Basically the player just not a
+				// player) BTW the enemies are squares
+
+				for (int i = 0; i < enemies; i++) {
+					// Make variables with enemy info
+					sf::Vector2f epos =
+					    enemypositions.at(i);
+					sf::Vector2f evel = enemyvelocity.at(i);
+					float erot = enemyrotation.at(i);
+					float ervl =
+					    enemyrotationvelocity.at(i);
+					float lazercooldown =
+					    enemylazercooldown.at(i);
+
+					// Choose which player to target
+					int closestplayer =
+					    0; // 0: No players alive,
+					       // 1: Player1, 2: Player2
+					{
+						float p1dist = distance(
+						    player1position.x - epos.x,
+						    player1position.x - epos.x);
+						float p2dist = distance(
+						    player2position.x - epos.x,
+						    player2position.y - epos.y);
+						if (!player1gameover &&
+						    (p1dist < p2dist ||
+						     player2gameover))
+							closestplayer = 1;
+						else if (player2mode &&
+							 !player2gameover)
+							closestplayer = 2;
+					}
+
+					// Get targeted player position
+					sf::Vector2f tpos; // Target pos
+					switch (closestplayer) {
+					case 1:
+						tpos = player1position;
+						break;
+					case 2:
+						tpos = player2position;
+						break;
+					default: // If All players gameover, go
+						 // to center
+						tpos = sf::Vector2f(
+						    window.getSize().x / 2.f,
+						    window.getSize().y / 2.f);
+					}
+
+					// Check if player is on the left or
+					// right
+					float steer =
+					    0; // 0: Don't steer, -1: steer
+					       // left, 1: steer right
+					bool engine =
+					    false; // Engine off by default
+					bool shoot =
+					    false; // Autoshoot off by default
+					{
+						// Enemy AI steering
+						float pi2 = PI * 2;
+						float angle = fmod(
+						    ((erot + 90) * PI / 180),
+						    pi2); // Current Angle
+						float want = atan(
+						    (epos.y - tpos.y) /
+						    (epos.x -
+						     tpos.x)); // Wanted angle
+						if (tpos.x <= epos.x)
+							want += PI;
+						float distance = fmod(
+						    std::min(
+							(float)((2 * PI) -
+								(want - angle)),
+							(float)(want - angle)),
+						    pi2); // Distance from
+							  // Current Angle to
+							  // Wanted Angle
+						if (distance < 0)
+							steer = -1;
+						if (distance > 0)
+							steer = 1;
+
+						// Engine
+						if (want > angle - PI / 8 &&
+						    want < angle + PI / 8) {
+							engine =
+							    true; // Turn on
+								  // engine if
+								  // target is
+								  // within 45
+								  // degrees of
+								  // view
+						}
+						// Disable Engine if already
+						// going fast in that direction
+						if (evel.x -
+							    sin(erot * PI /
+								180) *
+								(deltatime) *
+								(MOVEMENTVEL) >=
+							ENEMYMAXVELOCITY ||
+						    evel.x -
+							    sin(erot * PI /
+								180) *
+								(deltatime) *
+								(MOVEMENTVEL) <=
+							-ENEMYMAXVELOCITY)
+							engine = false;
+						if (evel.y +
+							    cos(erot * PI /
+								180) *
+								(deltatime) *
+								(MOVEMENTVEL) >=
+							ENEMYMAXVELOCITY ||
+						    evel.y +
+							    cos(erot * PI /
+								180) *
+								(deltatime) *
+								(MOVEMENTVEL) <=
+							-ENEMYMAXVELOCITY)
+							engine = false;
+
+						// Lazer
+						if (want > angle - PI / 16 &&
+						    want < angle + PI / 16) {
+							shoot =
+							    true; // Shoot if
+								  // player
+								  // within 22.5
+								  // degrees of
+								  // view
+						}
+					}
+
+					// Process controls
+
+					// Add engine acceleration
+					if (engine) {
+						evel.x -= sin(erot * PI / 180) *
+							  (deltatime) *
+							  (MOVEMENTVEL);
+						evel.y += cos(erot * PI / 180) *
+							  (deltatime) *
+							  (MOVEMENTVEL);
+					}
+
+					// Steer enemy
+
+					if (steer < 0.f &&
+					    ervl > -ENEMYMAXROTATIONVELOCITY)
+						ervl -=
+						    1 * (deltatime)*ROTATIONVEL;
+					else if (steer > 0.f &&
+						 ervl <
+						     ENEMYMAXROTATIONVELOCITY)
+						ervl +=
+						    1 * (deltatime)*ROTATIONVEL;
+
+					// Update Lazer Cooldown
+					enemylazercooldown.at(i) -= deltatime;
+					lazercooldown =
+					    enemylazercooldown.at(i);
+
+					// Shoot Lazer
+					if (shoot && lazercooldown <= 0) {
+						lazerfire.play();
+						lazers++;
+						lazercooldown = LAZERCOOLDOWN;
+						lazerpositions.push_back(epos);
+						lazerrotation.push_back(erot);
+						lazervelocity.push_back(
+						    sf::Vector2f(
+							sin(-erot * PI / 180) *
+							    LAZERSPEED,
+							cos(-erot * PI / 180) *
+							    LAZERSPEED));
+						lazervelocity.at(
+						    lazervelocity.size() - 1) +=
+						    evel; // Add enemy velocity
+							  // to lazer
+						if (distance(
+							lazervelocity
+							    .at(lazervelocity
+								    .size() -
+								1)
+							    .x,
+							lazervelocity
+							    .at(lazervelocity
+								    .size() -
+								1)
+							    .y) < LAZERSPEED)
+							lazervelocity.at(
+							    lazervelocity
+								.size() -
+							    1) -= evel;
+						lazerpositions.at(
+						    lazerpositions.size() -
+						    1) +=
+						    sf::Vector2f(
+							sin(-erot * PI / 180),
+							cos(-erot * PI / 180)) *
+						    (float)
+							HITRADIUS; // Get Lazer
+								   // out of hit
+								   // radius
+						// Update Lazer Cooldown
+						enemylazercooldown.at(i) =
+						    lazercooldown;
+					}
+
+					// Update position
+					epos += evel * (deltatime);
+					erot += ervl * (deltatime);
+
+					// Bounce on edge
+					if (epos.x < 0 && evel.x < 0 ||
+					    epos.x > window.getSize().x &&
+						evel.x > 0) {
+						evel.x *= -1 * EDGEBOUNCESCALE;
+					}
+					if (epos.y < 0 && evel.y < 0 ||
+					    epos.y > window.getSize().y &&
+						evel.y > 0) {
+						evel.y *= -1 * EDGEBOUNCESCALE;
+					}
+
+					// Update enemy status
+					enemypositions.at(i) = epos;
+					enemyvelocity.at(i) = evel;
+					enemyrotation.at(i) = erot;
+					enemyrotationvelocity.at(i) = ervl;
+
+					// Asteroid destroy enemy
+					for (int a = 0; a < asteroids; a++) {
+						sf::Vector2f apos =
+						    asteroidpositions.at(a);
+						float size = asteroidsize.at(a);
+						if (distance(epos.x - apos.x,
+							     epos.y - apos.y) <
+						    size) {
+							// Collision
 
 							// Explosion
 							destroysound.play();
@@ -2996,12 +3267,12 @@ int main() {
 							    enemypositions
 								.begin() +
 							    i);
-							enemyrotation.erase(
-							    enemyrotation
-								.begin() +
-							    i);
 							enemyvelocity.erase(
 							    enemyvelocity
+								.begin() +
+							    i);
+							enemyrotation.erase(
+							    enemyrotation
 								.begin() +
 							    i);
 							enemyrotationvelocity
@@ -3036,424 +3307,654 @@ int main() {
 						}
 					}
 
-				// Render enemy
+					// Destroy enemy if lazer hit
+					if (lazercooldown <
+					    LAZERCOOLDOWN -
+						LAZERINVULNERABILITYPERIOD)
+						for (int l = 0; l < lazers;
+						     l++) {
+							if (distance(
+								lazerpositions
+									.at(l)
+									.x -
+								    epos.x,
+								lazerpositions
+									.at(l)
+									.y -
+								    epos.y) <=
+							    HITRADIUS) {
 
-				// Draw Enemy
-				sf::ConvexShape enemy(
-				    8); // Square shaped enemy with rectangular
-					// tip
-				enemy.setPoint(0,
-					       sf::Vector2f(-2, 10)); //     **
-				enemy.setPoint(1,
-					       sf::Vector2f(-2, 15)); //     **
-				enemy.setPoint(
-				    2, sf::Vector2f(2, 15)); //  ********
-				enemy.setPoint(3, sf::Vector2f(2, 10));	 //  * *
-				enemy.setPoint(4, sf::Vector2f(10, 10)); //  * *
-				enemy.setPoint(5,
-					       sf::Vector2f(10, -10)); //  * *
-				enemy.setPoint(
-				    6, sf::Vector2f(-10, -10)); //  ********
-				enemy.setPoint(7, sf::Vector2f(-10, 10));
-				enemy.setFillColor(
-				    sf::Color::Transparent); // Black Fill
-				enemy.setOutlineColor(
-				    sf::Color::White); // White Outline
-				enemy.setOutlineThickness(2);
+								// Delete Lazer
+								lazerpositions.erase(
+								    lazerpositions
+									.begin() +
+								    l);
+								lazerrotation.erase(
+								    lazerrotation
+									.begin() +
+								    l);
+								lazervelocity.erase(
+								    lazervelocity
+									.begin() +
+								    l);
+								lazers--;
+								l--;
 
-				enemy.setPosition(epos); // Position
-				enemy.setRotation(erot); // Rotate
+								// Explosion
+								destroysound
+								    .play();
+								explosions++;
+								explosionpositions
+								    .push_back(
+									epos);
+								explosiontime
+								    .push_back(
+									EXPLOSIONTIME);
+								explosionsize
+								    .push_back(
+									PLAYEREXPLOSIONSIZE);
 
-				// Draw
-				window.draw(enemy);
+								// Delete Enemy
+								enemypositions.erase(
+								    enemypositions
+									.begin() +
+								    i);
+								enemyrotation.erase(
+								    enemyrotation
+									.begin() +
+								    i);
+								enemyvelocity.erase(
+								    enemyvelocity
+									.begin() +
+								    i);
+								enemyrotationvelocity
+								    .erase(
+									enemyrotationvelocity
+									    .begin() +
+									i);
+								enemylazercooldown
+								    .erase(
+									enemylazercooldown
+									    .begin() +
+									i);
+								enemies--;
+								i--;
 
-				// Draw Fire
-				sf::ConvexShape fire(5);
-				fire.setPoint(0, sf::Vector2f(-8, -15));
-				fire.setPoint(1, sf::Vector2f(-5, -20));
-				fire.setPoint(2, sf::Vector2f(0, -18));
-				fire.setPoint(3, sf::Vector2f(5, -20));
-				fire.setPoint(4, sf::Vector2f(8, -15));
+								// Increase
+								// Score
+								score +=
+								    ENEMYPOINTS;
+								// Text
+								texts++;
+								textpositions
+								    .push_back(
+									epos);
+								std::
+								    stringstream
+									buffer;
+								buffer << "+";
+								buffer
+								    << ENEMYPOINTS;
+								std::string text =
+								    buffer
+									.str();
+								textstring
+								    .push_back(
+									text);
+								texttime
+								    .push_back(
+									0);
 
-				fire.setFillColor(sf::Color::Transparent);
-				fire.setOutlineColor(sf::Color::White);
-				fire.setOutlineThickness(2);
+								break;
+							}
+						}
 
-				fire.setPosition(epos); // Position
-				fire.setRotation(erot); // Rotate
+					// Render enemy
 
-				if (engine)
-					window.draw(fire);
-			}
-			// End of enemy code
+					// Draw Enemy
+					sf::ConvexShape enemy(
+					    8); // Square shaped enemy with
+						// rectangular tip
+					enemy.setPoint(
+					    0, sf::Vector2f(-2, 10)); //     **
+					enemy.setPoint(
+					    1, sf::Vector2f(-2, 15)); //     **
+					enemy.setPoint(
+					    2,
+					    sf::Vector2f(2, 15)); //  ********
+					enemy.setPoint(
+					    3, sf::Vector2f(2, 10)); //  * *
+					enemy.setPoint(
+					    4, sf::Vector2f(10, 10)); //  * *
+					enemy.setPoint(
+					    5, sf::Vector2f(10, -10)); //  * *
+					enemy.setPoint(
+					    6, sf::Vector2f(-10,
+							    -10)); //  ********
+					enemy.setPoint(7,
+						       sf::Vector2f(-10, 10));
+					enemy.setFillColor(
+					    sf::Color::Transparent); // Black
+								     // Fill
+					enemy.setOutlineColor(
+					    sf::Color::White); // White Outline
+					enemy.setOutlineThickness(2);
 
-			// Texts Renderer
-			for (int i = 0; i < texts; i++) {
-				sf::Text text(textstring.at(i).c_str(), roboto,
-					      TEXTSIZE); // Size 20 text
-				sf::Vector2f pos = textpositions.at(i);
-				pos.y +=
-				    TEXTRISE * (texttime.at(i) /
-						TEXTTIME); // Rise animation
-				text.setPosition(pos);
-				text.setOrigin(text.getLocalBounds().width / 2,
-					       text.getLocalBounds().height /
-						   2);
-				text.setScale((TEXTTIME - texttime.at(i)) /
-						  TEXTTIME,
-					      (TEXTTIME - texttime.at(i)) /
-						  TEXTTIME); // Shrink animation
+					enemy.setPosition(epos); // Position
+					enemy.setRotation(erot); // Rotate
 
-				// Make sure it is on screen
-				sf::Vector2f top;
-				top.y = text.getGlobalBounds().top;
-				top.x = text.getGlobalBounds().left;
-				sf::Vector2f bot;
-				bot.y = text.getGlobalBounds().top +
-					text.getGlobalBounds().height;
-				bot.x = text.getGlobalBounds().left +
-					text.getGlobalBounds().width;
-				sf::Vector2f win =
-				    sf::Vector2f((float)window.getSize().x,
-						 (float)window.getSize().y);
-				if (top.y < 0)
-					text.move(0, -top.y);
-				if (top.x < 0)
-					text.move(-top.x, 0);
-				if (bot.y > win.y)
-					text.move(0, win.y - bot.y);
-				if (bot.x > win.x)
-					text.move(win.x - bot.x, 0);
+					// Draw
+					window.draw(enemy);
 
-				text.setFillColor(sf::Color::White);
-				window.draw(text);
+					// Draw Fire
+					sf::ConvexShape fire(5);
+					fire.setPoint(0, sf::Vector2f(-8, -15));
+					fire.setPoint(1, sf::Vector2f(-5, -20));
+					fire.setPoint(2, sf::Vector2f(0, -18));
+					fire.setPoint(3, sf::Vector2f(5, -20));
+					fire.setPoint(4, sf::Vector2f(8, -15));
 
-				// Update timer
-				texttime.at(i) += deltatime;
-				if (texttime.at(i) > TEXTTIME) {
-					texts--;
-					textpositions.erase(
-					    textpositions.begin() + i);
-					textstring.erase(textstring.begin() +
-							 i);
-					texttime.erase(texttime.begin() + i);
-					i--;
+					fire.setFillColor(
+					    sf::Color::Transparent);
+					fire.setOutlineColor(sf::Color::White);
+					fire.setOutlineThickness(2);
+
+					fire.setPosition(epos); // Position
+					fire.setRotation(erot); // Rotate
+
+					if (engine)
+						window.draw(fire);
 				}
-			}
+				// End of enemy code
 
-			// Powerups
-			for (int i = 0; i < powerups; i++) {
-				// Scale
-				if (powerupcollected.at(i) == false) {
-					if (powerupsize.at(i) < 1)
-						powerupsize.at(i) +=
-						    (1.f / POWERSCALETIME) *
-						    deltatime;
-					else
-						powerupsize.at(i) = 1;
-				} else {
-					if (powerupsize.at(i) > 0)
-						powerupsize.at(i) -=
-						    (1.f / POWERSCALETIME) *
-						    deltatime;
-					else
-						powerupsize.at(i) = 0;
-				}
+				// Texts Renderer
+				for (int i = 0; i < texts; i++) {
+					sf::Text text(textstring.at(i).c_str(),
+						      roboto,
+						      TEXTSIZE); // Size 20 text
+					sf::Vector2f pos = textpositions.at(i);
+					pos.y += TEXTRISE *
+						 (texttime.at(i) /
+						  TEXTTIME); // Rise animation
+					text.setPosition(pos);
+					text.setOrigin(
+					    text.getLocalBounds().width / 2,
+					    text.getLocalBounds().height / 2);
+					text.setScale(
+					    (TEXTTIME - texttime.at(i)) /
+						TEXTTIME,
+					    (TEXTTIME - texttime.at(i)) /
+						TEXTTIME); // Shrink animation
 
-				sf::Vector2f pos = poweruppositions.at(i);
-				int collect = 0;
-				if (distance(pos.x - player1position.x,
-					     pos.y - player1position.y) <=
-				    COLLECTRADIUS || poweruptype.at(i) == PLANET && distance(pos.x - player1position.x,
-                                             pos.y - player1position.y) <=
-                                    PLANET_SIZE) {
-					collect = 1;
-				} else if (distance(pos.x - player2position.x,
-						    pos.y -
-							player2position.y) <=
-					   COLLECTRADIUS || poweruptype.at(i) == PLANET && distance(pos.x - player2position.x,
-                                                    pos.y -
-                                                        player2position.y) <=
-                                           PLANET_SIZE) {
-					collect = 2;
-				}
-				if (powerupsize.at(i) != 1) collect = 0;	// Only collectable at full size
-				sf::CircleShape radius;
-			       if (poweruptype.at(i) != PLANET) radius = sf::CircleShape(
-				    COLLECTRADIUS * powerupsize.at(i), 16);
-			       else radius = sf::CircleShape(PLANET_SIZE * powerupsize.at(i), 16);
-				radius.setFillColor(sf::Color::Transparent);
-				radius.setOutlineThickness(2);
-				radius.setOutlineColor(sf::Color::White);
-				radius.setOrigin(
-				    radius.getLocalBounds().width / 2,
-				    radius.getLocalBounds().height / 2);
-				radius.setPosition(pos);
-				window.draw(radius);
-				if (powerupcollected.at(i) == false)
-					switch (poweruptype.at(i)) {
-					case SHEILD: {
-						sf::CircleShape sheild =
-						    sf::CircleShape(
-							COLLECTRADIUS / 2.f *
-							    powerupsize.at(i),
-							16);
-						sheild.setFillColor(
-						    sf::Color::Transparent);
-						sheild.setOutlineThickness(2);
-						sheild.setOutlineColor(
-						    sf::Color::White);
-						sheild.setOrigin(
-						    sheild.getLocalBounds()
-							    .width /
-							2,
-						    sheild.getLocalBounds()
-							    .height /
-							2);
-						sheild.setPosition(pos);
-						window.draw(sheild);
-						if (collect == 1) {
-							if (player1sheild)
-								player1sheilds++;
-							else
-								player1sheild =
-								    true;
-							player1time =
-							    clock
-								.getElapsedTime()
-								.asSeconds();
-						} else if (collect == 2) {
-							if (player2sheild)
-								player2sheilds++;
-							else
-								player2sheild =
-								    true;
-							player2time =
-							    clock
-								.getElapsedTime()
-								.asSeconds();
-						}
+					// Make sure it is on screen
+					sf::Vector2f top;
+					top.y = text.getGlobalBounds().top;
+					top.x = text.getGlobalBounds().left;
+					sf::Vector2f bot;
+					bot.y = text.getGlobalBounds().top +
+						text.getGlobalBounds().height;
+					bot.x = text.getGlobalBounds().left +
+						text.getGlobalBounds().width;
+					sf::Vector2f win = sf::Vector2f(
+					    (float)window.getSize().x,
+					    (float)window.getSize().y);
+					if (top.y < 0)
+						text.move(0, -top.y);
+					if (top.x < 0)
+						text.move(-top.x, 0);
+					if (bot.y > win.y)
+						text.move(0, win.y - bot.y);
+					if (bot.x > win.x)
+						text.move(win.x - bot.x, 0);
 
-						if (collect != 0) {
-							powerupsound.play();
-							// Text
-							texts++;
-							textpositions.push_back(
-							    pos);
-							texttime.push_back(0);
-							textstring.push_back(
-							    COLLECTSHEILDMESSAGE);
-						}
-					} break;
-					case BOMB: {
-						sf::CircleShape bomb =
-						    sf::CircleShape(
-							COLLECTRADIUS / 2.f *
-							    powerupsize.at(i),
-							4);
-						bomb.setOutlineThickness(2);
-						bomb.setOutlineColor(
-						    sf::Color::White);
-						bomb.setFillColor(
-						    sf::Color::Transparent);
-						bomb.setOrigin(
-						    bomb.getLocalBounds()
-							    .width /
-							2,
-						    bomb.getLocalBounds()
-							    .height /
-							2);
-						bomb.setPosition(pos);
-						window.draw(bomb);
-						if (collect != 0) {
-							bombs++;
-							powerupsound.play();
-							// Text
-							texts++;
-							textpositions.push_back(
-							    pos);
-							texttime.push_back(0);
-							textstring.push_back(
-							    COLLECTBOMBMESSAGE);
-						}
-					} break;
-					case PLANET: {
-						// Minigame Planet
-						sf::CircleShape crater1 =
-                                                    sf::CircleShape(
-                                                            PLANET_SIZE*powerupsize.at(i)/4,
-                                                        16);
-                                                crater1.setOutlineThickness(2);
-                                                crater1.setOutlineColor(
-                                                    sf::Color::White);
-                                                crater1.setFillColor(
-                                                    sf::Color::Transparent);
-                                                crater1.setOrigin(
-                                                    crater1.getLocalBounds()
-                                                            .width /
-                                                        2,
-                                                    crater1.getLocalBounds()
-                                                            .height /
-                                                        2);
-                                                crater1.setPosition(pos+sf::Vector2f(-PLANET_SIZE*powerupsize.at(i)/3,PLANET_SIZE*powerupsize.at(i)/2));
-                                                window.draw(crater1);
-						sf::CircleShape crater2 =
-                                                    sf::CircleShape(
-                                                            PLANET_SIZE*powerupsize.at(i)/3,
-                                                        16);
-                                                crater2.setOutlineThickness(2);
-                                                crater2.setOutlineColor(
-                                                    sf::Color::White);
-                                                crater2.setFillColor(
-                                                    sf::Color::Transparent);
-                                                crater2.setOrigin(
-                                                    crater2.getLocalBounds()
-                                                            .width /
-                                                        2,
-                                                    crater2.getLocalBounds()
-                                                            .height /
-                                                        2);
-                                                crater2.setPosition(pos-sf::Vector2f(PLANET_SIZE*powerupsize.at(i)/3,PLANET_SIZE*powerupsize.at(i)/3));
-                                                window.draw(crater2);
-						sf::CircleShape crater3 =
-                                                    sf::CircleShape(
-                                                            PLANET_SIZE*powerupsize.at(i)/5,
-                                                        16);
-                                                crater3.setOutlineThickness(2);
-                                                crater3.setOutlineColor(
-                                                    sf::Color::White);
-                                                crater3.setFillColor(
-                                                    sf::Color::Transparent);
-                                                crater3.setOrigin(
-                                                    crater3.getLocalBounds()
-                                                            .width /
-                                                        2,
-                                                    crater3.getLocalBounds()
-                                                            .height /
-                                                        2);
-                                                crater3.setPosition(pos+sf::Vector2f(PLANET_SIZE*powerupsize.at(i)/2,0));
-                                                window.draw(crater3);
+					text.setFillColor(sf::Color::White);
+					window.draw(text);
 
-						// Enter Planet
-						if (collect != 0 && !powerupcollected.at(i)) {
-							powerupcollected.at(i) = true;
-							planetexists = false;
-							// Text
-							texts++;
-							textpositions.push_back(pos);
-							textstring.push_back("Minigame Planet!");
-							texttime.push_back(0);
-							std::cout << "Enter Planet!" << std::endl;
-							// Minigame
-							nextminigame = 1;
-							planetanimtime = 0;
-						}
-					} break;
+					// Update timer
+					texttime.at(i) += deltatime;
+					if (texttime.at(i) > TEXTTIME) {
+						texts--;
+						textpositions.erase(
+						    textpositions.begin() + i);
+						textstring.erase(
+						    textstring.begin() + i);
+						texttime.erase(
+						    texttime.begin() + i);
+						i--;
 					}
-
-				if (collect != 0) {
-					powerupcollected.at(i) = true;
 				}
 
-				if (powerupcollected.at(i) &&
-				    powerupsize.at(i) == 0) {
-					powerups--;
-					poweruppositions.erase(
-					    poweruppositions.begin() + i);
-					poweruptype.erase(poweruptype.begin() +
-							  i);
-					powerupsize.erase(powerupsize.begin() +
-							  i);
-					powerupcollected.erase(
-					    powerupcollected.begin() + i);
-					i--;
-				}
-			}
-
-			// Bomb Cooldown
-			bombcooldown -= deltatime;
-
-			// Check for game over
-			if ((player1gameover && player2gameover) ||
-			    (player1gameover && !player2mode)) {
-				float animationTime =
-				    clock.getElapsedTime().asSeconds() -
-				    extraDelayClock;
-				if (animationTime > GAMEOVERTIME) {
-					clock.restart();
-					finalscore = 0;
-					screen = 7;
-					// Test Highscores
-					if (player2mode) {
-						int totalscore =
-						    score + bombs * BOMBSCORE;
-						if (totalscore >
-						    highscores
-							.twoplayerhighscore) {
-							newhighscore = true;
-							highscores
-							    .twoplayerhighscore =
-							    totalscore;
-							writehighscore(
-							    highscores);
-						}
-					} else {
-						int totalscore =
-						    score + bombs * BOMBSCORE;
-						if (totalscore >
-						    highscores.highscore) {
-							newhighscore = true;
-							highscores.highscore =
-							    totalscore;
-							writehighscore(
-							    highscores);
-						}
-					}
-				} // After GAMEOVERTIME seconds go to game over
-				  // screen
-			} else {
-				extraDelayClock =
-				    clock.getElapsedTime()
-					.asSeconds(); // Keep extraDelayClock up
-						      // to date until game over
-			}
-
-			// Fire Bomb
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) &&
-			    bombcooldown <= 0 && bombs > 0) {
-				bombexplosionsound.play();
-				bombcooldown = BOMBCOOLDOWN;
-				bombs--;
-
-				// Clear Screen
-				asteroids = 0;
-				asteroidpositions.clear();
-				asteroidrotation.clear();
-				asteroidrotationvelocity.clear();
-				asteroidvelocity.clear();
-				asteroidsize.clear();
-				// Enemies
-				enemies = 0;
-				enemypositions.clear();
-				enemyvelocity.clear();
-				enemyrotation.clear();
-				enemyrotationvelocity.clear();
-				enemylazercooldown.clear();
 				// Powerups
-				powerups = 0;
-				poweruppositions.clear();
-				poweruptype.clear();
-				powerupsize.clear();
-				// Lazers
-				lazers = 0;
-				lazerpositions.clear();
-				lazerrotation.clear();
-				lazervelocity.clear();
-			}
-					} break;
-				default: { // Minigame Planets
-#include "planets.cpp"	// Hacky way to reduce the size of this file	 
+				for (int i = 0; i < powerups; i++) {
+					// Scale
+					if (powerupcollected.at(i) == false) {
+						if (powerupsize.at(i) < 1)
+							powerupsize.at(i) +=
+							    (1.f /
+							     POWERSCALETIME) *
+							    deltatime;
+						else
+							powerupsize.at(i) = 1;
+					} else {
+						if (powerupsize.at(i) > 0)
+							powerupsize.at(i) -=
+							    (1.f /
+							     POWERSCALETIME) *
+							    deltatime;
+						else
+							powerupsize.at(i) = 0;
+					}
+
+					sf::Vector2f pos =
+					    poweruppositions.at(i);
+					int collect = 0;
+					if (distance(pos.x - player1position.x,
+						     pos.y -
+							 player1position.y) <=
+						COLLECTRADIUS ||
+					    poweruptype.at(i) == PLANET &&
+						distance(
+						    pos.x - player1position.x,
+						    pos.y -
+							player1position.y) <=
+						    PLANET_SIZE) {
+						collect = 1;
+					} else if (distance(
+						       pos.x -
+							   player2position.x,
+						       pos.y -
+							   player2position.y) <=
+						       COLLECTRADIUS ||
+						   poweruptype.at(i) ==
+							   PLANET &&
+						       distance(
+							   pos.x -
+							       player2position
+								   .x,
+							   pos.y -
+							       player2position
+								   .y) <=
+							   PLANET_SIZE) {
+						collect = 2;
+					}
+					if (powerupsize.at(i) != 1)
+						collect = 0; // Only collectable
+							     // at full size
+					sf::CircleShape radius;
+					if (poweruptype.at(i) != PLANET)
+						radius = sf::CircleShape(
+						    COLLECTRADIUS *
+							powerupsize.at(i),
+						    16);
+					else
+						radius = sf::CircleShape(
+						    PLANET_SIZE *
+							powerupsize.at(i),
+						    16);
+					radius.setFillColor(
+					    sf::Color::Transparent);
+					radius.setOutlineThickness(2);
+					radius.setOutlineColor(
+					    sf::Color::White);
+					radius.setOrigin(
+					    radius.getLocalBounds().width / 2,
+					    radius.getLocalBounds().height / 2);
+					radius.setPosition(pos);
+					window.draw(radius);
+					if (powerupcollected.at(i) == false)
+						switch (poweruptype.at(i)) {
+						case SHEILD: {
+							sf::CircleShape sheild =
+							    sf::CircleShape(
+								COLLECTRADIUS /
+								    2.f *
+								    powerupsize
+									.at(i),
+								16);
+							sheild.setFillColor(
+							    sf::Color::
+								Transparent);
+							sheild
+							    .setOutlineThickness(
+								2);
+							sheild.setOutlineColor(
+							    sf::Color::White);
+							sheild.setOrigin(
+							    sheild.getLocalBounds()
+								    .width /
+								2,
+							    sheild.getLocalBounds()
+								    .height /
+								2);
+							sheild.setPosition(pos);
+							window.draw(sheild);
+							if (collect == 1) {
+								if (player1sheild)
+									player1sheilds++;
+								else
+									player1sheild =
+									    true;
+								player1time =
+								    clock
+									.getElapsedTime()
+									.asSeconds();
+							} else if (collect ==
+								   2) {
+								if (player2sheild)
+									player2sheilds++;
+								else
+									player2sheild =
+									    true;
+								player2time =
+								    clock
+									.getElapsedTime()
+									.asSeconds();
+							}
+
+							if (collect != 0) {
+								powerupsound
+								    .play();
+								// Text
+								texts++;
+								textpositions
+								    .push_back(
+									pos);
+								texttime
+								    .push_back(
+									0);
+								textstring.push_back(
+								    COLLECTSHEILDMESSAGE);
+							}
+						} break;
+						case BOMB: {
+							sf::CircleShape bomb =
+							    sf::CircleShape(
+								COLLECTRADIUS /
+								    2.f *
+								    powerupsize
+									.at(i),
+								4);
+							bomb.setOutlineThickness(
+							    2);
+							bomb.setOutlineColor(
+							    sf::Color::White);
+							bomb.setFillColor(
+							    sf::Color::
+								Transparent);
+							bomb.setOrigin(
+							    bomb.getLocalBounds()
+								    .width /
+								2,
+							    bomb.getLocalBounds()
+								    .height /
+								2);
+							bomb.setPosition(pos);
+							window.draw(bomb);
+							if (collect != 0) {
+								bombs++;
+								powerupsound
+								    .play();
+								// Text
+								texts++;
+								textpositions
+								    .push_back(
+									pos);
+								texttime
+								    .push_back(
+									0);
+								textstring.push_back(
+								    COLLECTBOMBMESSAGE);
+							}
+						} break;
+						case PLANET: {
+							// Minigame Planet
+							sf::CircleShape crater1 =
+							    sf::CircleShape(
+								PLANET_SIZE *
+								    powerupsize
+									.at(i) /
+								    4,
+								16);
+							crater1
+							    .setOutlineThickness(
+								2);
+							crater1.setOutlineColor(
+							    sf::Color::White);
+							crater1.setFillColor(
+							    sf::Color::
+								Transparent);
+							crater1.setOrigin(
+							    crater1.getLocalBounds()
+								    .width /
+								2,
+							    crater1.getLocalBounds()
+								    .height /
+								2);
+							crater1.setPosition(
+							    pos +
+							    sf::Vector2f(
+								-PLANET_SIZE *
+								    powerupsize
+									.at(i) /
+								    3,
+								PLANET_SIZE *
+								    powerupsize
+									.at(i) /
+								    2));
+							window.draw(crater1);
+							sf::CircleShape crater2 =
+							    sf::CircleShape(
+								PLANET_SIZE *
+								    powerupsize
+									.at(i) /
+								    3,
+								16);
+							crater2
+							    .setOutlineThickness(
+								2);
+							crater2.setOutlineColor(
+							    sf::Color::White);
+							crater2.setFillColor(
+							    sf::Color::
+								Transparent);
+							crater2.setOrigin(
+							    crater2.getLocalBounds()
+								    .width /
+								2,
+							    crater2.getLocalBounds()
+								    .height /
+								2);
+							crater2.setPosition(
+							    pos -
+							    sf::Vector2f(
+								PLANET_SIZE *
+								    powerupsize
+									.at(i) /
+								    3,
+								PLANET_SIZE *
+								    powerupsize
+									.at(i) /
+								    3));
+							window.draw(crater2);
+							sf::CircleShape crater3 =
+							    sf::CircleShape(
+								PLANET_SIZE *
+								    powerupsize
+									.at(i) /
+								    5,
+								16);
+							crater3
+							    .setOutlineThickness(
+								2);
+							crater3.setOutlineColor(
+							    sf::Color::White);
+							crater3.setFillColor(
+							    sf::Color::
+								Transparent);
+							crater3.setOrigin(
+							    crater3.getLocalBounds()
+								    .width /
+								2,
+							    crater3.getLocalBounds()
+								    .height /
+								2);
+							crater3.setPosition(
+							    pos +
+							    sf::Vector2f(
+								PLANET_SIZE *
+								    powerupsize
+									.at(i) /
+								    2,
+								0));
+							window.draw(crater3);
+
+							// Enter Planet
+							if (collect != 0 &&
+							    !powerupcollected
+								 .at(i)) {
+								powerupcollected
+								    .at(i) =
+								    true;
+								planetexists =
+								    false;
+								// Text
+								texts++;
+								textpositions
+								    .push_back(
+									pos);
+								textstring
+								    .push_back(
+									"Miniga"
+									"me "
+									"Planet"
+									"!");
+								texttime
+								    .push_back(
+									0);
+								// Minigame
+								nextminigame =
+								    1;
+								planetanimtime =
+								    0;
+							}
+						} break;
+						}
+
+					if (collect != 0) {
+						powerupcollected.at(i) = true;
+					}
+
+					if (powerupcollected.at(i) &&
+					    powerupsize.at(i) == 0) {
+						powerups--;
+						poweruppositions.erase(
+						    poweruppositions.begin() +
+						    i);
+						poweruptype.erase(
+						    poweruptype.begin() + i);
+						powerupsize.erase(
+						    powerupsize.begin() + i);
+						powerupcollected.erase(
+						    powerupcollected.begin() +
+						    i);
+						i--;
+					}
 				}
+
+				// Bomb Cooldown
+				bombcooldown -= deltatime;
+
+				// Check for game over
+				if ((player1gameover && player2gameover) ||
+				    (player1gameover && !player2mode)) {
+					float animationTime =
+					    clock.getElapsedTime().asSeconds() -
+					    extraDelayClock;
+					if (animationTime > GAMEOVERTIME) {
+						clock.restart();
+						finalscore = 0;
+						screen = 7;
+						// Test Highscores
+						if (player2mode) {
+							int totalscore =
+							    score +
+							    bombs * BOMBSCORE;
+							if (totalscore >
+							    highscores
+								.twoplayerhighscore) {
+								newhighscore =
+								    true;
+								highscores
+								    .twoplayerhighscore =
+								    totalscore;
+								writehighscore(
+								    highscores);
+							}
+						} else {
+							int totalscore =
+							    score +
+							    bombs * BOMBSCORE;
+							if (totalscore >
+							    highscores
+								.highscore) {
+								newhighscore =
+								    true;
+								highscores
+								    .highscore =
+								    totalscore;
+								writehighscore(
+								    highscores);
+							}
+						}
+					} // After GAMEOVERTIME seconds go to
+					  // game over screen
+				} else {
+					extraDelayClock =
+					    clock.getElapsedTime()
+						.asSeconds(); // Keep
+							      // extraDelayClock
+							      // up to date
+							      // until game over
+				}
+
+				// Fire Bomb
+				if (sf::Keyboard::isKeyPressed(
+					sf::Keyboard::Space) &&
+				    bombcooldown <= 0 && bombs > 0) {
+					bombexplosionsound.play();
+					bombcooldown = BOMBCOOLDOWN;
+					bombs--;
+
+					// Clear Screen
+					asteroids = 0;
+					asteroidpositions.clear();
+					asteroidrotation.clear();
+					asteroidrotationvelocity.clear();
+					asteroidvelocity.clear();
+					asteroidsize.clear();
+					// Enemies
+					enemies = 0;
+					enemypositions.clear();
+					enemyvelocity.clear();
+					enemyrotation.clear();
+					enemyrotationvelocity.clear();
+					enemylazercooldown.clear();
+					// Powerups
+					powerups = 0;
+					poweruppositions.clear();
+					poweruptype.clear();
+					powerupsize.clear();
+					// Lazers
+					lazers = 0;
+					lazerpositions.clear();
+					lazerrotation.clear();
+					lazervelocity.clear();
+				}
+			} break;
+			default: { // Minigame Planets
+#define PLANET_CODE
+#include "planets.cpp"		   // Hacky way to reduce the size of this file
+			}
 			}
 
 			// Animate Bomb (Flash on screen)
@@ -3472,18 +3973,20 @@ int main() {
 			// Animate Minigame Switch
 			if (nextminigame != minigame) {
 				planetanimtime += deltatime;
-				if (planetanimtime >= PLANETANIMLENGTH) minigame = nextminigame;
-				// Fade Animation	
-				sf::RectangleShape fade =
-				    sf::RectangleShape(
-					sf::Vector2f(window.getSize().x,
-						     window.getSize().y));
+				if (planetanimtime >= PLANETANIMLENGTH) {
+					minigame = nextminigame;
+					clock.restart();
+				}
+				// Fade Animation
+				sf::RectangleShape fade = sf::RectangleShape(
+				    sf::Vector2f(window.getSize().x,
+						 window.getSize().y));
 				sf::Color color = sf::Color::Black;
-				color.a = (planetanimtime / PLANETANIMLENGTH) * 256;
+				color.a =
+				    (planetanimtime / PLANETANIMLENGTH) * 255;
 				fade.setFillColor(color);
 				fade.setPosition(sf::Vector2f(0, 0));
 				window.draw(fade);
-
 			}
 
 		} break;
