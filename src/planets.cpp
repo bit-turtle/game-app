@@ -2,10 +2,10 @@
 
 #ifdef PLANET_FUNC
 #undef PLANET_FUNC
-// Functions for Planets Go Here
+// Functions and Classes for Planets Go Here
 
 // Returns TextureRect for current animation frame
-sf::IntRect animateframe(sf::Texture tex, unsigned int frames, unsigned int fps, float time, float start = 0) {
+sf::IntRect animateframe(sf::Texture tex, unsigned int frames, unsigned int fps, float time, bool flip = false, float start = 0) {
 	sf::IntRect ret;
 	sf::Vector2u size = tex.getSize();
 	unsigned int frameheight = size.y/frames;
@@ -13,15 +13,90 @@ sf::IntRect animateframe(sf::Texture tex, unsigned int frames, unsigned int fps,
 	ret.width = size.x;
 	ret.height = frameheight;
 	unsigned int tick = (unsigned int)((time-start)*fps) % frames;
-	ret.top = tick/frameheight;
+	ret.top = tick*frameheight;
+
+	// Flip
+	if (flip) {
+		ret.left = ret.width;
+		ret.width = -ret.width;
+	}
+
 	return ret;
 }
 // Tests if the animation has played at least once
 bool animationdone(unsigned int frames, unsigned int fps, float time, float start = 0) {
-	unsigned int frame = (time-start)*fps;
-	if ( frame > frames )
+	
+	unsigned int tick = (unsigned int)((time-start)*fps);
+	if ( tick >= frames )
 		return true;
 	return false;
+}
+
+// Perfect Grid for Maps
+template <typename T> class Grid {
+	private:
+		std::vector<std::vector<T>> data;
+		unsigned int width = 0;
+		unsigned int height = 0;
+	public:
+		Grid() {}
+		void set(unsigned int x, unsigned int y, T value) {
+			// Resize Grid
+			while (x >= width) {
+				data.emplace_back();
+				for (int i = 0; i < height; i++) data.at(width).push_back(0);
+				width++;
+			};
+			while (y >= height) {
+				for (int i = 0; i < width; i++) data.at(i).push_back(0);
+				height++;
+			}
+			// Set Point
+			data.at(x).at(y) = value;
+		}
+		T get(unsigned int x, unsigned int y) {
+			if (x >= width || y >= height) return 0;
+			return data.at(x).at(height-1-y);
+		}
+		sf::Vector2u getsize() {
+			sf::Vector2u size;
+			size.x = width;
+			size.y = height;
+			return size;
+		}
+		void clear() {
+			data.clear();
+			width = 0;
+			height = 0;
+		}
+};
+
+// Deltatime Vector
+sf::Vector2f smooth(float deltatime, sf::Vector2f vec) {
+	vec.x * deltatime;
+	vec.y * deltatime;
+	return vec;
+}
+	
+
+// Check if position collides with block and return block id (id=0 = air)
+uint8_t checkblock(Grid<uint8_t>* map, float blocksize, sf::Vector2f pos) {
+	unsigned int x = pos.x/blocksize;
+	unsigned int y = pos.y/blocksize;
+	return map->get(x,y);
+}
+
+float drag(float value, float drag) {
+	if (value < 0) value += drag;
+	if (value > 0) value -= drag;
+	if (value < drag && value > -drag) value = 0;	// Close Enough
+	return value;
+}
+
+float setng(float value, float threshold) {	// SET if Not Greater
+	if (threshold > 0 && value < threshold) value = threshold;
+	else if (threshold < 0 && value > threshold) value = threshold;
+	return value;
 }
 
 #endif
@@ -32,9 +107,48 @@ bool animationdone(unsigned int frames, unsigned int fps, float time, float star
 
 // Mario ( 'm_' prefix )
 sf::Texture m_landinganim;	// Spaceship landing animation
-if (!m_landinganim.loadFromFile("textures/landing.anim.png")) {	// '.anim.png' for spritesheet animations
+if (!m_landinganim.loadFromFile("textures/landing.anim.png"))	// '.anim.png' for spritesheet animations
 	std::cout << "Falied to Load Texture 'landing.anim'!" << std::endl;
+// Player Assets
+sf::Texture m_playerwalk0anim;
+if (!m_playerwalk0anim.loadFromFile("textures/playerwalk0.anim.png"))
+	std::cout << "Failed to Load Texture 'playerwalk0.anim'!" << std::endl;
+sf::Texture m_playerwalk1anim;
+if (!m_playerwalk1anim.loadFromFile("textures/playerwalk1.anim.png"))
+	std::cout << "Failed to Load Texture 'playerwalk1.anim'!" << std::endl;
+sf::Texture m_player0;
+if (!m_player0.loadFromFile("textures/player0.png"))
+	std::cout << "Failed to Load Texture 'player0'!" << std::endl;
+sf::Texture m_player1;
+if (!m_player1.loadFromFile("textures/player1.png"))
+	std::cout << "Failed to Load Texture 'player1'!" << std::endl;
+// Enemy Assets
+sf::Texture m_enemywalkanim;
+if (!m_enemywalkanim.loadFromFile("textures/enemywalk.anim.png"))
+	std::cout << "Failed to Load Texture 'enemywalk.anim'!" << std::endl;
+
+// Game Map
+Grid<uint8_t> m_map;
+{
+	std::ifstream file("assets/mario.map.txt");
+	if (file.is_open()) {
+		std::string line;
+		unsigned int linenumber = 0;
+		while (getline(file, line)) {
+			std::string block;
+			unsigned int blocknumber = 0;
+			std::stringstream linebuffer(line);
+			while (getline(linebuffer, block, ' ')) {
+				m_map.set(blocknumber, linenumber, (uint8_t) std::stoul(block,nullptr,0) );	// Read Number and convert to unsigned long and then to uint8_t
+				blocknumber++;
+			}
+			linenumber++;
+		}
+	}
+	else std::cout << "Failed to Load Map 'mario.map'!" << std::endl;
+	file.close();
 }
+
 // End Mario
 
 #endif
@@ -44,11 +158,26 @@ if (!m_landinganim.loadFromFile("textures/landing.anim.png")) {	// '.anim.png' f
 // Global Variables for Planets Go Here
 
 // Minigame 1 Mario Style Moving and Combat Variables ( 'm_' prefix )
+// Visual
+float m_offset = 0;
+float m_scale = 8;
+sf::Vector2f m_playersize(5*m_scale,9*m_scale);
+float m_blockwidth = 11;
+float m_blocksize = m_blockwidth*m_scale;
+// Physic
+float m_speed = 0.25*m_scale;
+float m_airspeed = 0.105*m_scale;
+float m_jump = 0.5f*m_scale;
+float m_gravity = 0.5*m_scale;
+float m_drag = 0.25*m_scale;
+float m_friction = 1.75*m_scale;
 // Players
+sf::Vector2f m_p0pos;
+sf::Vector2f m_p0vel;
+bool m_p0land = false;
 sf::Vector2f m_p1pos;
 sf::Vector2f m_p1vel;
-sf::Vector2f m_p2pos;
-sf::Vector2f m_p2vel;
+bool m_p1land = false;
 // Enemies
 std::vector<sf::Vector2f> m_enemypos;
 std::vector<sf::Vector2f> m_enemyvel;
@@ -108,17 +237,167 @@ case 1: { // Mario Mode Controls
 case 2: {	// Animation of landing
 		sf::RectangleShape animation = sf::RectangleShape(sf::Vector2f(windowsize));
 		animation.setTexture(&m_landinganim);
-		animation.setTextureRect(animateframe(m_landinganim,25,12,time)); // 25 frames long at 12 fps using animation 'm_landinganim'
-		window.draw(animation);
+		animation.setTextureRect(animateframe(m_landinganim,22,13,time)); // 22 frames long at 13 fps using animation 'm_landinganim'
 
 		// Move on if done
-		if (animationdone(10,12,clock.getElapsedTime().asSeconds())) minigame = 3;
+		if (animationdone(22,13,time)) {
+			animation.setTextureRect(animateframe(m_landinganim,22,1,21)); // Freeze on last frame
+			nextminigame = 3;
+			if (planetanimtime >= PLANETANIMLENGTH) planetanimtime = 0;
+		}
+
+		window.draw(animation);
+
+		message = "";
+		tiptext = "";
 } break;
 
 case 3: {	// Mario Mode
-	// Player Controls
-	message = "Mario!";
-	tiptext = "TODO";
+		// Player Controls
+		// Player 0
+		{
+			int direction = 0;
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || (!player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Left) ) ) direction -= 1; 
+
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || (!player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Right) ) ) direction += 1;
+			if (m_p0land) m_p0vel.x = setng(m_p0vel.x, direction*m_speed);
+			else m_p0vel.x = setng(m_p0vel.x, direction*m_airspeed);
+
+			if ( m_p0land && ( sf::Keyboard::isKeyPressed(sf::Keyboard::W) || (!player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Up) ) ) ) m_p0vel.y = m_jump;
+			
+		}
+		// Player 1
+		{
+			int direction = 0;
+			if ( player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Left) ) direction -= 1; 
+
+			if ( sf::Keyboard::isKeyPressed(sf::Keyboard::Right) ) direction += 1;
+			if (m_p1land) m_p1vel.x = setng(m_p1vel.x, direction*m_speed);
+			else m_p1vel.x = setng(m_p1vel.x, direction*m_airspeed);
+
+			if (m_p1land && player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Up) )  m_p1vel.y = m_jump;
+		}
+
+		// Add Gravity
+		if (!m_p0land) m_p0vel.y -= pow(m_gravity,2.f)*deltatime;
+		if (!m_p1land) m_p1vel.y -= pow(m_gravity,2.f)*deltatime;
+		// Add Drag
+		m_p0vel.x = drag(m_p0vel.x, m_drag*deltatime);
+		m_p1vel.x = drag(m_p1vel.x, m_drag*deltatime);
+		// Add Friction
+		if (m_p0land) m_p0vel.x = drag(m_p0vel.x, m_friction*deltatime);
+		if (m_p1land) m_p1vel.x = drag(m_p1vel.x, m_friction*deltatime);
+		
+		// Move Players
+		{	// Player 0
+			m_p0land = false;
+			sf::Vector2f future = m_p0pos;
+			sf::Vector2f movement = smooth(deltatime,m_p0vel);
+
+			future.x += movement.x;
+			// Collision Checks X
+			if (	checkblock(&m_map, m_blocksize, future) != 0 ||
+				future.x < 0 || 
+				checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_playersize.x, future.y ) ) != 0 ||
+				checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_playersize.x, future.y + m_playersize.y ) ) != 0 ||
+				checkblock(&m_map, m_blocksize, sf::Vector2f(future.x, future.y + m_playersize.y ) ) != 0
+			) {
+				future.x = m_p0pos.x;	// Revert if collision
+				m_p0vel.x = 0;	// Cancel X momentum
+			}
+
+			// Collision Checks Y
+			future.y += movement.y;
+			
+			if (	checkblock(&m_map, m_blocksize, future) != 0 ||
+				future.y < 0 || 
+				checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_playersize.x, future.y ) ) != 0 ||
+				checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_playersize.x, future.y + m_playersize.y ) ) != 0 ||
+				checkblock(&m_map, m_blocksize, sf::Vector2f(future.x, future.y + m_playersize.y ) ) != 0
+			) {
+				future.y = m_p0pos.y;	// Revert if collision
+				m_p0vel.y = 0;	// Cancel X momentum
+				if (movement.y < 0) m_p0land = true;	// Only lands if going down
+			}
+
+			m_p0pos = future;
+		}
+
+		{	// Player 1
+			m_p1land = false;
+			sf::Vector2f future = m_p1pos;
+			sf::Vector2f movement = smooth(deltatime,m_p1vel);
+			
+			// Collision Checks X
+			future.x += movement.x;
+			if (	checkblock(&m_map, m_blocksize, future) != 0 ||
+				future.x < 0 || 
+				checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_playersize.x, future.y ) ) != 0 ||
+				checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_playersize.x, future.y + m_playersize.y ) ) != 0 ||
+				checkblock(&m_map, m_blocksize, sf::Vector2f(future.x, future.y + m_playersize.y ) ) != 0
+			) {
+				future.x = m_p1pos.x;	// Revert if collision
+				m_p1vel.x = 0;	// Cancel X momentum
+			}
+
+			// Collision Checks Y
+			future.y += movement.y;
+			
+			if (	checkblock(&m_map, m_blocksize, future) != 0 ||
+				future.y < 0 || 
+				checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_playersize.x, future.y ) ) != 0 ||
+				checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_playersize.x, future.y + m_playersize.y ) ) != 0 ||
+				checkblock(&m_map, m_blocksize, sf::Vector2f(future.x, future.y + m_playersize.y ) ) != 0
+			) {
+				future.y = m_p1pos.y;	// Revert if collision
+				m_p1vel.y = 0;	// Cancel X momentum
+				if (movement.y < 0) m_p1land = true;	// Only lands if going down
+			}
+
+			m_p1pos = future;
+		}
+
+		// Draw Players
+		// Player 0
+		if (!player1gameover) {
+			sf::Sprite player0;
+			if (m_p0vel.x == 0) player0.setTexture(m_player0);
+			else {
+				player0.setTexture(m_playerwalk0anim);
+				if (m_p0vel.x >= 0) player0.setTextureRect(animateframe(m_playerwalk0anim,6,12,time,false));	// 6 Frames, 12 FPS, Not Flipped
+				else player0.setTextureRect(animateframe(m_playerwalk0anim,6,12,time,true));	// 6 Frames, 12 FPS, Flipped
+			}
+			player0.setScale(m_scale,m_scale); // m_scale times Real Size
+			player0.setPosition(m_p0pos.x-m_offset,windowsize.y-m_p0pos.y-m_playersize.y);
+			// Draw Player
+			window.draw(player0);
+		}
+
+		// Player 1
+		if (player2mode && !player2gameover) {
+			sf::Sprite player1;
+			if (m_p1vel.x == 0) player1.setTexture(m_player1);
+			else {
+				player1.setTexture(m_playerwalk1anim);
+				if (m_p1vel.x >= 0) player1.setTextureRect(animateframe(m_playerwalk1anim,6,12,time,false));	// 6 Frames, 12 FPS, Not Flipped
+				else player1.setTextureRect(animateframe(m_playerwalk1anim,6,12,time,true));	// 6 Frames, 12 FPS, Flipped
+			}
+			player1.setScale(m_scale,m_scale); // m_scale times Real Size
+			player1.setPosition(m_p1pos.x,windowsize.y-m_p1pos.y-m_playersize.y);
+			// Draw Player
+			window.draw(player1);
+		}
+
+		// Draw Level
+		for (unsigned int x = 0; x < m_map.getsize().x; x++)
+			for (unsigned int y = 0; y < m_map.getsize().y; y++) {
+				sf::RectangleShape block(sf::Vector2f(m_blocksize,m_blocksize));
+				block.setPosition(x*m_blocksize,windowsize.y-y*m_blocksize-m_blocksize);
+				if (m_map.get(x,y) != 0) window.draw(block);
+			}
+
+		message = "Mario!";
+		tiptext = "TODO";
 } break;
 
 default:  // Minigame does not exist

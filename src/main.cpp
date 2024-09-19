@@ -18,6 +18,8 @@
 #include <cmath>
 #define PI 3.14159265
 
+#include <cstdint>
+
 #include <ctime>
 
 #define MOVEMENTVEL 400
@@ -36,7 +38,7 @@
 // Powerups
 #define PLANETANIMLENGTH 2
 #define PLANET_SIZE 80
-#define PLANETSPAWNCHANCE 16 // 1/x chance
+#define PLANETSPAWNCHANCE 1 // 1/x chance
 #define COLLECTRADIUS 40
 #define POWERUPCHANCE 20 // 1/ (x/2) chance
 #define BOMBCHANCE 5	 // 1/x chance
