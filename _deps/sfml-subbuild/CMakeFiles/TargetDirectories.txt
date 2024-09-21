@@ -1,0 +1,3 @@
+/home/hz7/Documents/c++/sfml/game/_deps/sfml-subbuild/CMakeFiles/sfml-populate.dir
+/home/hz7/Documents/c++/sfml/game/_deps/sfml-subbuild/CMakeFiles/edit_cache.dir
+/home/hz7/Documents/c++/sfml/game/_deps/sfml-subbuild/CMakeFiles/rebuild_cache.dir

@@ -4,16 +4,14 @@
 #undef PLANET_FUNC
 // Functions and Classes for Planets Go Here
 
-// Returns TextureRect for current animation frame
-sf::IntRect animateframe(sf::Texture tex, unsigned int frames, unsigned int fps, float time, bool flip = false, float start = 0) {
+// Function that selects a frame of a vertical spritesheet
+sf::IntRect spritesheet(sf::Texture tex, unsigned int frameheight, unsigned int id, bool flip = false) {
 	sf::IntRect ret;
 	sf::Vector2u size = tex.getSize();
-	unsigned int frameheight = size.y/frames;
 	ret.left = 0;
 	ret.width = size.x;
 	ret.height = frameheight;
-	unsigned int tick = (unsigned int)((time-start)*fps) % frames;
-	ret.top = tick*frameheight;
+	ret.top = id*frameheight;
 
 	// Flip
 	if (flip) {
@@ -23,53 +21,23 @@ sf::IntRect animateframe(sf::Texture tex, unsigned int frames, unsigned int fps,
 
 	return ret;
 }
+// Returns TextureRect for current animation frame
+sf::IntRect animateframe(sf::Texture tex, unsigned int frames, unsigned int fps, float time, bool flip = false, float start = 0) {
+	unsigned int frame = (unsigned int)((time-start)*fps) % frames;
+	sf::Vector2u size = tex.getSize();
+	unsigned int frameheight = size.y/frames;
+	return spritesheet(tex,frameheight,frame,flip);
+}
 // Tests if the animation has played at least once
 bool animationdone(unsigned int frames, unsigned int fps, float time, float start = 0) {
-	
 	unsigned int tick = (unsigned int)((time-start)*fps);
 	if ( tick >= frames )
 		return true;
 	return false;
 }
 
-// Perfect Grid for Maps
-template <typename T> class Grid {
-	private:
-		std::vector<std::vector<T>> data;
-		unsigned int width = 0;
-		unsigned int height = 0;
-	public:
-		Grid() {}
-		void set(unsigned int x, unsigned int y, T value) {
-			// Resize Grid
-			while (x >= width) {
-				data.emplace_back();
-				for (int i = 0; i < height; i++) data.at(width).push_back(0);
-				width++;
-			};
-			while (y >= height) {
-				for (int i = 0; i < width; i++) data.at(i).push_back(0);
-				height++;
-			}
-			// Set Point
-			data.at(x).at(y) = value;
-		}
-		T get(unsigned int x, unsigned int y) {
-			if (x >= width || y >= height) return 0;
-			return data.at(x).at(height-1-y);
-		}
-		sf::Vector2u getsize() {
-			sf::Vector2u size;
-			size.x = width;
-			size.y = height;
-			return size;
-		}
-		void clear() {
-			data.clear();
-			width = 0;
-			height = 0;
-		}
-};
+#include "grid.hpp"	// Map Grid
+#include "tilemap.hpp"	// Tilemap Renderer
 
 // Deltatime Vector
 sf::Vector2f smooth(float deltatime, sf::Vector2f vec) {
@@ -139,7 +107,7 @@ Grid<uint8_t> m_map;
 			unsigned int blocknumber = 0;
 			std::stringstream linebuffer(line);
 			while (getline(linebuffer, block, ' ')) {
-				m_map.set(blocknumber, linenumber, (uint8_t) std::stoul(block,nullptr,0) );	// Read Number and convert to unsigned long and then to uint8_t
+				m_map.set(blocknumber, linenumber, (unsigned int) std::stoul(block,nullptr,0) );	// Read Number and convert to unsigned long and then to unsigned int
 				blocknumber++;
 			}
 			linenumber++;
@@ -148,6 +116,9 @@ Grid<uint8_t> m_map;
 	else std::cout << "Failed to Load Map 'mario.map'!" << std::endl;
 	file.close();
 }
+
+
+
 
 // End Mario
 
@@ -165,12 +136,12 @@ sf::Vector2f m_playersize(5*m_scale,9*m_scale);
 float m_blockwidth = 11;
 float m_blocksize = m_blockwidth*m_scale;
 // Physic
-float m_speed = 0.25*m_scale;
-float m_airspeed = 0.105*m_scale;
-float m_jump = 0.5f*m_scale;
-float m_gravity = 0.5*m_scale;
-float m_drag = 0.25*m_scale;
-float m_friction = 1.75*m_scale;
+float m_speed = 100*m_scale;
+float m_airspeed = 75*m_scale;
+float m_jump = 200.f*m_scale;
+float m_gravity = 10.f*m_scale;
+float m_drag = 400*m_scale;
+float m_friction = 600*m_scale;
 // Players
 sf::Vector2f m_p0pos;
 sf::Vector2f m_p0vel;
@@ -181,6 +152,9 @@ bool m_p1land = false;
 // Enemies
 std::vector<sf::Vector2f> m_enemypos;
 std::vector<sf::Vector2f> m_enemyvel;
+// Level
+TileMap m_level;
+m_level.load("textures/blocks.png",sf::Vector2u(11,11), m_scale, window.getSize().y, m_map);
 
 // End Mario
 
@@ -278,9 +252,9 @@ case 3: {	// Mario Mode
 			if (m_p1land && player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Up) )  m_p1vel.y = m_jump;
 		}
 
-		// Add Gravity
-		if (!m_p0land) m_p0vel.y -= pow(m_gravity,2.f)*deltatime;
-		if (!m_p1land) m_p1vel.y -= pow(m_gravity,2.f)*deltatime;
+		// Add Half of Gravity
+		m_p0vel.y += (-pow(m_gravity,2.f))*deltatime*0.5f;
+		m_p1vel.y += (-pow(m_gravity,2.f))*deltatime*0.5f;
 		// Add Drag
 		m_p0vel.x = drag(m_p0vel.x, m_drag*deltatime);
 		m_p1vel.x = drag(m_p1vel.x, m_drag*deltatime);
@@ -292,9 +266,9 @@ case 3: {	// Mario Mode
 		{	// Player 0
 			m_p0land = false;
 			sf::Vector2f future = m_p0pos;
-			sf::Vector2f movement = smooth(deltatime,m_p0vel);
+			sf::Vector2f movement = m_p0vel;
 
-			future.x += movement.x;
+			future.x += movement.x * deltatime;
 			// Collision Checks X
 			if (	checkblock(&m_map, m_blocksize, future) != 0 ||
 				future.x < 0 || 
@@ -307,7 +281,7 @@ case 3: {	// Mario Mode
 			}
 
 			// Collision Checks Y
-			future.y += movement.y;
+			future.y += movement.y * deltatime;
 			
 			if (	checkblock(&m_map, m_blocksize, future) != 0 ||
 				future.y < 0 || 
@@ -326,10 +300,10 @@ case 3: {	// Mario Mode
 		{	// Player 1
 			m_p1land = false;
 			sf::Vector2f future = m_p1pos;
-			sf::Vector2f movement = smooth(deltatime,m_p1vel);
+			sf::Vector2f movement = m_p1vel;
 			
 			// Collision Checks X
-			future.x += movement.x;
+			future.x += movement.x * deltatime;
 			if (	checkblock(&m_map, m_blocksize, future) != 0 ||
 				future.x < 0 || 
 				checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_playersize.x, future.y ) ) != 0 ||
@@ -341,7 +315,7 @@ case 3: {	// Mario Mode
 			}
 
 			// Collision Checks Y
-			future.y += movement.y;
+			future.y += movement.y * deltatime;
 			
 			if (	checkblock(&m_map, m_blocksize, future) != 0 ||
 				future.y < 0 || 
@@ -356,7 +330,18 @@ case 3: {	// Mario Mode
 
 			m_p1pos = future;
 		}
+		
+		// Add Other Half of Gravity
+		m_p0vel.y += (-pow(m_gravity,2.f))*deltatime*0.5f;
+		m_p1vel.y += (-pow(m_gravity,2.f))*deltatime*0.5f;
 
+		// Scroll Camera
+		{
+			float future = m_offset;
+			if (m_p0pos.x > m_p1pos.x) future = m_p0pos.x - 1*(windowsize.x/2);
+			if (m_p1pos.x > m_p0pos.x) future = m_p1pos.x - 1*(windowsize.x/2);
+			if (future > 0) m_offset = future;
+		}
 		// Draw Players
 		// Player 0
 		if (!player1gameover) {
@@ -383,19 +368,15 @@ case 3: {	// Mario Mode
 				else player1.setTextureRect(animateframe(m_playerwalk1anim,6,12,time,true));	// 6 Frames, 12 FPS, Flipped
 			}
 			player1.setScale(m_scale,m_scale); // m_scale times Real Size
-			player1.setPosition(m_p1pos.x,windowsize.y-m_p1pos.y-m_playersize.y);
+			player1.setPosition(m_p1pos.x-m_offset,windowsize.y-m_p1pos.y-m_playersize.y);
 			// Draw Player
 			window.draw(player1);
 		}
 
 		// Draw Level
-		for (unsigned int x = 0; x < m_map.getsize().x; x++)
-			for (unsigned int y = 0; y < m_map.getsize().y; y++) {
-				sf::RectangleShape block(sf::Vector2f(m_blocksize,m_blocksize));
-				block.setPosition(x*m_blocksize,windowsize.y-y*m_blocksize-m_blocksize);
-				if (m_map.get(x,y) != 0) window.draw(block);
-			}
-
+		//m_level.setPosition(0-m_offset,0);
+		window.draw(m_level);
+		
 		message = "Mario!";
 		tiptext = "TODO";
 } break;

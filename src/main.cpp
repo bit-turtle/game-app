@@ -119,7 +119,7 @@ enum powertypes { SHEILD, BOMB, PLANET };
 
 int main() {
 	// Create Window
-	sf::RenderWindow window(sf::VideoMode(800, 600, 32), GAMENAME,
+	sf::RenderWindow window(sf::VideoMode::getFullscreenModes().at(0), GAMENAME,
 				sf::Style::Fullscreen);
 
 	// Load Files From Memory
@@ -357,6 +357,10 @@ int main() {
 	bitturtlesound.play();
 
 	while (window.isOpen()) {
+		
+		// Calculate Deltatime
+		float deltatime = deltaClock.restart().asSeconds();
+		
 		showtooltip = false;
 		enter = false;
 		// Process Events
@@ -394,8 +398,6 @@ int main() {
 		// Clear Window
 		window.clear();
 
-		float deltatime = deltaClock.getElapsedTime().asSeconds();
-		deltaClock.restart();
 
 // Debug Mode FPS counter
 #ifdef DEBUG
