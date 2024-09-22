@@ -54,6 +54,25 @@ uint8_t checkblock(Grid<uint8_t>* map, float blocksize, sf::Vector2f pos) {
 	return map->get(x,y);
 }
 
+bool checkcollision(uint8_t id) {
+	switch (id) {
+		case 0:	// Air
+			return false;
+		case 2:	// Spike
+			return false;
+		case 3:	// Spike
+			return false;
+		case 4:	// Spike
+			return false;
+		case 5:	// Spike
+			return false;
+		case 6:	// Chest
+			return false;
+		default:
+			return true;
+	}
+};
+
 float drag(float value, float drag) {
 	if (value < 0) value += drag;
 	if (value > 0) value -= drag;
@@ -270,11 +289,11 @@ case 3: {	// Mario Mode
 
 			future.x += movement.x * deltatime;
 			// Collision Checks X
-			if (	checkblock(&m_map, m_blocksize, future) != 0 ||
+			if (	checkcollision(checkblock(&m_map, m_blocksize, future) ) ||
 				future.x < 0 || 
-				checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_playersize.x, future.y ) ) != 0 ||
-				checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_playersize.x, future.y + m_playersize.y ) ) != 0 ||
-				checkblock(&m_map, m_blocksize, sf::Vector2f(future.x, future.y + m_playersize.y ) ) != 0
+				checkcollision(checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_playersize.x, future.y ) ) ) ||
+				checkcollision(checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_playersize.x, future.y + m_playersize.y ) ) ) ||
+				checkcollision(checkblock(&m_map, m_blocksize, sf::Vector2f(future.x, future.y + m_playersize.y ) ) )
 			) {
 				future.x = m_p0pos.x;	// Revert if collision
 				m_p0vel.x = 0;	// Cancel X momentum
@@ -283,11 +302,11 @@ case 3: {	// Mario Mode
 			// Collision Checks Y
 			future.y += movement.y * deltatime;
 			
-			if (	checkblock(&m_map, m_blocksize, future) != 0 ||
+			if (	checkcollision(checkblock(&m_map, m_blocksize, future) ) ||
 				future.y < 0 || 
-				checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_playersize.x, future.y ) ) != 0 ||
-				checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_playersize.x, future.y + m_playersize.y ) ) != 0 ||
-				checkblock(&m_map, m_blocksize, sf::Vector2f(future.x, future.y + m_playersize.y ) ) != 0
+				checkcollision(checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_playersize.x, future.y ) ) ) ||
+				checkcollision(checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_playersize.x, future.y + m_playersize.y ) ) ) ||
+				checkcollision(checkblock(&m_map, m_blocksize, sf::Vector2f(future.x, future.y + m_playersize.y ) ) )
 			) {
 				future.y = m_p0pos.y;	// Revert if collision
 				m_p0vel.y = 0;	// Cancel X momentum
@@ -304,11 +323,11 @@ case 3: {	// Mario Mode
 			
 			// Collision Checks X
 			future.x += movement.x * deltatime;
-			if (	checkblock(&m_map, m_blocksize, future) != 0 ||
+			if (	checkcollision(checkblock(&m_map, m_blocksize, future) ) ||
 				future.x < 0 || 
-				checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_playersize.x, future.y ) ) != 0 ||
-				checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_playersize.x, future.y + m_playersize.y ) ) != 0 ||
-				checkblock(&m_map, m_blocksize, sf::Vector2f(future.x, future.y + m_playersize.y ) ) != 0
+				checkcollision(checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_playersize.x, future.y ) ) ) ||
+				checkcollision(checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_playersize.x, future.y + m_playersize.y ) ) ) ||
+				checkcollision(checkblock(&m_map, m_blocksize, sf::Vector2f(future.x, future.y + m_playersize.y ) ) )
 			) {
 				future.x = m_p1pos.x;	// Revert if collision
 				m_p1vel.x = 0;	// Cancel X momentum
@@ -317,11 +336,11 @@ case 3: {	// Mario Mode
 			// Collision Checks Y
 			future.y += movement.y * deltatime;
 			
-			if (	checkblock(&m_map, m_blocksize, future) != 0 ||
+			if (	checkcollision(checkblock(&m_map, m_blocksize, future) ) ||
 				future.y < 0 || 
-				checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_playersize.x, future.y ) ) != 0 ||
-				checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_playersize.x, future.y + m_playersize.y ) ) != 0 ||
-				checkblock(&m_map, m_blocksize, sf::Vector2f(future.x, future.y + m_playersize.y ) ) != 0
+				checkcollision(checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_playersize.x, future.y ) ) ) ||
+				checkcollision(checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_playersize.x, future.y + m_playersize.y ) ) ) ||
+				checkcollision(checkblock(&m_map, m_blocksize, sf::Vector2f(future.x, future.y + m_playersize.y ) ) )
 			) {
 				future.y = m_p1pos.y;	// Revert if collision
 				m_p1vel.y = 0;	// Cancel X momentum
@@ -374,11 +393,11 @@ case 3: {	// Mario Mode
 		}
 
 		// Draw Level
-		//m_level.setPosition(0-m_offset,0);
+		m_level.setPosition(0-m_offset,0);
 		window.draw(m_level);
 		
-		message = "Mario!";
-		tiptext = "TODO";
+		message = "";
+		tiptext = "";
 } break;
 
 default:  // Minigame does not exist
