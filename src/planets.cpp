@@ -45,13 +45,25 @@ sf::Vector2f smooth(float deltatime, sf::Vector2f vec) {
 	vec.y * deltatime;
 	return vec;
 }
-	
+
+sf::Vector2u real2tile(sf::Vector2f realpos, float blocksize) {
+	sf::Vector2u ret;
+	ret.x = realpos.x/blocksize;
+	ret.y = realpos.y/blocksize;
+	return ret;
+}
+
+sf::Vector2f tile2real(sf::Vector2u tilepos, float blocksize) {
+	sf::Vector2f ret;
+	ret.x = tilepos.x*blocksize;
+	ret.y = tilepos.y*blocksize;
+	return ret;
+}
 
 // Check if position collides with block and return block id (id=0 = air)
 uint8_t checkblock(Grid<uint8_t>* map, float blocksize, sf::Vector2f pos) {
-	unsigned int x = pos.x/blocksize;
-	unsigned int y = pos.y/blocksize;
-	return map->get(x,y);
+	sf::Vector2u tile = real2tile(pos, blocksize);
+	return map->get(tile.x,tile.y);
 }
 
 bool checkcollision(uint8_t id) {
@@ -85,6 +97,14 @@ float setng(float value, float threshold) {	// SET if Not Greater
 	else if (threshold < 0 && value > threshold) value = threshold;
 	return value;
 }
+
+struct Enemy {
+	sf::Vector2f pos;
+	sf::Vector2f vel = sf::Vector2f(0,0);
+	bool left = false;
+	float squishtimer;
+	bool squished = false;
+};
 
 #endif
 
@@ -152,6 +172,7 @@ Grid<uint8_t> m_map;
 float m_offset = 0;
 float m_scale = 8;
 sf::Vector2f m_playersize(5*m_scale,9*m_scale);
+sf::Vector2f m_enemysize(7*m_scale,7*m_scale);
 float m_blockwidth = 11;
 float m_blocksize = m_blockwidth*m_scale;
 // Physic
@@ -164,16 +185,24 @@ float m_friction = 600*m_scale;
 // Players
 sf::Vector2f m_p0pos;
 sf::Vector2f m_p0vel;
+bool p0interact = false;
+bool p1interact = false;
 bool m_p0land = false;
 sf::Vector2f m_p1pos;
-sf::Vector2f m_p1vel;
 bool m_p1land = false;
+sf::Vector2f m_p1vel;
 // Enemies
-std::vector<sf::Vector2f> m_enemypos;
-std::vector<sf::Vector2f> m_enemyvel;
+std::vector<Enemy> m_enemies;
+// Load in enemies
+for (unsigned int x = 0; x < m_map.getsize().x; x++) for (unsigned int y = 0; y < m_map.getsize().y; y++) if (m_map.get(x,y) == 255) {	// 255 on map = enemy && air
+	Enemy enemy;
+	enemy.pos = sf::Vector2f(x*m_blocksize,y*m_blocksize);
+	m_enemies.push_back(enemy);
+	m_map.set(x,y,0);	// Set to air
+}
 // Level
 TileMap m_level;
-m_level.load("textures/blocks.png",sf::Vector2u(11,11), m_scale, window.getSize().y, m_map);
+m_level.load("textures/blocks.png",sf::Vector2u(11,11), m_scale, window.getSize().y, &m_map);
 
 // End Mario
 
@@ -214,7 +243,7 @@ case 1: { // Mario Mode Controls
 	text.setOrigin(text.getLocalBounds().width/2,text.getLocalBounds().height/2);
 	text.setPosition(windowsize.x*0.5,windowsize.y*0.50);	// 50% from top centered
 	window.draw(text);
-	text.setString("Attack: [s] or [v]");
+	text.setString("Interact: [s] or [v]");
 	text.setOrigin(text.getLocalBounds().width/2,text.getLocalBounds().height/2);
 	text.setPosition(windowsize.x*0.5,windowsize.y*0.70);	// 70% from top centered
 	window.draw(text);
@@ -286,9 +315,9 @@ case 3: {	// Mario Mode
 			m_p0land = false;
 			sf::Vector2f future = m_p0pos;
 			sf::Vector2f movement = m_p0vel;
-
-			future.x += movement.x * deltatime;
+			
 			// Collision Checks X
+			future.x += movement.x * deltatime;
 			if (	checkcollision(checkblock(&m_map, m_blocksize, future) ) ||
 				future.x < 0 || 
 				checkcollision(checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_playersize.x, future.y ) ) ) ||
@@ -315,7 +344,6 @@ case 3: {	// Mario Mode
 
 			m_p0pos = future;
 		}
-
 		{	// Player 1
 			m_p1land = false;
 			sf::Vector2f future = m_p1pos;
@@ -357,9 +385,19 @@ case 3: {	// Mario Mode
 		// Scroll Camera
 		{
 			float future = m_offset;
-			if (m_p0pos.x > m_p1pos.x) future = m_p0pos.x - 1*(windowsize.x/2);
-			if (m_p1pos.x > m_p0pos.x) future = m_p1pos.x - 1*(windowsize.x/2);
+			if (player2mode && !player1gameover && !player2gameover) {
+				if (m_p0pos.x > m_p1pos.x) future = m_p0pos.x - 1*(windowsize.x/2);
+				if (m_p1pos.x > m_p0pos.x) future = m_p1pos.x - 1*(windowsize.x/2);
+				if (m_p0pos.x < future) future -= future - m_p0pos.x;
+				if (m_p1pos.x < future) future -= future - m_p1pos.x;
+			}
+			else {
+				if (!player2mode) future = m_p0pos.x - 1*(windowsize.x/2);
+				else if (player1gameover) future = m_p0pos.x - 1*(windowsize.x/2);
+				else if (player2gameover) future = m_p1pos.x - 1*(windowsize.x/2);
+			}
 			if (future > 0) m_offset = future;
+
 		}
 		// Draw Players
 		// Player 0
@@ -390,6 +428,60 @@ case 3: {	// Mario Mode
 			player1.setPosition(m_p1pos.x-m_offset,windowsize.y-m_p1pos.y-m_playersize.y);
 			// Draw Player
 			window.draw(player1);
+		}
+
+		// Move and Draw enemies
+		for (Enemy enemy : m_enemies) {
+			// Velocity
+			if (enemy.left) enemy.vel.x = -1.f;
+			else enemy.vel.x = 1.f;
+			// Half of Gravity
+			enemy.vel.y += (-pow(m_gravity,2.f))*deltatime*0.5f;
+
+			// Move Enemy
+			{
+				sf::Vector2f future = enemy.pos;
+				sf::Vector2f movement = enemy.vel;
+				
+				// Collision Checks X
+				future.x += movement.x * deltatime;
+				if (	checkcollision(checkblock(&m_map, m_blocksize, future) ) ||
+					future.x < 0 || 
+					checkcollision(checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_enemysize.x, future.y ) ) ) ||
+					checkcollision(checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_enemysize.x, future.y + m_enemysize.y ) ) ) ||
+					checkcollision(checkblock(&m_map, m_blocksize, sf::Vector2f(future.x, future.y + m_enemysize.y ) ) )
+				) {
+					future.x = enemy.pos.x;	// Revert if collision
+					enemy.vel.x = 0;	// Cancel X momentum
+					enemy.left = !enemy.left;
+				}
+
+				// Collision Checks Y
+				future.y += movement.y * deltatime;
+				
+				if (	checkcollision(checkblock(&m_map, m_blocksize, future) ) ||
+					future.y < 0 || 
+					checkcollision(checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_enemysize.x, future.y ) ) ) ||
+					checkcollision(checkblock(&m_map, m_blocksize, sf::Vector2f(future.x + m_enemysize.x, future.y + m_enemysize.y ) ) ) ||
+					checkcollision(checkblock(&m_map, m_blocksize, sf::Vector2f(future.x, future.y + m_enemysize.y ) ) )
+				) {
+					future.y = enemy.pos.y;	// Revert if collision
+					enemy.vel.y = 0;	// Cancel X momentum
+				}
+
+				enemy.pos = future;
+			}
+
+			// Other Half of Gravity
+			enemy.vel.y += (-pow(m_gravity,2.f))*deltatime*0.5f;
+
+			// Draw Enemy
+			sf::Sprite senemy(m_enemywalkanim,
+				animateframe(m_enemywalkanim,4,13,time,enemy.left)	// Animate 'enemywalkanim' with 4 frames at 13 fps
+			);
+			senemy.setScale(m_scale,m_scale);
+			senemy.setPosition(enemy.pos.x-m_offset,windowsize.y-enemy.pos.y-m_playersize.y);
+			window.draw(senemy);
 		}
 
 		// Draw Level

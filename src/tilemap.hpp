@@ -2,15 +2,10 @@ class TileMap : public sf::Drawable, public sf::Transformable
 {
 public:
 
-    bool load(const std::string& tileset, sf::Vector2u tileSize, float scale, float base, Grid<uint8_t> tiles)
-    {
-	    unsigned int width = tiles.getsize().x;
-	    unsigned int height = tiles.getsize().y;
+    void update() {
 
-        // load the tileset texture
-        if (!m_tileset.loadFromFile(tileset))
-            return false;
-
+	    unsigned int width = tiles->getsize().x;
+	    unsigned int height = tiles->getsize().y;
         // resize the vertex array to fit the level size
         m_vertices.setPrimitiveType(sf::Triangles);
         m_vertices.resize(width * height * 6);
@@ -23,7 +18,7 @@ public:
             for (unsigned int j = 0; j < height; ++j)
             {
                 // get the current tile number
-                int tileNumber = tiles.get(i, height-1 - j);
+                int tileNumber = tiles->get(i, height-1 - j);
 
                 // find its position in the tileset texture
                 int tu = tileNumber % (m_tileset.getSize().x / tileSize.x);
@@ -48,10 +43,27 @@ public:
                 triangles[4].texCoords = sf::Vector2f((tu + 1) * tileSize.x, tv * tileSize.y);
                 triangles[5].texCoords = sf::Vector2f((tu + 1) * tileSize.x, (tv + 1) * tileSize.y);
             }
-
-        return true;
     }
 
+    bool load(const std::string& tileset, sf::Vector2u tilesize, float tilescale, float tilebase, Grid<uint8_t>* tilemap)
+    {
+
+        // load the tileset texture
+        if (!m_tileset.loadFromFile(tileset)) {
+            	std::cout << "Failed to load tileset" << std::endl;
+		return false;
+	}
+
+	// Set Vars
+	scale = tilescale;
+	base = tilebase;
+	tileSize = tilesize;
+	tiles = tilemap;
+
+	// Initial Update
+	update();
+ 	return true;
+    }
 private:
 
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -66,6 +78,10 @@ private:
         target.draw(m_vertices, states);
     }
 
+    sf::Vector2u tileSize;
+    float scale;
+    float base;
+    Grid<uint8_t>* tiles;
     sf::VertexArray m_vertices;
     sf::Texture m_tileset;
 };
