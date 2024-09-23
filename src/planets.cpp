@@ -178,6 +178,7 @@ float m_blocksize = m_blockwidth*m_scale;
 // Physic
 float m_speed = 100*m_scale;
 float m_airspeed = 75*m_scale;
+float m_enemyspeed = 50*m_scale;
 float m_jump = 200.f*m_scale;
 float m_gravity = 10.f*m_scale;
 float m_drag = 400*m_scale;
@@ -198,7 +199,7 @@ for (unsigned int x = 0; x < m_map.getsize().x; x++) for (unsigned int y = 0; y 
 	Enemy enemy;
 	enemy.pos = sf::Vector2f(x*m_blocksize,y*m_blocksize);
 	m_enemies.push_back(enemy);
-	m_map.set(x,y,0);	// Set to air
+	m_map.set(x,m_map.getsize().y-1-y,(uint8_t)0);	// Set to air
 }
 // Level
 TileMap m_level;
@@ -431,10 +432,11 @@ case 3: {	// Mario Mode
 		}
 
 		// Move and Draw enemies
-		for (Enemy enemy : m_enemies) {
+		for (unsigned int i = 0; i < m_enemies.size(); i++) {
+			Enemy enemy = m_enemies.at(i);
 			// Velocity
-			if (enemy.left) enemy.vel.x = -1.f;
-			else enemy.vel.x = 1.f;
+			if (enemy.left) enemy.vel.x = -m_enemyspeed;
+			else enemy.vel.x = m_enemyspeed;
 			// Half of Gravity
 			enemy.vel.y += (-pow(m_gravity,2.f))*deltatime*0.5f;
 
@@ -452,7 +454,6 @@ case 3: {	// Mario Mode
 					checkcollision(checkblock(&m_map, m_blocksize, sf::Vector2f(future.x, future.y + m_enemysize.y ) ) )
 				) {
 					future.x = enemy.pos.x;	// Revert if collision
-					enemy.vel.x = 0;	// Cancel X momentum
 					enemy.left = !enemy.left;
 				}
 
@@ -475,12 +476,15 @@ case 3: {	// Mario Mode
 			// Other Half of Gravity
 			enemy.vel.y += (-pow(m_gravity,2.f))*deltatime*0.5f;
 
+			// Update Enemy
+			m_enemies.at(i) = enemy;
+
 			// Draw Enemy
-			sf::Sprite senemy(m_enemywalkanim,
-				animateframe(m_enemywalkanim,4,13,time,enemy.left)	// Animate 'enemywalkanim' with 4 frames at 13 fps
-			);
-			senemy.setScale(m_scale,m_scale);
-			senemy.setPosition(enemy.pos.x-m_offset,windowsize.y-enemy.pos.y-m_playersize.y);
+			sf::Sprite senemy(m_enemywalkanim);
+			senemy.setTextureRect(animateframe(m_enemywalkanim,4,12,time,enemy.left));	// 4 Frames, 12 FPS, Flipped if needed
+			senemy.setScale(m_scale,m_scale); // m_scale times Real Size
+			senemy.setPosition(enemy.pos.x-m_offset,windowsize.y-enemy.pos.y-m_enemysize.y);
+			// Draw Player
 			window.draw(senemy);
 		}
 
