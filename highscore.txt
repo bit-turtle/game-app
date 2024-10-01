@@ -1,2 +1,2 @@
-highscore 0
+highscore 10
 twoplayerhighscore 0
