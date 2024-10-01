@@ -85,6 +85,21 @@ bool checkcollision(uint8_t id) {
 	}
 };
 
+bool checkdamage(uint8_t id) {
+	switch (id) {
+		case 2:	// Spike
+			return true;
+		case 3:	// Spike
+			return true;
+		case 4:	// Spike
+			return true;
+		case 5:	// Spike
+			return true;
+		default:
+			return false;
+	}
+}
+
 float drag(float value, float drag) {
 	if (value < 0) value += drag;
 	if (value > 0) value -= drag;
@@ -189,8 +204,10 @@ sf::Vector2f m_p0vel;
 bool p0interact = false;
 bool p1interact = false;
 bool m_p0land = false;
+float m_p0airtime = 0;	// TODO: Make airtime count as on ground if low enough
 sf::Vector2f m_p1pos;
 bool m_p1land = false;
+float m_p1airtime;
 sf::Vector2f m_p1vel;
 // Enemies
 std::vector<Enemy> m_enemies;
@@ -486,6 +503,50 @@ case 3: {	// Mario Mode
 			senemy.setPosition(enemy.pos.x-m_offset,windowsize.y-enemy.pos.y-m_enemysize.y);
 			// Draw Player
 			window.draw(senemy);
+
+			// Check Player Collision
+			sf::FloatRect hitenemy = senemy.getGlobalBounds();
+			sf::FloatRect player;
+			player.width = m_playersize.x;
+			player.height = m_playersize.y;
+			// Player 0
+			player.top = m_p0pos.y-m_playersize.x;
+			player.left = m_p0pos.x;
+			if (hitenemy.intersects(player)) {
+				std::cout << "Player 0 hit a enemy!" << std::endl;
+				// TODO
+			}
+			// Player 1
+			player.top = m_p1pos.y-m_playersize.x;
+			player.left = m_p1pos.x;
+			if (hitenemy.intersects(player)) {
+				std::cout << "Player 1 hit a enemy!" << std::endl;
+				// TODO
+			}
+		}
+
+		// Player Block Damage
+		// Player 0
+		{
+			if (
+				checkdamage(checkblock(&m_map, m_blocksize, m_p0pos)) ||
+				checkdamage(checkblock(&m_map, m_blocksize, sf::Vector2f(m_p0pos.x + m_playersize.x, m_p0pos.y) )) ||
+				checkdamage(checkblock(&m_map, m_blocksize, sf::Vector2f(m_p0pos.x, m_p0pos.y + m_playersize.y) )) ||
+				checkdamage(checkblock(&m_map, m_blocksize, m_p0pos + m_playersize ))
+			) {
+				std::cout << "Player 0 got spiked!" << std::endl;
+			}
+		}
+		// Player 1
+		{
+			if (
+				checkdamage(checkblock(&m_map, m_blocksize, m_p1pos)) ||
+				checkdamage(checkblock(&m_map, m_blocksize, sf::Vector2f(m_p1pos.x + m_playersize.x, m_p1pos.y) )) ||
+				checkdamage(checkblock(&m_map, m_blocksize, sf::Vector2f(m_p1pos.x, m_p1pos.y + m_playersize.y) )) ||
+				checkdamage(checkblock(&m_map, m_blocksize, m_p1pos + m_playersize ))
+			) {
+				std::cout << "Player 1 got spiked!" << std::endl;
+			}
 		}
 
 		// Draw Level
