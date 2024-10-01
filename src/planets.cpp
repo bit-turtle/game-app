@@ -142,7 +142,7 @@ sf::Texture m_player0;
 if (!m_player0.loadFromFile("textures/player0.png"))
 	std::cout << "Failed to Load Texture 'player0'!" << std::endl;
 sf::Texture m_playergameover0;
-if (m_playergameover0.loadFromFile("textures/playergameover1.png"))
+if (!m_playergameover0.loadFromFile("textures/playergameover0.png"))
 	std::cout << "Failed to Load Texture 'playergameover0'!" << std::endl;
 sf::Texture m_player1;
 if (!m_player1.loadFromFile("textures/player1.png"))
@@ -306,7 +306,7 @@ case 3: {	// Mario Mode
 		if (!m_p1land) m_p1airtime += deltatime;
 		else m_p1airtime = 0;
 		// Player 0
-		{
+		if (!player1gameover) {
 			int direction = 0;
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || (!player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Left) ) ) direction -= 1; 
 
@@ -321,7 +321,7 @@ case 3: {	// Mario Mode
 			
 		}
 		// Player 1
-		{
+		if (!player2gameover) {
 			int direction = 0;
 			if ( player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Left) ) direction -= 1; 
 
@@ -452,7 +452,7 @@ case 3: {	// Mario Mode
 			sf::Sprite player0;
 			player0.setTexture(m_playergameover0);
 			player0.setScale(m_scale,m_scale); // m_scale times Real Size
-			player0.setPosition(m_p0pos.x-m_offset,windowsize.y-m_p0pos.y-m_playersize.y);
+			player0.setPosition(m_p0pos.x-m_offset,windowsize.y-m_p0pos.y-m_playersize.x);
 			// Draw Gameover Player
 			window.draw(player0);
 		}
@@ -474,7 +474,7 @@ case 3: {	// Mario Mode
 			sf::Sprite player1;
 			player1.setTexture(m_playergameover1);
 			player1.setScale(m_scale,m_scale); // m_scale times Real Size
-			player1.setPosition(m_p1pos.x-m_offset,windowsize.y-m_p1pos.y-m_playersize.y);
+			player1.setPosition(m_p1pos.x-m_offset,windowsize.y-m_p1pos.y-m_playersize.x);
 			// Draw Gameover Player
 			window.draw(player1);
 		}
@@ -541,18 +541,16 @@ case 3: {	// Mario Mode
 			player.width = m_playersize.x;
 			player.height = m_playersize.y;
 			// Player 0
-			player.top = windowsize.y-m_p0pos.y-m_playersize.x;
+			player.top = windowsize.y-m_p0pos.y-m_playersize.y;
 			player.left = m_p0pos.x-m_offset;
 			if (hitenemy.intersects(player)) {
-				std::cout << "Player 0 hit a enemy!" << std::endl;
 				// TODO
 				player1gameover = true;
 			}
 			// Player 1
-			player.top = m_p1pos.y-m_playersize.x;
+			player.top = m_p1pos.y-m_playersize.y;
 			player.left = m_p1pos.x;
 			if (hitenemy.intersects(player)) {
-				std::cout << "Player 1 hit a enemy!" << std::endl;
 				// TODO
 				player2gameover = true;
 			}
@@ -567,7 +565,8 @@ case 3: {	// Mario Mode
 				checkdamage(checkblock(&m_map, m_blocksize, sf::Vector2f(m_p0pos.x, m_p0pos.y + m_playersize.y) )) ||
 				checkdamage(checkblock(&m_map, m_blocksize, m_p0pos + m_playersize ))
 			) {
-				std::cout << "Player 0 got spiked!" << std::endl;
+				// TODO
+				player1gameover = true;
 			}
 		}
 		// Player 1
@@ -578,7 +577,8 @@ case 3: {	// Mario Mode
 				checkdamage(checkblock(&m_map, m_blocksize, sf::Vector2f(m_p1pos.x, m_p1pos.y + m_playersize.y) )) ||
 				checkdamage(checkblock(&m_map, m_blocksize, m_p1pos + m_playersize ))
 			) {
-				std::cout << "Player 1 got spiked!" << std::endl;
+				// TODO
+				player2gameover = true;
 			}
 		}
 
