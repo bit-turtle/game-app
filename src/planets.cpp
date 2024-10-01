@@ -141,9 +141,15 @@ if (!m_playerwalk1anim.loadFromFile("textures/playerwalk1.anim.png"))
 sf::Texture m_player0;
 if (!m_player0.loadFromFile("textures/player0.png"))
 	std::cout << "Failed to Load Texture 'player0'!" << std::endl;
+sf::Texture m_playergameover0;
+if (m_playergameover0.loadFromFile("textures/playergameover1.png"))
+	std::cout << "Failed to Load Texture 'playergameover0'!" << std::endl;
 sf::Texture m_player1;
 if (!m_player1.loadFromFile("textures/player1.png"))
 	std::cout << "Failed to Load Texture 'player1'!" << std::endl;
+sf::Texture m_playergameover1;
+if (!m_playergameover1.loadFromFile("textures/playergameover1.png"))
+	std::cout << "Failed to Load Texture 'playergameover1'!" << std::endl;
 // Enemy Assets
 sf::Texture m_enemywalkanim;
 if (!m_enemywalkanim.loadFromFile("textures/enemywalk.anim.png"))
@@ -193,6 +199,7 @@ float m_blocksize = m_blockwidth*m_scale;
 // Physic
 float m_speed = 100*m_scale;
 float m_airspeed = 75*m_scale;
+float m_airtime = 0.05f;	// 0.05 seconds until not able to jump
 float m_enemyspeed = 50*m_scale;
 float m_jump = 200.f*m_scale;
 float m_gravity = 10.f*m_scale;
@@ -204,10 +211,10 @@ sf::Vector2f m_p0vel;
 bool p0interact = false;
 bool p1interact = false;
 bool m_p0land = false;
-float m_p0airtime = 0;	// TODO: Make airtime count as on ground if low enough
+float m_p0airtime = 0;
 sf::Vector2f m_p1pos;
 bool m_p1land = false;
-float m_p1airtime;
+float m_p1airtime = 0;
 sf::Vector2f m_p1vel;
 // Enemies
 std::vector<Enemy> m_enemies;
@@ -294,6 +301,10 @@ case 2: {	// Animation of landing
 
 case 3: {	// Mario Mode
 		// Player Controls
+		if (!m_p0land) m_p0airtime += deltatime;
+		else m_p0airtime = 0;
+		if (!m_p1land) m_p1airtime += deltatime;
+		else m_p1airtime = 0;
 		// Player 0
 		{
 			int direction = 0;
@@ -303,7 +314,10 @@ case 3: {	// Mario Mode
 			if (m_p0land) m_p0vel.x = setng(m_p0vel.x, direction*m_speed);
 			else m_p0vel.x = setng(m_p0vel.x, direction*m_airspeed);
 
-			if ( m_p0land && ( sf::Keyboard::isKeyPressed(sf::Keyboard::W) || (!player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Up) ) ) ) m_p0vel.y = m_jump;
+			if ( (m_p0land || m_p0airtime <= m_airtime) && ( sf::Keyboard::isKeyPressed(sf::Keyboard::W) || (!player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Up) ) ) ) {
+				m_p0vel.y = m_jump;
+				m_p0airtime = 1;
+			}
 			
 		}
 		// Player 1
@@ -315,7 +329,10 @@ case 3: {	// Mario Mode
 			if (m_p1land) m_p1vel.x = setng(m_p1vel.x, direction*m_speed);
 			else m_p1vel.x = setng(m_p1vel.x, direction*m_airspeed);
 
-			if (m_p1land && player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Up) )  m_p1vel.y = m_jump;
+			if ( (m_p1land || m_p1airtime <= m_airtime) && player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Up) ) {
+				m_p1vel.y = m_jump;
+				m_p1airtime = 1;
+			}
 		}
 
 		// Add Half of Gravity
@@ -329,7 +346,7 @@ case 3: {	// Mario Mode
 		if (m_p1land) m_p1vel.x = drag(m_p1vel.x, m_friction*deltatime);
 		
 		// Move Players
-		{	// Player 0
+		if (!player1gameover) {	// Player 0
 			m_p0land = false;
 			sf::Vector2f future = m_p0pos;
 			sf::Vector2f movement = m_p0vel;
@@ -362,7 +379,7 @@ case 3: {	// Mario Mode
 
 			m_p0pos = future;
 		}
-		{	// Player 1
+		if (player2mode && !player2gameover) {	// Player 1
 			m_p1land = false;
 			sf::Vector2f future = m_p1pos;
 			sf::Vector2f movement = m_p1vel;
@@ -431,6 +448,13 @@ case 3: {	// Mario Mode
 			player0.setPosition(m_p0pos.x-m_offset,windowsize.y-m_p0pos.y-m_playersize.y);
 			// Draw Player
 			window.draw(player0);
+		} else {
+			sf::Sprite player0;
+			player0.setTexture(m_playergameover0);
+			player0.setScale(m_scale,m_scale); // m_scale times Real Size
+			player0.setPosition(m_p0pos.x-m_offset,windowsize.y-m_p0pos.y-m_playersize.y);
+			// Draw Gameover Player
+			window.draw(player0);
 		}
 
 		// Player 1
@@ -445,6 +469,13 @@ case 3: {	// Mario Mode
 			player1.setScale(m_scale,m_scale); // m_scale times Real Size
 			player1.setPosition(m_p1pos.x-m_offset,windowsize.y-m_p1pos.y-m_playersize.y);
 			// Draw Player
+			window.draw(player1);
+		} else if (player2mode) {
+			sf::Sprite player1;
+			player1.setTexture(m_playergameover1);
+			player1.setScale(m_scale,m_scale); // m_scale times Real Size
+			player1.setPosition(m_p1pos.x-m_offset,windowsize.y-m_p1pos.y-m_playersize.y);
+			// Draw Gameover Player
 			window.draw(player1);
 		}
 
@@ -510,11 +541,12 @@ case 3: {	// Mario Mode
 			player.width = m_playersize.x;
 			player.height = m_playersize.y;
 			// Player 0
-			player.top = m_p0pos.y-m_playersize.x;
-			player.left = m_p0pos.x;
+			player.top = windowsize.y-m_p0pos.y-m_playersize.x;
+			player.left = m_p0pos.x-m_offset;
 			if (hitenemy.intersects(player)) {
 				std::cout << "Player 0 hit a enemy!" << std::endl;
 				// TODO
+				player1gameover = true;
 			}
 			// Player 1
 			player.top = m_p1pos.y-m_playersize.x;
@@ -522,6 +554,7 @@ case 3: {	// Mario Mode
 			if (hitenemy.intersects(player)) {
 				std::cout << "Player 1 hit a enemy!" << std::endl;
 				// TODO
+				player2gameover = true;
 			}
 		}
 
