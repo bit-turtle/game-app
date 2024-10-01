@@ -1,3 +1,3 @@
 # TODO
-1. Fix Mario Minigame Tilemap System (`../tilemap` example)
+1. Mario Minigame Lives
 2. Create Planet Mingames

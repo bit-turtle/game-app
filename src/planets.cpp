@@ -187,7 +187,7 @@ Grid<uint8_t> m_map;
 #ifdef PLANET_VARS
 #undef PLANET_VARS
 // Global Variables for Planets Go Here
-
+// Remember to copy values to PLANET_RESET
 // Minigame 1 Mario Style Moving and Combat Variables ( 'm_' prefix )
 // Visual
 float m_gameoveranimtime = 5.f;	// 5 second fade
@@ -238,11 +238,45 @@ for (unsigned int x = 0; x < m_map.getsize().x; x++) for (unsigned int y = 0; y 
 	m_enemies.push_back(enemy);
 	m_map.set(x,m_map.getsize().y-1-y,(uint8_t)0);	// Set to air
 }
+std::vector<Enemy> m_initenemies = m_enemies;
 // Level
+Grid m_initmap = m_map;
 TileMap m_level;
 m_level.load("textures/blocks.png",sf::Vector2u(11,11), m_scale, window.getSize().y, &m_map);
 
 // End Mario
+
+#endif
+
+#ifdef PLANET_RESET
+#undef PLANET_RESET
+
+// Visual
+m_offset = 0;
+// Players
+m_p0lives = m_maxlives;
+m_p0gameover = false;
+m_p0damagetime = 100;
+m_p0gameovertime = 0;
+m_p1lives = m_maxlives;
+m_p1gameover = false;
+m_p1damagetime = 100;
+m_p1gameovertime = 0;
+m_p0pos;
+m_p0vel;
+p0interact = false;
+p1interact = false;
+m_p0land = false;
+m_p0airtime = 0;
+m_p1pos;
+m_p1land = false;
+m_p1airtime = 0;
+m_p1vel;
+// Enemies
+// Re-Load in enemies
+m_enemies = m_initenemies;
+m_map = m_initmap;
+m_level.update();
 
 #endif
 
@@ -264,9 +298,6 @@ sf::Vector2f windowsize = sf::Vector2f(window.getSize().x,window.getSize().y);
 
 // Time in seconds
 float time = clock.getElapsedTime().asSeconds();
-
-// If Both Players Gameover Minigame = 0
-if (m_p0gameover && (player2mode && m_p1gameover)) minigame = 0;
 
 switch (minigame) {
 
@@ -445,8 +476,10 @@ case 3: {	// Mario Mode
 			}
 			else {
 				if (!player2mode) future = m_p0pos.x - 1*(windowsize.x/2);
-				else if (m_p0gameover) future = m_p0pos.x - 1*(windowsize.x/2);
-				else if (m_p1gameover) future = m_p1pos.x - 1*(windowsize.x/2);
+				else if (!m_p0gameover) future = m_p0pos.x - 1*(windowsize.x/2);
+				else if (!m_p1gameover) future = m_p1pos.x - 1*(windowsize.x/2);
+				else if (m_p0gameovertime < m_p1gameovertime) future = m_p0pos.x - 1*(windowsize.x/2);
+				else if (m_p0gameovertime > m_p1gameovertime) future = m_p1pos.x - 1*(windowsize.x/2);
 			}
 			if (future > 0) m_offset = future;
 
@@ -454,7 +487,7 @@ case 3: {	// Mario Mode
 		// Draw Players
 		// Player 0
 		m_p0damagetime += deltatime;
-		if ( (int)(m_p0damagetime * m_damageblinkrate)%1 == 0 || m_p0damagetime > m_damagetime ) if (!m_p0gameover) {
+		if ( (int)(m_p0damagetime * m_damageblinkrate)%2 == 0 || m_p0damagetime > m_damagetime ) if (!m_p0gameover) {
 			sf::Sprite player0;
 			if (m_p0vel.x == 0) player0.setTexture(m_player0);
 			else {
@@ -477,7 +510,7 @@ case 3: {	// Mario Mode
 
 		// Player 1
 		m_p1damagetime += deltatime;
-		if ( (int)(m_p1damagetime * m_damageblinkrate)%1 == 0 || m_p1damagetime > m_damagetime ) if (player2mode && !m_p1gameover) {
+		if ( (int)(m_p1damagetime * m_damageblinkrate)%2 == 0 || m_p1damagetime > m_damagetime ) if (player2mode && !m_p1gameover) {
 			sf::Sprite player1;
 			if (m_p1vel.x == 0) player1.setTexture(m_player1);
 			else {
@@ -562,7 +595,7 @@ case 3: {	// Mario Mode
 			// Player 0
 			player.top = windowsize.y-m_p0pos.y-m_playersize.y;
 			player.left = m_p0pos.x-m_offset;
-			if (hitenemy.intersects(player)) {
+			if (m_p0damagetime > m_damagetime && hitenemy.intersects(player)) {
 				if (m_p0lives == 0) m_p0gameover = true;
 				else {
 					m_p0damagetime = 0;
@@ -570,9 +603,9 @@ case 3: {	// Mario Mode
 				}
 			}
 			// Player 1
-			player.top = m_p1pos.y-m_playersize.y;
-			player.left = m_p1pos.x;
-			if (hitenemy.intersects(player)) {
+			player.top = windowsize.y-m_p1pos.y-m_playersize.y;
+			player.left = m_p1pos.x-m_offset;
+			if (m_p1damagetime > m_damagetime && hitenemy.intersects(player)) {
 				if (m_p1lives == 0) m_p1gameover = true;
 				else {
 					m_p1damagetime = 0;
@@ -583,7 +616,7 @@ case 3: {	// Mario Mode
 
 		// Player Block Damage
 		// Player 0
-		{
+		if (m_p0damagetime > m_damagetime) {
 			if (
 				checkdamage(checkblock(&m_map, m_blocksize, m_p0pos)) ||
 				checkdamage(checkblock(&m_map, m_blocksize, sf::Vector2f(m_p0pos.x + m_playersize.x, m_p0pos.y) )) ||
@@ -598,7 +631,7 @@ case 3: {	// Mario Mode
 			}
 		}
 		// Player 1
-		{
+		if (m_p1damagetime > m_damagetime) {
 			if (
 				checkdamage(checkblock(&m_map, m_blocksize, m_p1pos)) ||
 				checkdamage(checkblock(&m_map, m_blocksize, sf::Vector2f(m_p1pos.x + m_playersize.x, m_p1pos.y) )) ||
@@ -625,8 +658,9 @@ case 3: {	// Mario Mode
 		if (m_p1gameover) m_p1gameovertime += deltatime;
 		// Continue if both players gameover after fade
 		if ( (m_p0gameover && !player2mode) || (m_p0gameover && m_p1gameover) ) {
-			float gt = std::min(m_p0gameovertime,m_p1gameovertime);
-			if (!player2mode) gt = m_p0gameovertime;
+			extraDelayClock = time-5.f;	// Skip other animation
+			float gt = m_p0gameovertime;
+			if (player2mode && m_p1gameovertime < gt) gt = m_p1gameovertime;
 			sf::RectangleShape fade((sf::Vector2f)windowsize);
 			sf::Color fill = sf::Color::Black;
 			fill.a = gt/m_gameoveranimtime*255;
@@ -641,13 +675,13 @@ case 3: {	// Mario Mode
 			player1gameover = true;
 			player2gameover = true;
 		} else {
-			extraDelayClock = clock.getElapsedTime().asSeconds();	// Skip other animation
 			if (m_p0gameover) player1gameover = true;
 			if (m_p1gameover) player2gameover = true;
 		}
 } break;
 
 default:  // Minigame does not exist
+	nextminigame = 0;
 	minigame = 0;
 }
 

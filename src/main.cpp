@@ -688,6 +688,11 @@ int main() {
 		// Player Select [1P or 2P]
 		case 2: {
 			// Reset Game Variables
+
+// Reset Planet Variables
+#define PLANET_RESET
+#include "planets.cpp"
+
 			nextminigame = 0;
 			minigame = 0;
 			newhighscore = false;
