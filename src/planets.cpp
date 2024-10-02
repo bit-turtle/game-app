@@ -121,6 +121,16 @@ struct Enemy {
 	bool squished = false;
 };
 
+// TODO Tile entity system
+enum TileEntityTypes {	// Tiles on the map that change are tile entities
+	CHEST = 4,	// Chest, ID = 4
+	OPENCHEST = 5,	// OpenChest, ID = 5
+};
+struct TileEntity {
+	sf::Vector2u pos;
+	TileEntityTypes type;
+};
+
 #endif
 
 #ifdef PLANET_ASSETS
@@ -154,6 +164,9 @@ if (!m_playergameover1.loadFromFile("textures/playergameover1.png"))
 sf::Texture m_enemywalkanim;
 if (!m_enemywalkanim.loadFromFile("textures/enemywalk.anim.png"))
 	std::cout << "Failed to Load Texture 'enemywalk.anim'!" << std::endl;
+sf::Texture m_enemysquish;
+if (!m_enemysquish.loadFromFile("textures/enemysquish.png"))
+	std::cout << "Failed to Load Texture 'enemysquish.png'" << std::endl;
 
 // Game Map
 Grid<uint8_t> m_map;
@@ -583,10 +596,17 @@ case 3: {	// Mario Mode
 			enemy.vel.y += (-pow(m_gravity,2.f))*deltatime*0.5f;
 
 			// Draw Enemy
-			sf::Sprite senemy(m_enemywalkanim);
-			senemy.setTextureRect(animateframe(m_enemywalkanim,4,12,time,enemy.left));	// 4 Frames, 12 FPS, Flipped if needed
+			sf::Sprite senemy;
+			if (!enemy.squished) {
+				senemy.setTexture(m_enemywalkanim);
+				senemy.setTextureRect(animateframe(m_enemywalkanim,4,12,time,enemy.left));	// 4 Frames, 12 FPS, Flipped if needed
+			}
+			else {
+				senemy.setTexture(m_enemysquish);
+			}
+			// Set Scale
 			senemy.setScale(m_scale,m_scale); // m_scale times Real Size
-			senemy.setPosition(enemy.pos.x-m_offset,windowsize.y-enemy.pos.y-m_enemysize.y);
+			senemy.setPosition(enemy.pos.x-m_offset,windowsize.y-enemy.pos.y-senemy.getLocalBounds().height);
 			// Draw Player
 			window.draw(senemy);
 
