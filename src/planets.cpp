@@ -206,6 +206,7 @@ float m_airspeed = 75*m_scale;
 float m_airtime = 0.05f;	// 0.05 seconds until not able to jump
 float m_enemyspeed = 50*m_scale;
 float m_jump = 200.f*m_scale;
+float m_hitjump = m_jump / 2;	// Defeat enemy bounce
 float m_gravity = 10.f*m_scale;
 float m_drag = 400*m_scale;
 float m_friction = 600*m_scale;
@@ -539,7 +540,8 @@ case 3: {	// Mario Mode
 		for (unsigned int i = 0; i < m_enemies.size(); i++) {
 			Enemy enemy = m_enemies.at(i);
 			// Velocity
-			if (enemy.left) enemy.vel.x = -m_enemyspeed;
+			if (enemy.squished) enemy.vel.x = 0;
+			else if (enemy.left) enemy.vel.x = -m_enemyspeed;
 			else enemy.vel.x = m_enemyspeed;
 			// Half of Gravity
 			enemy.vel.y += (-pow(m_gravity,2.f))*deltatime*0.5f;
@@ -580,9 +582,6 @@ case 3: {	// Mario Mode
 			// Other Half of Gravity
 			enemy.vel.y += (-pow(m_gravity,2.f))*deltatime*0.5f;
 
-			// Update Enemy
-			m_enemies.at(i) = enemy;
-
 			// Draw Enemy
 			sf::Sprite senemy(m_enemywalkanim);
 			senemy.setTextureRect(animateframe(m_enemywalkanim,4,12,time,enemy.left));	// 4 Frames, 12 FPS, Flipped if needed
@@ -591,27 +590,40 @@ case 3: {	// Mario Mode
 			// Draw Player
 			window.draw(senemy);
 
-			// Check Player Collision
-			sf::FloatRect hitenemy = senemy.getGlobalBounds();
-			sf::FloatRect player;
-			player.width = m_playersize.x;
-			player.height = m_playersize.y;
-			// Player 0
-			player.top = windowsize.y-m_p0pos.y-m_playersize.y;
-			player.left = m_p0pos.x-m_offset;
-			if (m_p0damagetime > m_damagetime && hitenemy.intersects(player)) {
-				m_p0damagetime = 0;
-				if (m_p0lives == 0) m_p0gameover = true;
-				else m_p0lives--;
+			if (!enemy.squished) {
+				// Check Player Collision
+				sf::FloatRect hitenemy = senemy.getGlobalBounds();
+				sf::FloatRect player;
+				player.width = m_playersize.x;
+				player.height = m_playersize.y;
+				// Player 0
+				player.top = windowsize.y-m_p0pos.y-m_playersize.y;
+				player.left = m_p0pos.x-m_offset;
+				if (!m_p0land && hitenemy.intersects(player) && m_p0vel.y < 0) {
+					enemy.squished = true;
+					m_p0vel.y = m_hitjump;	// Boing
+				}
+				else if (m_p0damagetime > m_damagetime && hitenemy.intersects(player)) {
+					m_p0damagetime = 0;
+					if (m_p0lives == 0) m_p0gameover = true;
+					else m_p0lives--;
+				}
+				// Player 1
+				player.top = windowsize.y-m_p1pos.y-m_playersize.y;
+				player.left = m_p1pos.x-m_offset;
+				if (!m_p1land && hitenemy.intersects(player) && m_p1vel.y < 0) {
+					enemy.squished = true;
+					m_p1vel.y = m_hitjump;	// Boing
+				}
+				else if (m_p1damagetime > m_damagetime && hitenemy.intersects(player)) {
+					m_p1damagetime = 0;
+					if (m_p1lives == 0) m_p1gameover = true;
+					else m_p1lives--;
+				}
 			}
-			// Player 1
-			player.top = windowsize.y-m_p1pos.y-m_playersize.y;
-			player.left = m_p1pos.x-m_offset;
-			if (m_p1damagetime > m_damagetime && hitenemy.intersects(player)) {
-				m_p1damagetime = 0;
-				if (m_p1lives == 0) m_p1gameover = true;
-				else m_p1lives--;
-			}
+			
+			// Update Enemy
+			m_enemies.at(i) = enemy;
 		}
 
 		// Player Block Damage
