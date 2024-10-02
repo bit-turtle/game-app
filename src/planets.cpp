@@ -243,14 +243,14 @@ std::vector<Enemy> m_initenemies = m_enemies;
 Grid m_initmap = m_map;
 TileMap m_level;
 m_level.load("textures/blocks.png",sf::Vector2u(11,11), m_scale, window.getSize().y, &m_map);
-
+TileMap m_initlevel = m_level;
 // End Mario
 
 #endif
 
 #ifdef PLANET_RESET
 #undef PLANET_RESET
-
+// Begin Mario
 // Visual
 m_offset = 0;
 // Players
@@ -262,22 +262,22 @@ m_p1lives = m_maxlives;
 m_p1gameover = false;
 m_p1damagetime = 100;
 m_p1gameovertime = 0;
-m_p0pos;
-m_p0vel;
+m_p0pos = sf::Vector2f(0,0);
+m_p0vel = sf::Vector2f(0,0);
 p0interact = false;
 p1interact = false;
 m_p0land = false;
 m_p0airtime = 0;
-m_p1pos;
+m_p1pos = sf::Vector2f(0,0);
 m_p1land = false;
 m_p1airtime = 0;
-m_p1vel;
+m_p1vel = sf::Vector2f(0,0);
 // Enemies
 // Re-Load in enemies
 m_enemies = m_initenemies;
 m_map = m_initmap;
-m_level.update();
-
+m_level = m_initlevel;
+// End Mario
 #endif
 
 #ifdef PLANET_CODE
@@ -487,48 +487,52 @@ case 3: {	// Mario Mode
 		// Draw Players
 		// Player 0
 		m_p0damagetime += deltatime;
-		if ( (int)(m_p0damagetime * m_damageblinkrate)%2 == 0 || m_p0damagetime > m_damagetime ) if (!m_p0gameover) {
-			sf::Sprite player0;
-			if (m_p0vel.x == 0) player0.setTexture(m_player0);
-			else {
-				player0.setTexture(m_playerwalk0anim);
-				if (m_p0vel.x >= 0) player0.setTextureRect(animateframe(m_playerwalk0anim,6,12,time,false));	// 6 Frames, 12 FPS, Not Flipped
-				else player0.setTextureRect(animateframe(m_playerwalk0anim,6,12,time,true));	// 6 Frames, 12 FPS, Flipped
+		if ( (int)(m_p0damagetime * m_damageblinkrate)%2 == 0 || m_p0damagetime > m_damagetime ) {
+		       	if (!m_p0gameover) {
+				sf::Sprite player0;
+				if (m_p0vel.x == 0) player0.setTexture(m_player0);
+				else {
+					player0.setTexture(m_playerwalk0anim);
+					if (m_p0vel.x >= 0) player0.setTextureRect(animateframe(m_playerwalk0anim,6,12,time,false));	// 6 Frames, 12 FPS, Not Flipped
+					else player0.setTextureRect(animateframe(m_playerwalk0anim,6,12,time,true));	// 6 Frames, 12 FPS, Flipped
+				}
+				player0.setScale(m_scale,m_scale); // m_scale times Real Size
+				player0.setPosition(m_p0pos.x-m_offset,windowsize.y-m_p0pos.y-m_playersize.y);
+				// Draw Player
+				window.draw(player0);
+			} else {
+				sf::Sprite player0;
+				player0.setTexture(m_playergameover0);
+				player0.setScale(m_scale,m_scale); // m_scale times Real Size
+				player0.setPosition(m_p0pos.x-m_offset,windowsize.y-m_p0pos.y-m_playersize.x);
+				// Draw Gameover Player
+				window.draw(player0);
 			}
-			player0.setScale(m_scale,m_scale); // m_scale times Real Size
-			player0.setPosition(m_p0pos.x-m_offset,windowsize.y-m_p0pos.y-m_playersize.y);
-			// Draw Player
-			window.draw(player0);
-		} else {
-			sf::Sprite player0;
-			player0.setTexture(m_playergameover0);
-			player0.setScale(m_scale,m_scale); // m_scale times Real Size
-			player0.setPosition(m_p0pos.x-m_offset,windowsize.y-m_p0pos.y-m_playersize.x);
-			// Draw Gameover Player
-			window.draw(player0);
 		}
 
 		// Player 1
 		m_p1damagetime += deltatime;
-		if ( (int)(m_p1damagetime * m_damageblinkrate)%2 == 0 || m_p1damagetime > m_damagetime ) if (player2mode && !m_p1gameover) {
-			sf::Sprite player1;
-			if (m_p1vel.x == 0) player1.setTexture(m_player1);
-			else {
-				player1.setTexture(m_playerwalk1anim);
-				if (m_p1vel.x >= 0) player1.setTextureRect(animateframe(m_playerwalk1anim,6,12,time,false));	// 6 Frames, 12 FPS, Not Flipped
-				else player1.setTextureRect(animateframe(m_playerwalk1anim,6,12,time,true));	// 6 Frames, 12 FPS, Flipped
+		if ( (int)(m_p1damagetime * m_damageblinkrate)%2 == 0 || m_p1damagetime > m_damagetime ) {
+			if (player2mode && !m_p1gameover) {
+				sf::Sprite player1;
+				if (m_p1vel.x == 0) player1.setTexture(m_player1);
+				else {
+					player1.setTexture(m_playerwalk1anim);
+					if (m_p1vel.x >= 0) player1.setTextureRect(animateframe(m_playerwalk1anim,6,12,time,false));	// 6 Frames, 12 FPS, Not Flipped
+					else player1.setTextureRect(animateframe(m_playerwalk1anim,6,12,time,true));	// 6 Frames, 12 FPS, Flipped
+				}
+				player1.setScale(m_scale,m_scale); // m_scale times Real Size
+				player1.setPosition(m_p1pos.x-m_offset,windowsize.y-m_p1pos.y-m_playersize.y);
+				// Draw Player
+				window.draw(player1);
+			} else if (player2mode) {
+				sf::Sprite player1;
+				player1.setTexture(m_playergameover1);
+				player1.setScale(m_scale,m_scale); // m_scale times Real Size
+				player1.setPosition(m_p1pos.x-m_offset,windowsize.y-m_p1pos.y-m_playersize.x);
+				// Draw Gameover Player
+				window.draw(player1);
 			}
-			player1.setScale(m_scale,m_scale); // m_scale times Real Size
-			player1.setPosition(m_p1pos.x-m_offset,windowsize.y-m_p1pos.y-m_playersize.y);
-			// Draw Player
-			window.draw(player1);
-		} else if (player2mode) {
-			sf::Sprite player1;
-			player1.setTexture(m_playergameover1);
-			player1.setScale(m_scale,m_scale); // m_scale times Real Size
-			player1.setPosition(m_p1pos.x-m_offset,windowsize.y-m_p1pos.y-m_playersize.x);
-			// Draw Gameover Player
-			window.draw(player1);
 		}
 
 		// Move and Draw enemies
@@ -596,53 +600,45 @@ case 3: {	// Mario Mode
 			player.top = windowsize.y-m_p0pos.y-m_playersize.y;
 			player.left = m_p0pos.x-m_offset;
 			if (m_p0damagetime > m_damagetime && hitenemy.intersects(player)) {
+				m_p0damagetime = 0;
 				if (m_p0lives == 0) m_p0gameover = true;
-				else {
-					m_p0damagetime = 0;
-					m_p0lives--;
-				}
+				else m_p0lives--;
 			}
 			// Player 1
 			player.top = windowsize.y-m_p1pos.y-m_playersize.y;
 			player.left = m_p1pos.x-m_offset;
 			if (m_p1damagetime > m_damagetime && hitenemy.intersects(player)) {
+				m_p1damagetime = 0;
 				if (m_p1lives == 0) m_p1gameover = true;
-				else {
-					m_p1damagetime = 0;
-					m_p1lives--;
-				}
+				else m_p1lives--;
 			}
 		}
 
 		// Player Block Damage
 		// Player 0
-		if (m_p0damagetime > m_damagetime) {
+		if (m_p0airtime >= m_airtime && m_p0damagetime > m_damagetime) {
 			if (
 				checkdamage(checkblock(&m_map, m_blocksize, m_p0pos)) ||
 				checkdamage(checkblock(&m_map, m_blocksize, sf::Vector2f(m_p0pos.x + m_playersize.x, m_p0pos.y) )) ||
 				checkdamage(checkblock(&m_map, m_blocksize, sf::Vector2f(m_p0pos.x, m_p0pos.y + m_playersize.y) )) ||
 				checkdamage(checkblock(&m_map, m_blocksize, m_p0pos + m_playersize ))
 			) {
+				m_p0damagetime = 0;
 				if (m_p0lives == 0) m_p0gameover = true;
-				else {
-					m_p0damagetime = 0;
-					m_p0lives--;
-				}
+				else m_p0lives--;
 			}
 		}
 		// Player 1
-		if (m_p1damagetime > m_damagetime) {
+		if (m_p1airtime >= m_airtime && m_p1damagetime > m_damagetime) {
 			if (
 				checkdamage(checkblock(&m_map, m_blocksize, m_p1pos)) ||
 				checkdamage(checkblock(&m_map, m_blocksize, sf::Vector2f(m_p1pos.x + m_playersize.x, m_p1pos.y) )) ||
 				checkdamage(checkblock(&m_map, m_blocksize, sf::Vector2f(m_p1pos.x, m_p1pos.y + m_playersize.y) )) ||
 				checkdamage(checkblock(&m_map, m_blocksize, m_p1pos + m_playersize ))
 			) {
+				m_p1damagetime = 0;
 				if (m_p1lives == 0) m_p1gameover = true;
-				else {
-					m_p1damagetime = 0;
-					m_p1lives--;
-				}
+				else m_p1lives--;
 			}
 		}
 
