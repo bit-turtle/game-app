@@ -603,10 +603,11 @@ case 3: {	// Mario Mode
 			}
 			else {
 				senemy.setTexture(m_enemysquish);
+				senemy.setOrigin(1,0);
 			}
 			// Set Scale
 			senemy.setScale(m_scale,m_scale); // m_scale times Real Size
-			senemy.setPosition(enemy.pos.x-m_offset,windowsize.y-enemy.pos.y-senemy.getLocalBounds().height);
+			senemy.setPosition(enemy.pos.x-m_offset,windowsize.y-enemy.pos.y-senemy.getGlobalBounds().height);
 			// Draw Player
 			window.draw(senemy);
 

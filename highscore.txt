@@ -1,2 +1,2 @@
-highscore 11
-twoplayerhighscore 11
+highscore 13
+twoplayerhighscore 28
