@@ -85,16 +85,62 @@ bool checkcollision(uint8_t id) {
 	}
 };
 
-bool checkdamage(uint8_t id) {
+float trianglesign(sf::Vector2f p1, sf::Vector2f p2, sf::Vector2f p3) {
+	return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
+}
+
+bool trianglecollision(sf::Vector2f pt, sf::Vector2f v1, sf::Vector2f v2, sf::Vector2f v3) {
+	float d1 = trianglesign(pt, v1, v2);
+	float d2 = trianglesign(pt, v2, v3);
+	float d3 = trianglesign(pt, v3, v1);
+
+	bool has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+	bool has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+
+	return !(has_neg && has_pos);
+}
+
+bool checkdamage(Grid<uint8_t>* map, float blocksize, sf::Vector2f pos) {
+	uint8_t id = checkblock(map, blocksize, pos);
+	sf::Vector2f rpos(pos.x/blocksize, pos.y/blocksize);
+	// Square Collision but Triangle Collision With Spikes
 	switch (id) {
-		case 2:	// Spike
-			return true;
-		case 3:	// Spike
-			return true;
-		case 4:	// Spike
-			return true;
-		case 5:	// Spike
-			return true;
+		case 2:	// Up Facing Spike
+			if (
+				trianglecollision(rpos,
+					sf::Vector2f(2,0),
+					sf::Vector2f(9,0),
+					sf::Vector2f(6,6)
+				)
+			) return true;
+			else return false;
+		case 3:	// Down Facing Spike
+			if (
+				trianglecollision(rpos,
+					sf::Vector2f(2,11),
+					sf::Vector2f(9,11),
+					sf::Vector2f(6,6)
+				)
+			) return true;
+			else return false;
+		case 4:	// Right Facing Spike
+			if (
+				trianglecollision(rpos,
+					sf::Vector2f(0,2),
+					sf::Vector2f(0,9),
+					sf::Vector2f(6,6)
+				)
+			) return true;
+			else return false;
+		case 5:	// Left Facing Spike
+			if (
+				trianglecollision(rpos,
+					sf::Vector2f(11,2),
+					sf::Vector2f(11,9),
+					sf::Vector2f(6,6)
+				)
+			) return true;
+			else return false;
 		default:
 			return false;
 	}
@@ -137,6 +183,13 @@ struct TileEntity {
 #undef PLANET_ASSETS
 // Load Assets (Textures/Sound/Etc) for Planet Minigames
 
+// Ship Land Animation
+sf::SoundBuffer whooshbuffer;
+if (!whooshbuffer.loadFromFile("sounds/whoosh.wav"))
+	std::cout << "Failed to Load The Whoosh Sound!" << std::endl;
+sf::Sound whoosh;
+whoosh.setBuffer(whooshbuffer);
+
 // Mario ( 'm_' prefix )
 sf::Texture m_landinganim;	// Spaceship landing animation
 if (!m_landinganim.loadFromFile("textures/landing.anim.png"))	// '.anim.png' for spritesheet animations
@@ -167,6 +220,14 @@ if (!m_enemywalkanim.loadFromFile("textures/enemywalk.anim.png"))
 sf::Texture m_enemysquish;
 if (!m_enemysquish.loadFromFile("textures/enemysquish.png"))
 	std::cout << "Failed to Load Texture 'enemysquish.png'" << std::endl;
+
+// Sounds
+sf::SoundBuffer m_jumpsoundbuffer;
+if (!m_jumpsoundbuffer.loadFromFile("sounds/jump.wav"))
+	std::cout << "Failed to load sound effect 'jump'!" << std::endl;
+sf::Sound m_jumpsound;
+m_jumpsound.setBuffer(m_jumpsoundbuffer);
+m_jumpsound.setLoop(false);
 
 // Game Map
 Grid<uint8_t> m_map;
@@ -200,6 +261,7 @@ Grid<uint8_t> m_map;
 #ifdef PLANET_VARS
 #undef PLANET_VARS
 // Global Variables for Planets Go Here
+bool whooshed = false;
 // Remember to copy values to PLANET_RESET
 // Minigame 1 Mario Style Moving and Combat Variables ( 'm_' prefix )
 // Visual
@@ -238,10 +300,10 @@ sf::Vector2f m_p0vel;
 bool p0interact = false;
 bool p1interact = false;
 bool m_p0land = false;
-float m_p0airtime = 0;
+long double m_p0airtime = 0;
 sf::Vector2f m_p1pos;
 bool m_p1land = false;
-float m_p1airtime = 0;
+long double m_p1airtime = 0;
 sf::Vector2f m_p1vel;
 // Enemies
 std::vector<Enemy> m_enemies;
@@ -264,6 +326,8 @@ TileMap m_initlevel = m_level;
 
 #ifdef PLANET_RESET
 #undef PLANET_RESET
+// Whoosh
+whooshed = false;
 // Begin Mario
 // Visual
 m_offset = 0;
@@ -344,6 +408,10 @@ case 1: { // Mario Mode Controls
 } break;
 
 case 2: {	// Animation of landing
+	if (whooshed == false) {
+		whoosh.play();
+		whooshed = true;
+	}
 		sf::RectangleShape animation = sf::RectangleShape(sf::Vector2f(windowsize));
 		animation.setTexture(&m_landinganim);
 		animation.setTextureRect(animateframe(m_landinganim,22,13,time)); // 22 frames long at 13 fps using animation 'm_landinganim'
@@ -378,12 +446,13 @@ case 3: {	// Mario Mode
 
 			if ( (m_p0land || m_p0airtime <= m_airtime) && ( sf::Keyboard::isKeyPressed(sf::Keyboard::W) || (!player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Up) ) ) ) {
 				m_p0vel.y = m_jump;
-				m_p0airtime = 1;
+				m_p0airtime = 10;
+				m_jumpsound.play();
 			}
 			
 		}
 		// Player 1
-		if (!m_p1gameover) {
+		if (!m_p1gameover && player2mode) {
 			int direction = 0;
 			if ( player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Left) ) direction -= 1; 
 
@@ -393,7 +462,8 @@ case 3: {	// Mario Mode
 
 			if ( (m_p1land || m_p1airtime <= m_airtime) && player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Up) ) {
 				m_p1vel.y = m_jump;
-				m_p1airtime = 1;
+				m_p1airtime = 10;
+				m_jumpsound.play();
 			}
 		}
 
@@ -651,10 +721,10 @@ case 3: {	// Mario Mode
 		// Player 0
 		if (m_p0airtime >= m_airtime && m_p0damagetime > m_damagetime) {
 			if (
-				checkdamage(checkblock(&m_map, m_blocksize, m_p0pos)) ||
-				checkdamage(checkblock(&m_map, m_blocksize, sf::Vector2f(m_p0pos.x + m_playersize.x, m_p0pos.y) )) ||
-				checkdamage(checkblock(&m_map, m_blocksize, sf::Vector2f(m_p0pos.x, m_p0pos.y + m_playersize.y) )) ||
-				checkdamage(checkblock(&m_map, m_blocksize, m_p0pos + m_playersize ))
+				checkdamage(&m_map, m_blocksize, m_p0pos) ||
+				checkdamage(&m_map, m_blocksize, sf::Vector2f(m_p0pos.x + m_playersize.x, m_p0pos.y) ) ||
+				checkdamage(&m_map, m_blocksize, sf::Vector2f(m_p0pos.x, m_p0pos.y + m_playersize.y) ) ||
+				checkdamage(&m_map, m_blocksize, m_p0pos + m_playersize )
 			) {
 				m_p0damagetime = 0;
 				if (m_p0lives == 0) m_p0gameover = true;
@@ -664,10 +734,10 @@ case 3: {	// Mario Mode
 		// Player 1
 		if (m_p1airtime >= m_airtime && m_p1damagetime > m_damagetime) {
 			if (
-				checkdamage(checkblock(&m_map, m_blocksize, m_p1pos)) ||
-				checkdamage(checkblock(&m_map, m_blocksize, sf::Vector2f(m_p1pos.x + m_playersize.x, m_p1pos.y) )) ||
-				checkdamage(checkblock(&m_map, m_blocksize, sf::Vector2f(m_p1pos.x, m_p1pos.y + m_playersize.y) )) ||
-				checkdamage(checkblock(&m_map, m_blocksize, m_p1pos + m_playersize ))
+				checkdamage(&m_map, m_blocksize, m_p1pos) ||
+				checkdamage(&m_map, m_blocksize, sf::Vector2f(m_p1pos.x + m_playersize.x, m_p1pos.y) ) ||
+				checkdamage(&m_map, m_blocksize, sf::Vector2f(m_p1pos.x, m_p1pos.y + m_playersize.y) ) ||
+				checkdamage(&m_map, m_blocksize, m_p1pos + m_playersize )
 			) {
 				m_p1damagetime = 0;
 				if (m_p1lives == 0) m_p1gameover = true;
