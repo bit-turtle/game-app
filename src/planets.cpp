@@ -102,7 +102,7 @@ bool trianglecollision(sf::Vector2f pt, sf::Vector2f v1, sf::Vector2f v2, sf::Ve
 
 bool checkdamage(Grid<uint8_t>* map, float blocksize, sf::Vector2f pos) {
 	uint8_t id = checkblock(map, blocksize, pos);
-	sf::Vector2f rpos(pos.x/blocksize, pos.y/blocksize);
+	sf::Vector2f rpos((unsigned)pos.x%(unsigned)blocksize, (unsigned)pos.y%(unsigned)blocksize);
 	// Square Collision but Triangle Collision With Spikes
 	switch (id) {
 		case 2:	// Up Facing Spike
