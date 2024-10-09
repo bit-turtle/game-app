@@ -172,11 +172,22 @@ struct Enemy {
 	bool squished = false;
 };
 
-// TODO Tile entity system
 enum TileEntityTypes {	// Tiles on the map that change are tile entities
-	CHEST = 4,	// Chest, ID = 4
-	OPENCHEST = 5,	// OpenChest, ID = 5
+	CHEST = 6,	// Chest, ID = 6
+	OPENCHEST = 7,	// OpenChest, ID = 7
 };
+
+bool istileentity(uint8_t id) {
+	switch(id) {
+		case 6:
+			return true;
+		case 7:
+			return true;
+		default:
+			return false;
+	}
+}
+
 struct TileEntity {
 	sf::Vector2u pos;
 	TileEntityTypes type;
@@ -247,6 +258,7 @@ Grid<uint8_t> m_map;
 			unsigned int blocknumber = 0;
 			std::stringstream linebuffer(line);
 			while (getline(linebuffer, block, ' ')) {
+				if (block == "") continue;	// Skip empty values
 				m_map.set(blocknumber, linenumber, (unsigned int) std::stoul(block,nullptr,0) );	// Read Number and convert to unsigned long and then to unsigned int
 				blocknumber++;
 			}
@@ -321,6 +333,17 @@ for (unsigned int x = 0; x < m_map.getsize().x; x++) for (unsigned int y = 0; y 
 	m_map.set(x,m_map.getsize().y-1-y,(uint8_t)0);	// Set to air
 }
 std::vector<Enemy> m_initenemies = m_enemies;
+// Tile Entities (Like Chests)
+std::vector<TileEntity> m_tileentities;
+// Load tile entities
+for (unsigned int x = 0; x < m_map.getsize().x; x++) for (unsigned int y = 0; y < m_map.getsize().y; y++) if (istileentity(m_map.get(x,y)) != 0) {	// 255 on map = enemy && air
+	TileEntity tileentity;
+	tileentity.type = (TileEntityTypes) m_map.get(x,y);
+	tileentity.pos = sf::Vector2u(x,y);
+	m_tileentities.push_back(tileentity);
+	m_map.set(x,m_map.getsize().y-1-y,(uint8_t)0);	// Set to air
+}
+std::vector<TileEntity> m_inittileentities = m_tileentities;
 // Level
 Grid m_initmap = m_map;
 TileMap m_level;
@@ -359,6 +382,7 @@ m_p1vel = sf::Vector2f(0,0);
 // Enemies
 // Re-Load in enemies
 m_enemies = m_initenemies;
+m_tileentities = m_inittileentities;
 m_map = m_initmap;
 m_level = m_initlevel;
 // End Mario
