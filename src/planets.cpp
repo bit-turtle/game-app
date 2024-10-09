@@ -21,6 +21,16 @@ sf::IntRect spritesheet(sf::Texture tex, unsigned int frameheight, unsigned int 
 
 	return ret;
 }
+
+sf::IntRect sidesheet(unsigned int framesize, uint8_t frame) {
+	sf::IntRect ret;
+	ret.left = frame*framesize;
+	ret.top = framesize;
+	ret.width = framesize;
+	ret.height = framesize;
+	return ret;
+}
+
 // Returns TextureRect for current animation frame
 sf::IntRect animateframe(sf::Texture tex, unsigned int frames, unsigned int fps, float time, bool flip = false, float start = 0) {
 	unsigned int frame = (unsigned int)((time-start)*fps) % frames;
@@ -193,6 +203,35 @@ struct TileEntity {
 	TileEntityTypes type;
 };
 
+enum InteractResultTypes {
+	NOTHING,
+	SCORE,
+	LIFE
+};
+
+struct InteractResult {
+	InteractResultTypes type;
+	int level;
+};
+
+InteractResult tileinteract(std::vector<TileEntity>& tiles, float blocksize, sf::Vector2f pos) {
+	InteractResult res;
+	res.type = NOTHING;
+	sf::Vector2u intpos = real2tile(pos, blocksize);
+	for (TileEntity tile : tiles) if (tile.pos.x == intpos.x && tile.pos.y == intpos.y) {
+		switch (tile.type) {
+			case CHEST:
+				res.type = LIFE;
+				res.level = 1;
+				break;
+			default:
+				break;
+		}
+		break;
+	} else continue;
+	return res;
+}
+
 #endif
 
 #ifdef PLANET_ASSETS
@@ -245,6 +284,11 @@ if (!m_jumpsoundbuffer.loadFromFile("sounds/jump.wav"))
 sf::Sound m_jumpsound;
 m_jumpsound.setBuffer(m_jumpsoundbuffer);
 m_jumpsound.setLoop(false);
+
+// Block Texture
+sf::Texture m_blocktexture;
+if (!m_blocktexture.loadFromFile("textures/blocks.png"))
+	std::cout << "Failed to load texture 'blocks'!" << std::endl;
 
 // Game Map
 Grid<uint8_t> m_map;
@@ -315,8 +359,8 @@ float m_p1damagetime = 100;
 float m_p1gameovertime = 0;
 sf::Vector2f m_p0pos;
 sf::Vector2f m_p0vel;
-bool p0interact = false;
-bool p1interact = false;
+bool m_p0interact = false;
+bool m_p1interact = false;
 bool m_p0land = false;
 long double m_p0airtime = 0;
 sf::Vector2f m_p1pos;
@@ -371,8 +415,8 @@ m_p1damagetime = 100;
 m_p1gameovertime = 0;
 m_p0pos = sf::Vector2f(0,0);
 m_p0vel = sf::Vector2f(0,0);
-p0interact = false;
-p1interact = false;
+m_p0interact = false;
+m_p1interact = false;
 m_p0land = false;
 m_p0airtime = 0;
 m_p1pos = sf::Vector2f(0,0);
@@ -467,6 +511,8 @@ case 3: {	// Mario Mode
 		else m_p1airtime = 0;
 		// Player 0
 		if (!m_p0gameover) {
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) || (!player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) ) m_p0interact = true;
+			else m_p0interact = false;
 			int direction = 0;
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || (!player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Left) ) ) direction -= 1; 
 
@@ -483,6 +529,8 @@ case 3: {	// Mario Mode
 		}
 		// Player 1
 		if (!m_p1gameover && player2mode) {
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) m_p1interact = true;
+			else m_p1interact = false;
 			int direction = 0;
 			if ( player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Left) ) direction -= 1; 
 
@@ -779,6 +827,15 @@ case 3: {	// Mario Mode
 		m_level.setPosition(0-m_offset,0);
 		window.draw(m_level);
 		
+		// Draw Tile Entities
+		for (TileEntity tile : m_tileentities) {
+			sf::RectangleShape render(sf::Vector2f(m_blocksize,m_blocksize));
+			render.setPosition(tile2real(tile.pos, m_blocksize));
+			render.setTexture(&m_blocktexture);
+			render.setTextureRect(sidesheet(11.f, (uint8_t)tile.type));
+			window.draw(render);
+		}
+
 		message = "";
 		tiptext = "";
 
