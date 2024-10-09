@@ -90,6 +90,7 @@ float trianglesign(sf::Vector2f p1, sf::Vector2f p2, sf::Vector2f p3) {
 }
 
 bool trianglecollision(sf::Vector2f pt, sf::Vector2f v1, sf::Vector2f v2, sf::Vector2f v3) {
+	
 	float d1 = trianglesign(pt, v1, v2);
 	float d2 = trianglesign(pt, v2, v3);
 	float d3 = trianglesign(pt, v3, v1);
@@ -99,45 +100,49 @@ bool trianglecollision(sf::Vector2f pt, sf::Vector2f v1, sf::Vector2f v2, sf::Ve
 
 	return !(has_neg && has_pos);
 }
+bool subrectcollision(sf::Vector2f pt, sf::FloatRect rect) {
+	return rect.contains(pt);
+}
 
-bool checkdamage(Grid<uint8_t>* map, float blocksize, sf::Vector2f pos) {
+bool checkdamage(Grid<uint8_t>* map, float blocksize, float blockwidth, sf::Vector2f pos) {
 	uint8_t id = checkblock(map, blocksize, pos);
-	sf::Vector2f rpos((unsigned)pos.x%(unsigned)blocksize, (unsigned)pos.y%(unsigned)blocksize);
+	sf::Vector2u bpos = real2tile(pos, blocksize);
+	sf::Vector2f rpos(pos.x/blocksize*blockwidth - bpos.x*blockwidth, pos.y/blocksize*blockwidth+0.1f - bpos.y*blockwidth);
 	// Square Collision but Triangle Collision With Spikes
 	switch (id) {
 		case 2:	// Up Facing Spike
 			if (
 				trianglecollision(rpos,
-					sf::Vector2f(2,0),
-					sf::Vector2f(9,0),
-					sf::Vector2f(6,6)
+					sf::Vector2f(1,0),
+					sf::Vector2f(8,0),
+					sf::Vector2f(5,5)
 				)
 			) return true;
 			else return false;
 		case 3:	// Down Facing Spike
 			if (
 				trianglecollision(rpos,
-					sf::Vector2f(2,11),
-					sf::Vector2f(9,11),
-					sf::Vector2f(6,6)
+					sf::Vector2f(1,10),
+					sf::Vector2f(8,10),
+					sf::Vector2f(5,5)
 				)
 			) return true;
 			else return false;
 		case 4:	// Right Facing Spike
 			if (
 				trianglecollision(rpos,
-					sf::Vector2f(0,2),
-					sf::Vector2f(0,9),
-					sf::Vector2f(6,6)
+					sf::Vector2f(0,1),
+					sf::Vector2f(0,8),
+					sf::Vector2f(5,5)
 				)
 			) return true;
 			else return false;
 		case 5:	// Left Facing Spike
 			if (
 				trianglecollision(rpos,
-					sf::Vector2f(11,2),
-					sf::Vector2f(11,9),
-					sf::Vector2f(6,6)
+					sf::Vector2f(10,1),
+					sf::Vector2f(10,8),
+					sf::Vector2f(5,5)
 				)
 			) return true;
 			else return false;
@@ -181,6 +186,7 @@ struct TileEntity {
 
 #ifdef PLANET_ASSETS
 #undef PLANET_ASSETS
+
 // Load Assets (Textures/Sound/Etc) for Planet Minigames
 
 // Ship Land Animation
@@ -719,12 +725,12 @@ case 3: {	// Mario Mode
 
 		// Player Block Damage
 		// Player 0
-		if (m_p0airtime >= m_airtime && m_p0damagetime > m_damagetime) {
+		if (m_p0damagetime > m_damagetime) {
 			if (
-				checkdamage(&m_map, m_blocksize, m_p0pos) ||
-				checkdamage(&m_map, m_blocksize, sf::Vector2f(m_p0pos.x + m_playersize.x, m_p0pos.y) ) ||
-				checkdamage(&m_map, m_blocksize, sf::Vector2f(m_p0pos.x, m_p0pos.y + m_playersize.y) ) ||
-				checkdamage(&m_map, m_blocksize, m_p0pos + m_playersize )
+				checkdamage(&m_map, m_blocksize, m_blockwidth, m_p0pos) ||
+				checkdamage(&m_map, m_blocksize, m_blockwidth, sf::Vector2f(m_p0pos.x + m_playersize.x, m_p0pos.y) ) ||
+				checkdamage(&m_map, m_blocksize, m_blockwidth, sf::Vector2f(m_p0pos.x, m_p0pos.y + m_playersize.y) ) ||
+				checkdamage(&m_map, m_blocksize, m_blockwidth, m_p0pos + m_playersize )
 			) {
 				m_p0damagetime = 0;
 				if (m_p0lives == 0) m_p0gameover = true;
@@ -732,12 +738,12 @@ case 3: {	// Mario Mode
 			}
 		}
 		// Player 1
-		if (m_p1airtime >= m_airtime && m_p1damagetime > m_damagetime) {
+		if (m_p1damagetime > m_damagetime) {
 			if (
-				checkdamage(&m_map, m_blocksize, m_p1pos) ||
-				checkdamage(&m_map, m_blocksize, sf::Vector2f(m_p1pos.x + m_playersize.x, m_p1pos.y) ) ||
-				checkdamage(&m_map, m_blocksize, sf::Vector2f(m_p1pos.x, m_p1pos.y + m_playersize.y) ) ||
-				checkdamage(&m_map, m_blocksize, m_p1pos + m_playersize )
+				checkdamage(&m_map, m_blocksize, m_blockwidth, m_p1pos) ||
+				checkdamage(&m_map, m_blocksize, m_blockwidth, sf::Vector2f(m_p1pos.x + m_playersize.x, m_p1pos.y) ) ||
+				checkdamage(&m_map, m_blocksize, m_blockwidth, sf::Vector2f(m_p1pos.x, m_p1pos.y + m_playersize.y) ) ||
+				checkdamage(&m_map, m_blocksize, m_blockwidth, m_p1pos + m_playersize )
 			) {
 				m_p1damagetime = 0;
 				if (m_p1lives == 0) m_p1gameover = true;
