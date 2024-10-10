@@ -234,6 +234,35 @@ InteractResult tileinteract(std::vector<TileEntity>* tiles, float blocksize, sf:
 	return res;
 }
 
+struct YayText {
+	std::string text;
+	sf::Vector2f pos;
+	float initsize = 40;
+	float size = initsize;
+	float animtime = 0;
+	float animlength = 1;
+	float risedist = 50;
+};
+
+void yaytext(sf::RenderWindow* window, sf::Font* font, float deltatime, float offset, std::vector<YayText>* texts) {
+	for (int i = 0; i < texts->size(); i++) {
+		texts->at(i).animtime += deltatime;
+		texts->at(i).pos.y += (texts->at(i).risedist / texts->at(i).animlength) * deltatime;
+		texts->at(i).size += (texts->at(i).initsize / texts->at(i).animlength) * deltatime;
+
+		if (texts->at(i).animtime >= texts->at(i).animlength) {
+			texts->erase(texts->begin()+i);
+			i--;
+			continue;
+		}
+
+		sf::Text text(texts->at(i).text, *font, texts->at(i).size);
+		text.setOrigin(text.getLocalBounds().width/2,text.getLocalBounds().height/2);
+		text.setPosition(texts->at(i).pos.x - offset, window->getSize().y - texts->at(i).pos.y);
+		window->draw(text);
+	}
+};
+
 #endif
 
 #ifdef PLANET_ASSETS
@@ -329,6 +358,7 @@ bool whooshed = false;
 // Remember to copy values to PLANET_RESET
 // Minigame 1 Mario Style Moving and Combat Variables ( 'm_' prefix )
 // Visual
+std::vector<YayText> m_yaytext;
 float m_gameoveranimtime = 5.f;	// 5 second fade
 float m_offset = 0;
 float m_scale = 8;
@@ -405,6 +435,7 @@ TileMap m_initlevel = m_level;
 whooshed = false;
 // Begin Mario
 // Visual
+m_yaytext.clear();
 m_offset = 0;
 // Players
 m_p0lives = m_maxlives;
@@ -837,11 +868,26 @@ case 3: {	// Mario Mode
 				switch (interact.type) {
 					case LIFE:
 						if (player2mode && m_p1gameover) {
+							m_p1damagetime = 0;
 							m_p1gameover = false;
 							m_p1lives += interact.level;
+
+							// Yaytext
+							YayText text;
+							text.pos = p0pos;
+							text.text = "Player 2 Revived!";
+							m_yaytext.push_back(text);
 						}
 						else {
 							m_p0lives += interact.level;
+
+							// Yaytext
+							YayText text;
+							text.pos = p0pos;
+							std::stringstream lifecount;
+							lifecount << "+" << interact.level << " Lives!";
+							text.text = lifecount.str();
+							m_yaytext.push_back(text);
 						}
 						break;
 					case SCORE:
@@ -854,12 +900,27 @@ case 3: {	// Mario Mode
 				InteractResult interact = tileinteract(&m_tileentities, m_blocksize, p1pos);
 				switch (interact.type) {
 					case LIFE:
-						if (player2mode && m_p1gameover) {
-							m_p1gameover = false;
-							m_p1lives += interact.level;
+						if (player2mode && m_p0gameover) {
+							m_p0damagetime = 0;
+							m_p0gameover = false;
+							m_p0lives += interact.level;
+							
+							// Yaytext
+							YayText text;
+							text.pos = p1pos;
+							text.text = "Player 1 Revived!";
+							m_yaytext.push_back(text);
 						}
 						else {
-							m_p0lives += interact.level;
+							m_p1lives += interact.level;
+							
+							// Yaytext
+							YayText text;
+							text.pos = p1pos;
+							std::stringstream lifecount;
+							lifecount << "+" << interact.level << " Lives!";
+							text.text = lifecount.str();
+							m_yaytext.push_back(text);
 						}
 						break;
 					case SCORE:
@@ -879,6 +940,9 @@ case 3: {	// Mario Mode
 			render.setPosition(pos);
 			window.draw(render);
 		}
+
+		// Draw Yaytext
+		yaytext(&window, &roboto, deltatime, m_offset, &m_yaytext);
 
 		message = "";
 		tiptext = "";
