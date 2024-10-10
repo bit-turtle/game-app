@@ -1,7 +1,4 @@
 # TODO
-1. Create Planet Mingames
-    - Triangle Spike Collision
-        - Maybe just half squares
-    - Finish Mario Mingame and make cutscene to being put in maze
-    - Create Maze Minigame to find ship
-    - Create 'stinger' Minigame to exit planet
+1. Finish Mario Mingame and make cutscene to being put in maze
+2. Create Maze Minigame to find ship
+3. Create 'stinger' Minigame to exit planet

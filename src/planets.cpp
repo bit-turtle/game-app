@@ -25,7 +25,7 @@ sf::IntRect spritesheet(sf::Texture tex, unsigned int frameheight, unsigned int 
 sf::IntRect sidesheet(unsigned int framesize, uint8_t frame) {
 	sf::IntRect ret;
 	ret.left = frame*framesize;
-	ret.top = framesize;
+	ret.top = 0;
 	ret.width = framesize;
 	ret.height = framesize;
 	return ret;
@@ -123,36 +123,36 @@ bool checkdamage(Grid<uint8_t>* map, float blocksize, float blockwidth, sf::Vect
 		case 2:	// Up Facing Spike
 			if (
 				trianglecollision(rpos,
-					sf::Vector2f(1,0),
-					sf::Vector2f(8,0),
-					sf::Vector2f(5,5)
+					sf::Vector2f(2,0),
+					sf::Vector2f(9,0),
+					sf::Vector2f(6,6)
 				)
 			) return true;
 			else return false;
 		case 3:	// Down Facing Spike
 			if (
 				trianglecollision(rpos,
-					sf::Vector2f(1,10),
-					sf::Vector2f(8,10),
-					sf::Vector2f(5,5)
+					sf::Vector2f(2,11),
+					sf::Vector2f(9,11),
+					sf::Vector2f(6,6)
 				)
 			) return true;
 			else return false;
 		case 4:	// Right Facing Spike
 			if (
 				trianglecollision(rpos,
-					sf::Vector2f(0,1),
-					sf::Vector2f(0,8),
-					sf::Vector2f(5,5)
+					sf::Vector2f(0,2),
+					sf::Vector2f(0,9),
+					sf::Vector2f(6,6)
 				)
 			) return true;
 			else return false;
 		case 5:	// Left Facing Spike
 			if (
 				trianglecollision(rpos,
-					sf::Vector2f(10,1),
-					sf::Vector2f(10,8),
-					sf::Vector2f(5,5)
+					sf::Vector2f(11,2),
+					sf::Vector2f(11,9),
+					sf::Vector2f(6,6)
 				)
 			) return true;
 			else return false;
@@ -214,13 +214,15 @@ struct InteractResult {
 	int level;
 };
 
-InteractResult tileinteract(std::vector<TileEntity>& tiles, float blocksize, sf::Vector2f pos) {
+InteractResult tileinteract(std::vector<TileEntity>* tiles, float blocksize, sf::Vector2f pos) {
 	InteractResult res;
 	res.type = NOTHING;
 	sf::Vector2u intpos = real2tile(pos, blocksize);
-	for (TileEntity tile : tiles) if (tile.pos.x == intpos.x && tile.pos.y == intpos.y) {
+	int id = 0;
+	for (TileEntity tile : *tiles) if (tile.pos.x == intpos.x && tile.pos.y == intpos.y) {
 		switch (tile.type) {
 			case CHEST:
+				tiles->at(id).type = OPENCHEST;
 				res.type = LIFE;
 				res.level = 1;
 				break;
@@ -228,7 +230,7 @@ InteractResult tileinteract(std::vector<TileEntity>& tiles, float blocksize, sf:
 				break;
 		}
 		break;
-	} else continue;
+	} else id++;
 	return res;
 }
 
@@ -827,12 +829,54 @@ case 3: {	// Mario Mode
 		m_level.setPosition(0-m_offset,0);
 		window.draw(m_level);
 		
+		// Interact With Tile Entities From Player Center
+		{
+			sf::Vector2f p0pos = m_p0pos + sf::Vector2f(m_playersize.x/2,m_playersize.y/2);
+			if (m_p0interact) {
+				InteractResult interact = tileinteract(&m_tileentities, m_blocksize, p0pos);
+				switch (interact.type) {
+					case LIFE:
+						if (player2mode && m_p1gameover) {
+							m_p1gameover = false;
+							m_p1lives += interact.level;
+						}
+						else {
+							m_p0lives += interact.level;
+						}
+						break;
+					case SCORE:
+						score += interact.level;
+						break;
+				}
+			}
+			sf::Vector2f p1pos = m_p1pos + sf::Vector2f(m_playersize.x/2,m_playersize.y/2);
+			if (m_p1interact) {
+				InteractResult interact = tileinteract(&m_tileentities, m_blocksize, p1pos);
+				switch (interact.type) {
+					case LIFE:
+						if (player2mode && m_p1gameover) {
+							m_p1gameover = false;
+							m_p1lives += interact.level;
+						}
+						else {
+							m_p0lives += interact.level;
+						}
+						break;
+					case SCORE:
+						score += interact.level;
+						break;
+				}
+			}
+		}
 		// Draw Tile Entities
 		for (TileEntity tile : m_tileentities) {
 			sf::RectangleShape render(sf::Vector2f(m_blocksize,m_blocksize));
-			render.setPosition(tile2real(tile.pos, m_blocksize));
 			render.setTexture(&m_blocktexture);
 			render.setTextureRect(sidesheet(11.f, (uint8_t)tile.type));
+			sf::Vector2f pos = tile2real(tile.pos, m_blocksize);
+			pos.y = windowsize.y - pos.y - m_blocksize;
+			pos.x -= m_offset;
+			render.setPosition(pos);
 			window.draw(render);
 		}
 
