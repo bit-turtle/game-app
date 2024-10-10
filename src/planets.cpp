@@ -248,7 +248,7 @@ void yaytext(sf::RenderWindow* window, sf::Font* font, float deltatime, float of
 	for (int i = 0; i < texts->size(); i++) {
 		texts->at(i).animtime += deltatime;
 		texts->at(i).pos.y += (texts->at(i).risedist / texts->at(i).animlength) * deltatime;
-		texts->at(i).size += (texts->at(i).initsize / texts->at(i).animlength) * deltatime;
+		texts->at(i).size -= (texts->at(i).initsize / texts->at(i).animlength) * deltatime;
 
 		if (texts->at(i).animtime >= texts->at(i).animlength) {
 			texts->erase(texts->begin()+i);
