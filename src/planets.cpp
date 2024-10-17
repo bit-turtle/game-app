@@ -78,20 +78,10 @@ uint8_t checkblock(Grid<uint8_t>* map, float blocksize, sf::Vector2f pos) {
 
 bool checkcollision(uint8_t id) {
 	switch (id) {
-		case 0:	// Air
-			return false;
-		case 2:	// Spike
-			return false;
-		case 3:	// Spike
-			return false;
-		case 4:	// Spike
-			return false;
-		case 5:	// Spike
-			return false;
-		case 6:	// Chest
-			return false;
-		default:
+		case 1:	// Block
 			return true;
+		default:
+			return false;
 	}
 };
 
@@ -183,8 +173,10 @@ struct Enemy {
 };
 
 enum TileEntityTypes {	// Tiles on the map that change are tile entities
-	CHEST = 6,	// Chest, ID = 6
-	OPENCHEST = 7,	// OpenChest, ID = 7
+	CHEST = 6,		// Chest, ID = 6
+	OPENCHEST = 7,		// OpenChest, ID = 7
+	LABERINTHDOOR = 8,	// LaberinthDoor, ID = 8
+	COIN = 9,		// Coin, ID = 9
 };
 
 bool istileentity(uint8_t id) {
@@ -192,6 +184,10 @@ bool istileentity(uint8_t id) {
 		case 6:
 			return true;
 		case 7:
+			return true;
+		case 8:
+			return true;
+		case 9:
 			return true;
 		default:
 			return false;
@@ -206,7 +202,8 @@ struct TileEntity {
 enum InteractResultTypes {
 	NOTHING,
 	SCORE,
-	LIFE
+	LIFE,
+	LABERINTH,
 };
 
 struct InteractResult {
@@ -226,6 +223,14 @@ InteractResult tileinteract(std::vector<TileEntity>* tiles, float blocksize, sf:
 				res.type = LIFE;
 				res.level = 1;
 				break;
+			case LABERINTHDOOR:
+				tiles->at(id).type = static_cast<TileEntityTypes>(0);
+				res.type = LABERINTH;
+				break;
+			case COIN:
+				tiles->at(id).type = static_cast<TileEntityTypes>(0);
+				res.type = SCORE;
+				res.level = 5;
 			default:
 				break;
 		}
@@ -237,11 +242,11 @@ InteractResult tileinteract(std::vector<TileEntity>* tiles, float blocksize, sf:
 struct YayText {
 	std::string text;
 	sf::Vector2f pos;
-	float initsize = 40;
+	float initsize = 35;
 	float size = initsize;
 	float animtime = 0;
 	float animlength = 1;
-	float risedist = 50;
+	float risedist = 150;
 };
 
 void yaytext(sf::RenderWindow* window, sf::Font* font, float deltatime, float offset, std::vector<YayText>* texts) {
@@ -379,13 +384,13 @@ float m_hitjump = m_jump / 2;	// Defeat enemy bounce
 float m_gravity = 10.f*m_scale;
 float m_drag = 400*m_scale;
 float m_friction = 600*m_scale;
-unsigned int m_maxlives = 2;	// Extra lives: 2 = 3 total
+unsigned int m_initlives = 2;	// Extra lives: 2 = 3 total
 // Players
-unsigned int m_p0lives = m_maxlives;
+unsigned int m_p0lives = m_initlives;
 bool m_p0gameover = false;
 float m_p0damagetime = 100;
 float m_p0gameovertime = 0;
-unsigned int m_p1lives = m_maxlives;
+unsigned int m_p1lives = m_initlives;
 bool m_p1gameover = false;
 float m_p1damagetime = 100;
 float m_p1gameovertime = 0;
@@ -438,11 +443,11 @@ whooshed = false;
 m_yaytext.clear();
 m_offset = 0;
 // Players
-m_p0lives = m_maxlives;
+m_p0lives = m_initlives;
 m_p0gameover = false;
 m_p0damagetime = 100;
 m_p0gameovertime = 0;
-m_p1lives = m_maxlives;
+m_p1lives = m_initlives;
 m_p1gameover = false;
 m_p1damagetime = 100;
 m_p1gameovertime = 0;
@@ -868,7 +873,7 @@ case 3: {	// Mario Mode
 				switch (interact.type) {
 					case LIFE:
 						if (player2mode && m_p1gameover) {
-							m_p1damagetime = 0;
+							m_p1damagetime = -2;
 							m_p1gameover = false;
 							m_p1lives += interact.level;
 
@@ -890,9 +895,29 @@ case 3: {	// Mario Mode
 							m_yaytext.push_back(text);
 						}
 						break;
-					case SCORE:
+					case SCORE: {
 						score += interact.level;
-						break;
+						
+						// Yaytext
+						YayText text;
+						text.pos = p0pos;
+						std::stringstream scorecount;
+						scorecount << "+" << interact.level << " Score!";
+						text.text = scorecount.str();
+						m_yaytext.push_back(text);
+						} break;
+					case LABERINTH: {	// Fall into laberinth
+						nextminigame = 4;
+						minigame = 4;
+						player1gameover = m_p0gameover;
+						player2gameover = m_p1gameover;
+						
+						// Yaytext
+						YayText doortext;
+						doortext.pos = p0pos;
+						doortext.text = "The Door Slowly Opens";
+						m_yaytext.push_back(doortext);
+						} break;
 				}
 			}
 			sf::Vector2f p1pos = m_p1pos + sf::Vector2f(m_playersize.x/2,m_playersize.y/2);
@@ -923,9 +948,29 @@ case 3: {	// Mario Mode
 							m_yaytext.push_back(text);
 						}
 						break;
-					case SCORE:
+					case SCORE: {
 						score += interact.level;
-						break;
+						
+						// Yaytext
+						YayText text;
+						text.pos = p1pos;
+						std::stringstream scorecount;
+						scorecount << "+" << interact.level << " Score!";
+						text.text = scorecount.str();
+						m_yaytext.push_back(text);
+						} break;
+					case LABERINTH:	{ // Fall into laberinth
+						nextminigame = 4;
+						minigame = 4;
+						player1gameover = m_p0gameover;
+						player2gameover = m_p1gameover;
+						
+						// Yaytext
+						YayText doortext;
+						doortext.pos = p1pos;
+						doortext.text = "The Door Slowly Opens";
+						m_yaytext.push_back(doortext);
+						} break;
 				}
 			}
 		}
@@ -972,6 +1017,10 @@ case 3: {	// Mario Mode
 			if (m_p0gameover) player1gameover = true;
 			if (m_p1gameover) player2gameover = true;
 		}
+} break;
+
+case 4: {	// Animation of falling into laberinth
+	
 } break;
 
 default:  // Minigame does not exist

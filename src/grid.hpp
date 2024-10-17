@@ -21,8 +21,7 @@ template <typename T> class Grid {
 			data.at(x).at(y) = value;
 		}
 		T get(unsigned int x, unsigned int y) {
-			T blank;
-			if (x >= width || y >= height) return blank;
+			if (x >= width || y >= height) return static_cast<T>(0);
 			return data.at(x).at(height-1-y);
 		}
 		sf::Vector2u getsize() {
