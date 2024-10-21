@@ -1,2 +1,2 @@
-highscore 30
+highscore 60
 twoplayerhighscore 75

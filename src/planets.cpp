@@ -2,6 +2,7 @@
 
 #ifdef PLANET_FUNC
 #undef PLANET_FUNC
+
 // Functions and Classes for Planets Go Here
 
 // Function that selects a frame of a vertical spritesheet
@@ -268,6 +269,10 @@ void yaytext(sf::RenderWindow* window, sf::Font* font, float deltatime, float of
 	}
 };
 
+// Laberinth Functions
+#define LABERINTH_FUNC
+#include "laberinth.cpp"
+
 #endif
 
 #ifdef PLANET_ASSETS
@@ -354,10 +359,17 @@ Grid<uint8_t> m_map;
 
 // End Mario
 
+// Laberinth Assets
+#define LABERINTH_ASSET
+#include "laberinth.cpp"
+
 #endif
 
 #ifdef PLANET_VARS
 #undef PLANET_VARS
+// Laberinth Variables
+#define LABERITH_VARS
+#include "laberinth.cpp"
 // Global Variables for Planets Go Here
 bool whooshed = false;
 // Remember to copy values to PLANET_RESET
@@ -681,6 +693,9 @@ case 3: {	// Mario Mode
 				else if (m_p0gameovertime < m_p1gameovertime) future = m_p0pos.x - 1*(windowsize.x/2);
 				else if (m_p0gameovertime > m_p1gameovertime) future = m_p1pos.x - 1*(windowsize.x/2);
 			}
+			// Round the future
+			future = std::roundf(future);
+			// 
 			if (future > 0) m_offset = future;
 
 		}
@@ -809,6 +824,14 @@ case 3: {	// Mario Mode
 				if (!m_p0land && hitenemy.intersects(player) && m_p0vel.y < 0) {
 					enemy.squished = true;
 					m_p0vel.y = m_hitjump;	// Boing
+					score += 15;
+					// YayText
+					YayText text;
+					text.text = "+15 Score!";
+					text.pos = m_p0pos;
+					text.pos.y -= m_playersize.y / 2;
+					text.pos.x += m_playersize.x / 2;
+					m_yaytext.push_back(text);
 				}
 				else if (m_p0damagetime > m_damagetime && hitenemy.intersects(player)) {
 					m_p0damagetime = 0;
@@ -821,6 +844,14 @@ case 3: {	// Mario Mode
 				if (!m_p1land && hitenemy.intersects(player) && m_p1vel.y < 0) {
 					enemy.squished = true;
 					m_p1vel.y = m_hitjump;	// Boing
+					score += 15;
+					// YayText
+					YayText text;
+					text.text = "+15 Score!";
+					text.pos = m_p0pos;
+					text.pos.y -= m_playersize.y / 2;
+					text.pos.x += m_playersize.x / 2;
+					m_yaytext.push_back(text);
 				}
 				else if (m_p1damagetime > m_damagetime && hitenemy.intersects(player)) {
 					m_p1damagetime = 0;
@@ -1020,7 +1051,11 @@ case 3: {	// Mario Mode
 } break;
 
 case 4: {	// Animation of falling into laberinth
-	
+	if (true) nextminigame = 5;	
+} break;
+case 5: {
+#define LABERINTH_CODE
+#include "laberinth.cpp"	
 } break;
 
 default:  // Minigame does not exist
