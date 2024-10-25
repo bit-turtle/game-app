@@ -1,3 +1,5 @@
+#ifndef GRID_H
+#define GRID_H
 // Perfect Grid for Maps
 template <typename T> class Grid {
 	private:
@@ -10,11 +12,11 @@ template <typename T> class Grid {
 			// Resize Grid
 			while (x >= width) {
 				data.emplace_back();
-				for (int i = 0; i < height; i++) data.at(width).push_back(0);
+				for (int i = 0; i < height; i++) data.at(width).push_back(static_cast<T>(0));
 				width++;
 			};
 			while (y >= height) {
-				for (int i = 0; i < width; i++) data.at(i).push_back(0);
+				for (int i = 0; i < width; i++) data.at(i).push_back(static_cast<T>(0));
 				height++;
 			}
 			// Set Point
@@ -36,3 +38,4 @@ template <typename T> class Grid {
 			height = 0;
 		}
 };
+#endif
