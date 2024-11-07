@@ -368,7 +368,7 @@ Grid<uint8_t> m_map;
 #ifdef PLANET_VARS
 #undef PLANET_VARS
 // Laberinth Variables
-#define LABERITH_VARS
+#define LABERINTH_VARS
 #include "laberinth.cpp"
 // Global Variables for Planets Go Here
 bool whooshed = false;
@@ -378,7 +378,7 @@ bool whooshed = false;
 std::vector<YayText> m_yaytext;
 float m_gameoveranimtime = 5.f;	// 5 second fade
 float m_offset = 0;
-float m_scale = 8;
+float m_scale = window.getSize().y/128;
 sf::Vector2f m_playersize(5*m_scale,9*m_scale);
 sf::Vector2f m_enemysize(7*m_scale,7*m_scale);
 float m_blockwidth = 11;
@@ -448,6 +448,9 @@ TileMap m_initlevel = m_level;
 
 #ifdef PLANET_RESET
 #undef PLANET_RESET
+// Laberinth Reset
+#define LABERINTH_RESET
+#include "laberinth.cpp"
 // Whoosh
 whooshed = false;
 // Begin Mario
@@ -1054,6 +1057,14 @@ case 4: {	// Animation of falling into laberinth
 	if (true) nextminigame = 5;	
 } break;
 case 5: {
+#define LABERINTH_INST
+#include "laberinth.cpp"	
+} break;
+case 6: {
+#define LABERINTH_GEN
+#include "laberinth.cpp"
+} break;
+case 7: {
 #define LABERINTH_CODE
 #include "laberinth.cpp"	
 } break;

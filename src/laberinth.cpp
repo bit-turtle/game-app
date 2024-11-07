@@ -1,98 +1,185 @@
 // Laberinth Minigame with a Procedural Maze
-#include "grid.hpp"
+#define MAZE_SIZE_X 64
+#define MAZE_SIZE_Y 32
+#define MAZE_TILE_SIZE 16
+#define MAZE_GEN_RATE 16
+//
+#define MOVE_DELAY 0.1	// Delay in seconds
 //
 #ifdef LABERINTH_FUNC
+#include "maze.hpp"
 #undef LABERINTH_FUNC
-enum MazeTile {		// Representation of the top right corner of walls on a cell, maze is an array of these
-	EMPTY = 0b00,		// * * * * @ @ @ @ & & & & @ @ @ @       &       @ & & & & @ @ @ @       &
-	RIGHT = 0b01,		//       *       @       &               &       @               @       &
-	BOTTOM = 0b10,		//       *       @       &               &       @               @       &
-	BOTTOM_RIGHT = 0b11,	//       *       @       &               &       @               @       &
-};
-enum MazeSide {
-	RIGHT_SIDE,
-	BOTTOM_SIDE,
-	LEFT_SIDE,
-	TOP_SIDE,
-};
-void connectMaze(Grid<MazeTile>* maze, int x, int y, MazeSide side) {
-	bool left = (x == 0) ? true : false;
-	bool top = (y == 0) ? true : false;
-	switch (side) {
-		case RIGHT_SIDE:
-			if (maze->get(x,y) == BOTTOM || maze->get(x,y) == BOTTOM_RIGHT)
-				maze->set(x,y, BOTTOM_RIGHT);
-			else
-				maze->set(x,y, RIGHT);
-			break;
-		case BOTTOM_SIDE:
-			if (maze->get(x,y) == RIGHT || maze->get(x,y) == BOTTOM_RIGHT)
-				maze->set(x,y, BOTTOM_RIGHT);
-			else
-				maze->set(x,y, BOTTOM);
-			break;
-		case LEFT_SIDE:
-			if (left) break;
-			if (maze->get(x-1,y) == BOTTOM || maze->get(x-1,y) == BOTTOM_RIGHT)
-				maze->set(x-1,y, BOTTOM_RIGHT);
-			else
-				maze->set(x-1,y, RIGHT);
-			break;
-		case TOP_SIDE:
-			if (top) break;
-			if (maze->get(x,y-1) == RIGHT || maze->get(x,y-1) == BOTTOM_RIGHT)
-				maze->set(x,y-1, BOTTOM_RIGHT);
-			else
-				maze->set(x,y-1, BOTTOM);
-			break;
-		
-	}
-}
 #endif
 
 #ifdef LABERINTH_ASSET
 #undef LABERINTH_ASSET
 sf::Texture l_p0tex;	// Player 0 Texture
-if (!l_p0tex.loadFromFile("player0.laberinth.png"))
+if (!l_p0tex.loadFromFile("textures/player0.laberinth.png"))
 	std::cout << "Failed to load texture 'player0.laberinth'" << std::endl;
 sf::Texture l_p1tex;	// Player 1 Texture
-if (!l_p0tex.loadFromFile("player1.laberinth.png"))
+if (!l_p0tex.loadFromFile("textures/player1.laberinth.png"))
 	std::cout << "Failed to load texture 'player1.laberinth'" << std::endl;
 sf::Texture l_enemytex;	// Enemy Texture
-if (!l_p0tex.loadFromFile("enemy.laberinth.png"))
+if (!l_p0tex.loadFromFile("textures/enemy.laberinth.png"))
 	std::cout << "Failed to load texture 'enemy.laberinth'" << std::endl;
 // Wall Textures
 sf::Texture l_fillwalltex;	// Filler texture to not leave gaps in Wall
-if (!l_p0tex.loadFromFile("fill.wall.laberinth.png"))
+if (!l_p0tex.loadFromFile("textures/fill.wall.laberinth.png"))
 	std::cout << "Failed to load texture 'fill.wall.laberinth'" << std::endl;
 sf::Texture l_litwalltex;	// Lit Wall Texture
-if (!l_p0tex.loadFromFile("lit.wall.laberinth.png"))
+if (!l_p0tex.loadFromFile("textures/lit.wall.laberinth.png"))
 	std::cout << "Failed to load texture 'lit.wall.laberinth'" << std::endl;
 sf::Texture l_shadowwalltex;	// Shadowed Wall Texture
-if (!l_p0tex.loadFromFile("shadow.wall.laberinth.png"))
+if (!l_p0tex.loadFromFile("textures/shadow.wall.laberinth.png"))
 	std::cout << "Failed to load texture 'shadow.wall.laberinth'" << std::endl;
 // End of wall textures
 sf::Texture l_cointex;	// Coin Texture
-if (!l_p0tex.loadFromFile("coin.laberinth.png"))
+if (!l_p0tex.loadFromFile("textures/coin.laberinth.png"))
 	std::cout << "Failed to load texture 'coin.laberinth'" << std::endl;
-// Initialize Maze
-// TODO
 #endif
 
 #ifdef LABERINTH_VARS
 #undef LABERINTH_VARS
-sf::Vector2u l_p0pos;
-sf::Vector2u l_p1pos;
-std::vector<sf::Vector2u> l_enpos;
-Grid<MazeTile> maze;
+sf::Vector2u l_p0pos(0,0);
+float l_p0delay = 0;
+sf::Vector2u l_p1pos(0,0);
+float l_p1delay = 0;
+sf::Vector2u l_enpos = sf::Vector2u(rand()%(MAZE_SIZE_X/2) + (MAZE_SIZE_X/4),rand()%(MAZE_SIZE_Y/2) + (MAZE_SIZE_Y/4));
+float l_endelay = 0;
+Maze l_maze(MAZE_SIZE_X, MAZE_SIZE_Y);
+int l_genguess = MAZE_SIZE_X * MAZE_SIZE_Y * 2 - 1;
+#endif
+
+#ifdef LABERINTH_RESET
+#undef LABERINTH_RESET
+l_p0pos = sf::Vector2u(0,0);
+l_p0delay = 0;
+l_p1pos = sf::Vector2u(0,0);
+l_p1delay = 0;
+l_enpos = sf::Vector2u(rand()%(MAZE_SIZE_X/2) + (MAZE_SIZE_X/4),rand()%(MAZE_SIZE_Y/2) + (MAZE_SIZE_Y/4));
+l_endelay = 0;
+l_maze.init(MAZE_SIZE_X, MAZE_SIZE_Y);
+#endif
+
+#ifdef LABERINTH_INST
+#undef LABERINTH_INST
+message = "Controls";
+tiptext = "Press [Enter] or Click to Continue";
+text.setString("Move: [W][A][S][D] or [^][<][v][>]");
+text.setOrigin(text.getLocalBounds().width/2,text.getLocalBounds().height/2);
+text.setPosition(windowsize.x*0.5,windowsize.y*0.5);	// 50% from top centered
+window.draw(text);
+
+// Continue
+if (click || enter) {
+	minigame = 6;
+	nextminigame = 6;	// Skip animation
+	clock.restart();
+#define LABERINTH_RESET
+#include "laberinth.cpp"
+}
+
+#endif
+
+#ifdef LABERINTH_GEN
+#undef LABERINTH_GEN
+// Generate Maze
+for (int i = 0; i < MAZE_GEN_RATE; i++) if(l_maze.gen()) break;
+// Loader
+switch ((int)clock.getElapsedTime().asSeconds()%4) {
+	case 0:
+		message = "Generating Maze";
+		break;
+	case 1:
+		message = "Generating Maze.";
+		break;
+	case 2:
+		message = "Generating Maze..";
+		break;
+	default:
+		message = "Generating Maze...";
+} 
+std::stringstream percentagedone;
+if (l_genguess > 0) percentagedone << (l_maze.iter() / l_genguess * 100);
+else percentagedone << "NaN";
+percentagedone << "% Generated (";
+percentagedone << l_maze.iter();
+percentagedone << "/";
+percentagedone << l_genguess;
+percentagedone << ")";
+tiptext = percentagedone.str();
+
+if (l_maze.done()) {
+	nextminigame = 7;
+	minigame = 7;
+	clock.restart();
+}
 #endif
 
 #ifdef LABERINTH_CODE
 #undef LABERINTH_CODE
 // Controls
-
+// Player 0
+int l_p0mx = 0;
+if (
+	!player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Right) ||
+	sf::Keyboard::isKeyPressed(sf::Keyboard::D)
+) l_p0mx += 1;
+if (
+	!player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Left) ||
+	sf::Keyboard::isKeyPressed(sf::Keyboard::A)
+) l_p0mx -= 1;
+int l_p0my = 0;
+if (
+	!player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Up) ||
+	sf::Keyboard::isKeyPressed(sf::Keyboard::W)
+) l_p0my -= 1;
+if (
+	!player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Down) ||
+	sf::Keyboard::isKeyPressed(sf::Keyboard::S)
+) l_p0mx += 1;
+// Player 1
+int l_p1mx = 0;
+if ( player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Right)
+) l_p0mx += 1;
+if ( player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Left)
+) l_p0mx -= 1;
+int l_p1my = 0;
+if ( player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Up)
+) l_p0mx -= 1;
+if ( player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Down)
+) l_p0mx += 1;
 // Movement
-
+if (!player1gameover) {
+	// Player 0
+	l_p0delay -= deltatime;
+	if (l_p0delay <= 0) {
+		l_p0delay = 0;
+		if (l_p0mx != 0 && l_maze.testx(l_p0pos, l_p0mx)) {
+			l_p0pos.x += l_p0mx;
+			l_p0delay = MOVE_DELAY;
+		}
+		else if (l_p0my != 0 && l_maze.testy(l_p0pos, l_p0my)) {
+			l_p0pos.y += l_p0my;
+			l_p0delay = MOVE_DELAY;
+		}
+	}
+}
+if (!player2gameover && player2mode) {
+	// Player 1
+	l_p1delay -= deltatime;
+	if (l_p1delay <= 0) {
+		l_p1delay = 0;
+		if (l_p1mx != 0 && l_maze.testx(l_p1pos, l_p1mx)) {
+			l_p1pos.x += l_p1mx;
+			l_p1delay = MOVE_DELAY;
+		}
+		else if (l_p1my != 0 && l_maze.testy(l_p1pos, l_p1my)) {
+			l_p1pos.y += l_p1my;
+			l_p1delay = MOVE_DELAY;
+		}
+	}
+}
 // Render
 
 #endif
