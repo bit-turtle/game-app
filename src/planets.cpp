@@ -282,54 +282,78 @@ void yaytext(sf::RenderWindow* window, sf::Font* font, float deltatime, float of
 
 // Ship Land Animation
 sf::SoundBuffer whooshbuffer;
-if (!whooshbuffer.loadFromFile("sounds/whoosh.wav"))
+if (!whooshbuffer.loadFromFile("sounds/whoosh.wav")) {
 	std::cout << "Failed to Load The Whoosh Sound!" << std::endl;
+	ok = false;
+}
 sf::Sound whoosh;
 whoosh.setBuffer(whooshbuffer);
 
 // Mario ( 'm_' prefix )
 sf::Texture m_landinganim;	// Spaceship landing animation
-if (!m_landinganim.loadFromFile("textures/landing.anim.png"))	// '.anim.png' for spritesheet animations
+if (!m_landinganim.loadFromFile("textures/landing.anim.png")) {	// '.anim.png' for spritesheet animations
 	std::cout << "Falied to Load Texture 'landing.anim'!" << std::endl;
+	ok = false;
+}
 // Player Assets
 sf::Texture m_playerwalk0anim;
-if (!m_playerwalk0anim.loadFromFile("textures/playerwalk0.anim.png"))
+if (!m_playerwalk0anim.loadFromFile("textures/playerwalk0.anim.png")) {
 	std::cout << "Failed to Load Texture 'playerwalk0.anim'!" << std::endl;
+	ok = false;
+}
 sf::Texture m_playerwalk1anim;
-if (!m_playerwalk1anim.loadFromFile("textures/playerwalk1.anim.png"))
+if (!m_playerwalk1anim.loadFromFile("textures/playerwalk1.anim.png")) {
 	std::cout << "Failed to Load Texture 'playerwalk1.anim'!" << std::endl;
+	ok = false;
+}
 sf::Texture m_player0;
-if (!m_player0.loadFromFile("textures/player0.png"))
+if (!m_player0.loadFromFile("textures/player0.png")) {
 	std::cout << "Failed to Load Texture 'player0'!" << std::endl;
+	ok = false;
+}
 sf::Texture m_playergameover0;
-if (!m_playergameover0.loadFromFile("textures/playergameover0.png"))
+if (!m_playergameover0.loadFromFile("textures/playergameover0.png")) {
 	std::cout << "Failed to Load Texture 'playergameover0'!" << std::endl;
+	ok = false;
+}
 sf::Texture m_player1;
-if (!m_player1.loadFromFile("textures/player1.png"))
+if (!m_player1.loadFromFile("textures/player1.png")) {
 	std::cout << "Failed to Load Texture 'player1'!" << std::endl;
+	ok = false;
+}
 sf::Texture m_playergameover1;
-if (!m_playergameover1.loadFromFile("textures/playergameover1.png"))
+if (!m_playergameover1.loadFromFile("textures/playergameover1.png")) {
 	std::cout << "Failed to Load Texture 'playergameover1'!" << std::endl;
+	ok = false;
+}
 // Enemy Assets
 sf::Texture m_enemywalkanim;
-if (!m_enemywalkanim.loadFromFile("textures/enemywalk.anim.png"))
+if (!m_enemywalkanim.loadFromFile("textures/enemywalk.anim.png")) {
 	std::cout << "Failed to Load Texture 'enemywalk.anim'!" << std::endl;
+	ok = false;
+}
 sf::Texture m_enemysquish;
-if (!m_enemysquish.loadFromFile("textures/enemysquish.png"))
+if (!m_enemysquish.loadFromFile("textures/enemysquish.png")) {
 	std::cout << "Failed to Load Texture 'enemysquish.png'" << std::endl;
+	ok = false;
+}
 
 // Sounds
 sf::SoundBuffer m_jumpsoundbuffer;
-if (!m_jumpsoundbuffer.loadFromFile("sounds/jump.wav"))
+if (!m_jumpsoundbuffer.loadFromFile("sounds/jump.wav")) {
 	std::cout << "Failed to load sound effect 'jump'!" << std::endl;
+	ok = false;
+}
 sf::Sound m_jumpsound;
 m_jumpsound.setBuffer(m_jumpsoundbuffer);
 m_jumpsound.setLoop(false);
 
 // Block Texture
 sf::Texture m_blocktexture;
-if (!m_blocktexture.loadFromFile("textures/blocks.png"))
+if (!m_blocktexture.loadFromFile("textures/blocks.png")) {
 	std::cout << "Failed to load texture 'blocks'!" << std::endl;
+	ok = false;
+}
 
 // Game Map
 Grid<uint8_t> m_map;
@@ -350,7 +374,10 @@ Grid<uint8_t> m_map;
 			linenumber++;
 		}
 	}
-	else std::cout << "Failed to Load Map 'mario.map'!" << std::endl;
+	else {
+		std::cout << "Failed to Load Map 'mario.map'!" << std::endl;
+		ok = false;
+	}
 	file.close();
 }
 

@@ -14,28 +14,42 @@
 #ifdef LABERINTH_ASSET
 #undef LABERINTH_ASSET
 sf::Texture l_p0tex;	// Player 0 Texture
-if (!l_p0tex.loadFromFile("textures/player0.laberinth.png"))
+if (!l_p0tex.loadFromFile("textures/player0.laberinth.png")) {
 	std::cout << "Failed to load texture 'player0.laberinth'" << std::endl;
+	ok = false;
+}
 sf::Texture l_p1tex;	// Player 1 Texture
-if (!l_p0tex.loadFromFile("textures/player1.laberinth.png"))
+if (!l_p0tex.loadFromFile("textures/player1.laberinth.png")) {
 	std::cout << "Failed to load texture 'player1.laberinth'" << std::endl;
+	ok = false;
+}
 sf::Texture l_enemytex;	// Enemy Texture
-if (!l_p0tex.loadFromFile("textures/enemy.laberinth.png"))
+if (!l_p0tex.loadFromFile("textures/enemy.laberinth.png")) {
 	std::cout << "Failed to load texture 'enemy.laberinth'" << std::endl;
+	ok = false;
+}
 // Wall Textures
 sf::Texture l_fillwalltex;	// Filler texture to not leave gaps in Wall
-if (!l_p0tex.loadFromFile("textures/fill.wall.laberinth.png"))
+if (!l_p0tex.loadFromFile("textures/fill.wall.laberinth.png")) {
 	std::cout << "Failed to load texture 'fill.wall.laberinth'" << std::endl;
+	ok = false;
+}
 sf::Texture l_litwalltex;	// Lit Wall Texture
-if (!l_p0tex.loadFromFile("textures/lit.wall.laberinth.png"))
+if (!l_p0tex.loadFromFile("textures/lit.wall.laberinth.png")) {
 	std::cout << "Failed to load texture 'lit.wall.laberinth'" << std::endl;
+	ok = false;
+}
 sf::Texture l_shadowwalltex;	// Shadowed Wall Texture
-if (!l_p0tex.loadFromFile("textures/shadow.wall.laberinth.png"))
+if (!l_p0tex.loadFromFile("textures/shadow.wall.laberinth.png")) {
 	std::cout << "Failed to load texture 'shadow.wall.laberinth'" << std::endl;
+	ok = false;
+}
 // End of wall textures
 sf::Texture l_cointex;	// Coin Texture
-if (!l_p0tex.loadFromFile("textures/coin.laberinth.png"))
+if (!l_p0tex.loadFromFile("textures/coin.laberinth.png")) {
 	std::cout << "Failed to load texture 'coin.laberinth'" << std::endl;
+	ok = false;
+}
 #endif
 
 #ifdef LABERINTH_VARS

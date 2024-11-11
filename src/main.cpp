@@ -118,6 +118,9 @@ enum powertypes { SHEILD, BOMB, PLANET };
 #include "planets.cpp"
 
 int main() {
+	// Is everything ok?
+	bool ok = true;
+
 	// Create Window
 	sf::RenderWindow window(sf::VideoMode::getFullscreenModes().at(0), GAMENAME,
 				sf::Style::Fullscreen);
@@ -148,6 +151,7 @@ int main() {
 	if (!dangerdetectedbuffer.loadFromFile("sounds/dangerdetected.wav")) {
 		std::cout << "Failed to load sound effect 'dangerdetected'!"
 			  << std::endl;
+		ok = false;
 	}
 	sf::Sound dangerdetected;
 	dangerdetected.setBuffer(dangerdetectedbuffer);
@@ -156,6 +160,7 @@ int main() {
 	if (!lazerfirebuffer.loadFromFile("sounds/lazerfire.wav")) {
 		std::cout << "Failed to load sound effect 'lazerfire'!"
 			  << std::endl;
+		ok = false;
 	}
 	sf::Sound lazerfire;
 	lazerfire.setBuffer(lazerfirebuffer);
@@ -164,6 +169,7 @@ int main() {
 	if (!explosionbuffer.loadFromFile("sounds/explosion.wav")) {
 		std::cout << "Failed to load sound effect 'explosion'!"
 			  << std::endl;
+		ok = false;
 	}
 	sf::Sound explosionsound;
 	explosionsound.setBuffer(explosionbuffer);
@@ -172,6 +178,7 @@ int main() {
 	if (!destroybuffer.loadFromFile("sounds/destroy.wav")) {
 		std::cout << "Failed to load sound effect 'destroy'!"
 			  << std::endl;
+		ok = false;
 	}
 	sf::Sound destroysound;
 	destroysound.setBuffer(destroybuffer);
@@ -180,6 +187,7 @@ int main() {
 	if (!powerupbuffer.loadFromFile("sounds/powerup.wav")) {
 		std::cout << "Failed to load sound effect 'powerup'!"
 			  << std::endl;
+		ok = false;
 	}
 	sf::Sound powerupsound;
 	powerupsound.setBuffer(powerupbuffer);
@@ -188,6 +196,7 @@ int main() {
 	if (!powerdownbuffer.loadFromFile("sounds/powerdown.wav")) {
 		std::cout << "Failed to load sound effect 'powerdown'!"
 			  << std::endl;
+		ok = false;
 	}
 	sf::Sound powerdownsound;
 	powerdownsound.setBuffer(powerdownbuffer);
@@ -196,6 +205,7 @@ int main() {
 	if (!buttonclickbuffer.loadFromFile("sounds/buttonclick.wav")) {
 		std::cout << "Failed to load sound effect 'buttonclick'!"
 			  << std::endl;
+		ok = false;
 	}
 	sf::Sound buttonclicksound;
 	buttonclicksound.setBuffer(buttonclickbuffer);
@@ -204,6 +214,7 @@ int main() {
 	if (!scorecountbuffer.loadFromFile("sounds/scorecount.wav")) {
 		std::cout << "Failed to load sound effect 'scorecount'!"
 			  << std::endl;
+		ok = false;
 	}
 	sf::Sound scorecountsound;
 	scorecountsound.setBuffer(scorecountbuffer);
@@ -212,6 +223,7 @@ int main() {
 	if (!bombbuffer.loadFromFile("sounds/bombexplosion.wav")) {
 		std::cout << "Failed to load sound effect 'bombexplosion'!"
 			  << std::endl;
+		ok = false;
 	}
 	sf::Sound bombexplosionsound;
 	bombexplosionsound.setBuffer(bombbuffer);
@@ -220,6 +232,7 @@ int main() {
 	if (!bitturtlebuffer.loadFromFile("sounds/bit-turtle.wav")) {
 		std::cout << "Failed to load the bit turtle sound!"
 			  << std::endl;
+		ok = false;
 	}
 	sf::Sound bitturtlesound;
 	bitturtlesound.setBuffer(bitturtlebuffer);
@@ -229,6 +242,7 @@ int main() {
 	sf::Music backgroundmusic;
 	if (!backgroundmusic.openFromFile("sounds/backgroundmusic.wav")) {
 		std::cout << "Failed to load Background Music!";
+		ok = false;
 	}
 
 // Import Planet Minigame Assets
@@ -421,6 +435,7 @@ int main() {
 			sf::Sprite logosprite(logo);
 			sf::Time time = clock.getElapsedTime();
 			sf::Color logocolor = sf::Color::White;
+			if (!ok) logocolor = sf::Color::Red;	// Red if not everything is loaded
 			if (time.asSeconds() < 1)
 				// Fade in
 				logocolor.a = time.asSeconds() * 256;
@@ -461,12 +476,14 @@ int main() {
 		case 1: {
 			// Title
 			sf::Text title(GAMENAME, roboto, 80);
+			if (!ok) title = sf::Text("Files Failed To Load!", roboto, 80);
 			// Center Title, 10% from top
 			sf::FloatRect titlesize = title.getLocalBounds();
 			title.setPosition(sf::Vector2f(
 			    window.getSize().x / 2.f - titlesize.width / 2.f,
 			    window.getSize().y * 0.1));
 			title.setFillColor(sf::Color::White);
+			if (!ok) title.setFillColor(sf::Color::Red);
 			window.draw(title);
 			// Play Button
 			sf::RectangleShape playbutton(sf::Vector2f(400, 100));
@@ -498,6 +515,7 @@ int main() {
 			window.draw(playbutton);
 			// Play Button Text
 			sf::Text playtext("Play Game", roboto, 50);
+			if (!ok) playtext = sf::Text("Play Anyways", roboto, 50);
 			// Center Text In Button
 			sf::FloatRect textsize = playtext.getLocalBounds();
 			playtext.setPosition(sf::Vector2f(
@@ -511,6 +529,7 @@ int main() {
 			window.draw(playtext);
 			// Tip Text
 			sf::Text tiptext("Press [esc] To Exit", roboto, 30);
+			if (!ok) tiptext = sf::Text("Press [esc] to exit, try running from game folder", roboto, 30);
 			// Center Tip Text, 10% from bottom
 			sf::FloatRect tipsize = tiptext.getLocalBounds();
 			tiptext.setPosition(
