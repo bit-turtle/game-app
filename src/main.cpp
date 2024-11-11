@@ -271,7 +271,7 @@ int main() {
 
 	// Game
 	bool newhighscore = false;
-	struct highscore highscores = readhighscore();
+	struct Highscore highscores = readhighscore();
 	int score = 0;
 	int finalscore = 0;  // Counter for final score animation
 	float scoretime = 0; // Timer for final score animation

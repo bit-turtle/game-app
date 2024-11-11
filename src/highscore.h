@@ -3,12 +3,12 @@
 #include <string>
 #include <sstream>
 
-struct highscore {
+struct Highscore {
   int highscore = 0;
   int twoplayerhighscore = 0;
 };
-struct highscore readhighscore() {
-  struct highscore highscores;
+struct Highscore readhighscore() {
+  struct Highscore highscores;
   std::ifstream file("highscore.txt");
   std::string linestr;
   while (getline(file,linestr)) {
@@ -28,7 +28,7 @@ struct highscore readhighscore() {
   file.close();
   return highscores;
 }
-void writehighscore(struct highscore highscores) {
+void writehighscore(struct Highscore highscores) {
   std::ofstream file("highscore.txt");
   file << "highscore " << highscores.highscore << std::endl;
   file << "twoplayerhighscore " << highscores.twoplayerhighscore << std::endl;
