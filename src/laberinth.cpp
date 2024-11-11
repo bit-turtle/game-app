@@ -181,5 +181,9 @@ if (!player2gameover && player2mode) {
 	}
 }
 // Render
-
+// Players
+{
+	sf::RectangleShape player0(sf::Vector2f(windowsize.y/128, windowsize.y/128));
+	// TODO
+}
 #endif
