@@ -5,4 +5,4 @@ A game like asteroids written in C++
 ## Building
 1. `git clone https://github.com/bit-turtle/game-app`
 2. `cmake .`
-3. `make` or other build system
+3. `make` or `msbuild`
