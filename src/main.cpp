@@ -50,7 +50,8 @@
 #define LAZERSPEED 1000 // Speed of lazers
 #define LAZERCOOLDOWN 0.25
 #define LAZERDESPAWNDISTANCE 100 // Lazer despawn distance
-#define HITRADIUS 40 // Player and enemy hit radius for lazers in pixels
+#define HITRADIUS 40 // Player hit radius for lazers in pixels
+#define E_HITRADIUS 50 // Enemy hit radius for lazers in pixels
 #define LAZERINVULNERABILITYPERIOD                                             \
 	0.15 // Seconds after shooting a lazer that the player or enemy cannot
 	     // be hit you can fire at the last second to survive
@@ -3240,7 +3241,7 @@ int main() {
 							sin(-erot * PI / 180),
 							cos(-erot * PI / 180)) *
 						    (float)
-							HITRADIUS; // Get Lazer
+							E_HITRADIUS; // Get Lazer
 								   // out of hit
 								   // radius
 						// Update Lazer Cooldown
@@ -3350,7 +3351,7 @@ int main() {
 									.at(l)
 									.y -
 								    epos.y) <=
-							    HITRADIUS) {
+							    E_HITRADIUS) {
 
 								// Delete Lazer
 								lazerpositions.erase(
