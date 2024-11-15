@@ -229,7 +229,7 @@ InteractResult tileinteract(std::vector<TileEntity>* tiles, float blocksize, sf:
 				res.type = LABERINTH;
 				break;
 			case COIN:
-				tiles->at(id).type = static_cast<TileEntityTypes>(0);
+				tiles->at(id).type = OPENCHEST;
 				res.type = SCORE;
 				res.level = 5;
 			default:
