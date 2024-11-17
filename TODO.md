@@ -1,5 +1,5 @@
 # TODO
-1. Maze Maze Movement Test
-2. Make Maze renderer
-3. Make cutscene to being put in maze
-4. Create 'stinger' Minigame to exit planet
+1. Make Maze renderer
+2. Make cutscene to being put in maze
+3. Create 'stinger' Minigame to exit planet
+4. Player Experience

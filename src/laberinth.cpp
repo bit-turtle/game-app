@@ -54,6 +54,7 @@ if (!l_p0tex.loadFromFile("textures/coin.laberinth.png")) {
 
 #ifdef LABERINTH_VARS
 #undef LABERINTH_VARS
+unsigned l_scale = 10;
 sf::Vector2u l_p0pos(0,0);
 float l_p0delay = 0;
 sf::Vector2u l_p1pos(0,0);
@@ -79,7 +80,8 @@ l_maze.init(MAZE_SIZE_X, MAZE_SIZE_Y);
 #undef LABERINTH_INST
 message = "Controls";
 tiptext = "Press [Enter] or Click to Continue";
-text.setString("Move: [W][A][S][D] or [^][<][v][>]");
+text.setString("Move: [WASD] or [^<v>]");
+if (player2mode) text.setString("Player 1: Move: [WASD]\nPlayer 2: Move: [^<v>]");
 text.setOrigin(text.getLocalBounds().width/2,text.getLocalBounds().height/2);
 text.setPosition(windowsize.x*0.5,windowsize.y*0.5);	// 50% from top centered
 window.draw(text);
@@ -90,7 +92,7 @@ if (click || enter) {
 	nextminigame = 6;	// Skip animation
 	clock.restart();
 #define LABERINTH_RESET
-#include "laberinth.cpp"
+#include "laberinth.cpp"	// This is cursed on another level (Including the current file in that file)
 }
 
 #endif
@@ -100,7 +102,7 @@ if (click || enter) {
 // Generate Maze
 for (int i = 0; i < MAZE_GEN_RATE; i++) if(l_maze.gen()) break;
 // Loader
-switch ((int)clock.getElapsedTime().asSeconds()%4) {
+switch ((int)(clock.getElapsedTime().asSeconds()*8)%4) {
 	case 0:
 		message = "Generating Maze";
 		break;
@@ -151,18 +153,18 @@ if (
 if (
 	!player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Down) ||
 	sf::Keyboard::isKeyPressed(sf::Keyboard::S)
-) l_p0mx += 1;
+) l_p0my += 1;
 // Player 1
 int l_p1mx = 0;
 if ( player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Right)
-) l_p0mx += 1;
+) l_p1mx += 1;
 if ( player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Left)
-) l_p0mx -= 1;
+) l_p1mx -= 1;
 int l_p1my = 0;
 if ( player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Up)
-) l_p0mx -= 1;
+) l_p1my -= 1;
 if ( player2mode && sf::Keyboard::isKeyPressed(sf::Keyboard::Down)
-) l_p0mx += 1;
+) l_p1my += 1;
 // Movement
 if (!player1gameover) {
 	// Player 0
@@ -173,7 +175,7 @@ if (!player1gameover) {
 			l_p0pos.x += l_p0mx;
 			l_p0delay = MOVE_DELAY;
 		}
-		else if (l_p0my != 0 && l_maze.testy(l_p0pos, l_p0my)) {
+		if (l_p0my != 0 && l_maze.testy(l_p0pos, l_p0my)) {
 			l_p0pos.y += l_p0my;
 			l_p0delay = MOVE_DELAY;
 		}
@@ -188,7 +190,7 @@ if (!player2gameover && player2mode) {
 			l_p1pos.x += l_p1mx;
 			l_p1delay = MOVE_DELAY;
 		}
-		else if (l_p1my != 0 && l_maze.testy(l_p1pos, l_p1my)) {
+		if (l_p1my != 0 && l_maze.testy(l_p1pos, l_p1my)) {
 			l_p1pos.y += l_p1my;
 			l_p1delay = MOVE_DELAY;
 		}
@@ -196,8 +198,16 @@ if (!player2gameover && player2mode) {
 }
 // Render
 // Players
-{
-	sf::RectangleShape player0(sf::Vector2f(windowsize.y/128, windowsize.y/128));
-	// TODO
+{	// Player 0
+	sf::Sprite p0(l_p0tex);
+	p0.setScale(l_scale/8,l_scale/8);
+	p0.setPosition(200+l_p0pos.x * 8, 200+l_p0pos.y * 8);
+	window.draw(p0);
+}
+{	// Player 1
+	sf::Sprite p1(l_p1tex);
+	p1.setScale(l_scale/8,l_scale/8);
+	p1.setPosition(200+l_p1pos.x * 8, 200+l_p1pos.y * 8);
+	window.draw(p1);
 }
 #endif
