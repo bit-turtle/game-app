@@ -19,34 +19,34 @@ if (!l_p0tex.loadFromFile("textures/player0.laberinth.png")) {
 	ok = false;
 }
 sf::Texture l_p1tex;	// Player 1 Texture
-if (!l_p0tex.loadFromFile("textures/player1.laberinth.png")) {
+if (!l_p1tex.loadFromFile("textures/player1.laberinth.png")) {
 	std::cout << "Failed to load texture 'player1.laberinth'" << std::endl;
 	ok = false;
 }
 sf::Texture l_enemytex;	// Enemy Texture
-if (!l_p0tex.loadFromFile("textures/enemy.laberinth.png")) {
+if (!l_enemytex.loadFromFile("textures/enemy.laberinth.png")) {
 	std::cout << "Failed to load texture 'enemy.laberinth'" << std::endl;
 	ok = false;
 }
 // Wall Textures
 sf::Texture l_fillwalltex;	// Filler texture to not leave gaps in Wall
-if (!l_p0tex.loadFromFile("textures/fill.wall.laberinth.png")) {
+if (!l_fillwalltex.loadFromFile("textures/fill.wall.laberinth.png")) {
 	std::cout << "Failed to load texture 'fill.wall.laberinth'" << std::endl;
 	ok = false;
 }
 sf::Texture l_litwalltex;	// Lit Wall Texture
-if (!l_p0tex.loadFromFile("textures/lit.wall.laberinth.png")) {
+if (!l_litwalltex.loadFromFile("textures/lit.wall.laberinth.png")) {
 	std::cout << "Failed to load texture 'lit.wall.laberinth'" << std::endl;
 	ok = false;
 }
 sf::Texture l_shadowwalltex;	// Shadowed Wall Texture
-if (!l_p0tex.loadFromFile("textures/shadow.wall.laberinth.png")) {
+if (!l_shadowwalltex.loadFromFile("textures/shadow.wall.laberinth.png")) {
 	std::cout << "Failed to load texture 'shadow.wall.laberinth'" << std::endl;
 	ok = false;
 }
 // End of wall textures
 sf::Texture l_cointex;	// Coin Texture
-if (!l_p0tex.loadFromFile("textures/coin.laberinth.png")) {
+if (!l_cointex.loadFromFile("textures/coin.laberinth.png")) {
 	std::cout << "Failed to load texture 'coin.laberinth'" << std::endl;
 	ok = false;
 }
@@ -54,7 +54,7 @@ if (!l_p0tex.loadFromFile("textures/coin.laberinth.png")) {
 
 #ifdef LABERINTH_VARS
 #undef LABERINTH_VARS
-unsigned l_scale = 10;
+unsigned l_scale = 64;
 sf::Vector2u l_p0pos(0,0);
 float l_p0delay = 0;
 sf::Vector2u l_p1pos(0,0);
@@ -201,13 +201,13 @@ if (!player2gameover && player2mode) {
 {	// Player 0
 	sf::Sprite p0(l_p0tex);
 	p0.setScale(l_scale/8,l_scale/8);
-	p0.setPosition(200+l_p0pos.x * 8, 200+l_p0pos.y * 8);
+	p0.setPosition(200 +l_p0pos.x*l_scale,200 +l_p0pos.y*l_scale);
 	window.draw(p0);
 }
 {	// Player 1
 	sf::Sprite p1(l_p1tex);
 	p1.setScale(l_scale/8,l_scale/8);
-	p1.setPosition(200+l_p1pos.x * 8, 200+l_p1pos.y * 8);
+	p1.setPosition(200 +l_p1pos.x*l_scale,200 +l_p1pos.y*l_scale);
 	window.draw(p1);
 }
 #endif

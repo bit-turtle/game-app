@@ -6,4 +6,4 @@ xcopy /s/e Release\highscore.txt bundle
 xcopy /s/e textures bundle
 xcopy /s/e sounds bundle
 xcopy /s/e assets bundle
-echo "Created Bundle!"
+echo "Created Bundle! ('\bundle')"

@@ -6,3 +6,5 @@ cmake_install.cmake
 CMakeFiles
 _deps
 bundle
+GameApp.AppDir
+GameApp.AppImage
