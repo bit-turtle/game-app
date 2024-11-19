@@ -197,17 +197,23 @@ if (!player2gameover && player2mode) {
 	}
 }
 // Render
-// Players
 {	// Player 0
 	sf::Sprite p0(l_p0tex);
-	p0.setScale(l_scale/8,l_scale/8);
-	p0.setPosition(200 +l_p0pos.x*l_scale,200 +l_p0pos.y*l_scale);
+	p0.setScale(l_scale/9,l_scale/9);
+	p0.setPosition(200 +l_p0pos.x*l_scale - l_scale/9,200 +l_p0pos.y*l_scale);
 	window.draw(p0);
 }
 {	// Player 1
 	sf::Sprite p1(l_p1tex);
-	p1.setScale(l_scale/8,l_scale/8);
+	p1.setScale(l_scale/9,l_scale/9);
 	p1.setPosition(200 +l_p1pos.x*l_scale,200 +l_p1pos.y*l_scale);
 	window.draw(p1);
+}
+// Wall Test
+{	// Horizontal
+	sf::RectangleShape wall(sf::Vector2f(l_scale-l_scale/9, l_scale/9));
+	wall.setPosition(200 +l_scale*2 -l_scale/9, 200 +l_scale*2 -l_scale/9);
+	wall.setTexture(&l_shadowwalltex);
+	window.draw(wall);
 }
 #endif
