@@ -200,20 +200,48 @@ if (!player2gameover && player2mode) {
 {	// Player 0
 	sf::Sprite p0(l_p0tex);
 	p0.setScale(l_scale/9,l_scale/9);
-	p0.setPosition(200 +l_p0pos.x*l_scale - l_scale/9,200 +l_p0pos.y*l_scale);
+	p0.setPosition(l_p0pos.x*l_scale, l_p0pos.y*l_scale);
 	window.draw(p0);
 }
 {	// Player 1
 	sf::Sprite p1(l_p1tex);
 	p1.setScale(l_scale/9,l_scale/9);
-	p1.setPosition(200 +l_p1pos.x*l_scale,200 +l_p1pos.y*l_scale);
+	p1.setPosition(l_p1pos.x*l_scale, l_p1pos.y*l_scale);
 	window.draw(p1);
 }
 // Wall Test
-{	// Horizontal
-	sf::RectangleShape wall(sf::Vector2f(l_scale-l_scale/9, l_scale/9));
-	wall.setPosition(200 +l_scale*2 -l_scale/9, 200 +l_scale*2 -l_scale/9);
-	wall.setTexture(&l_shadowwalltex);
+{	// Right
+	sf::Sprite wall(l_shadowwalltex);
+	wall.setScale(l_scale/9, l_scale/9);
+	wall.setRotation(0);
+	wall.setPosition(l_scale*2, l_scale*2 -l_scale/9);
+	window.draw(wall);
+}
+{	// Down
+	sf::Sprite wall(l_shadowwalltex);
+	wall.setScale(l_scale/9, l_scale/9);
+	wall.setRotation(90);
+	wall.setPosition(l_scale*2, l_scale*2);
+	window.draw(wall);
+}
+{	// Left
+	sf::Sprite wall(l_shadowwalltex);
+	wall.setScale(l_scale/9, l_scale/9);
+	wall.setRotation(180);
+	wall.setPosition(l_scale*2 -l_scale/9, l_scale*2);
+	window.draw(wall);
+}
+{	// Up 
+	sf::Sprite wall(l_shadowwalltex);
+	wall.setScale(l_scale/9, l_scale/9);
+	wall.setRotation(270);
+	wall.setPosition(l_scale*2 -l_scale/9, l_scale*2 -l_scale/9);
+	window.draw(wall);
+}
+{	// Center
+	sf::Sprite wall(l_fillwalltex);
+	wall.setScale(l_scale/9, l_scale/9);
+	wall.setPosition(l_scale*2 -l_scale/9, l_scale*2 -l_scale/9);
 	window.draw(wall);
 }
 #endif
