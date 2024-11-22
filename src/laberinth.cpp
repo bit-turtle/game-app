@@ -81,7 +81,7 @@ l_maze.init(MAZE_SIZE_X, MAZE_SIZE_Y);
 message = "Controls";
 tiptext = "Press [Enter] or Click to Continue";
 text.setString("Move: [WASD] or [^<v>]");
-if (player2mode) text.setString("Player 1: Move: [WASD]\nPlayer 2: Move: [^<v>]");
+if (player2mode) text.setString("Player 1: Move: [WASD]\n\nPlayer 2: Move: [^<v>]");
 text.setOrigin(text.getLocalBounds().width/2,text.getLocalBounds().height/2);
 text.setPosition(windowsize.x*0.5,windowsize.y*0.5);	// 50% from top centered
 window.draw(text);
@@ -197,34 +197,34 @@ if (!player2gameover && player2mode) {
 	}
 }
 // Render
-{	// Player 0
+if (!player2gameover) {	// Player 0
 	sf::Sprite p0(l_p0tex);
 	p0.setScale(l_scale/9,l_scale/9);
 	p0.setPosition(l_p0pos.x*l_scale, l_p0pos.y*l_scale);
 	window.draw(p0);
 }
-{	// Player 1
+if (player2mode && !player2gameover) {	// Player 1
 	sf::Sprite p1(l_p1tex);
 	p1.setScale(l_scale/9,l_scale/9);
 	p1.setPosition(l_p1pos.x*l_scale, l_p1pos.y*l_scale);
 	window.draw(p1);
 }
 // Wall Test
-{	// Right
+if (l_maze[l_p0pos.x][l_p0pos.y] & RIGHT) {	// Right
 	sf::Sprite wall(l_shadowwalltex);
 	wall.setScale(l_scale/9, l_scale/9);
 	wall.setRotation(0);
-	wall.setPosition(l_scale*2, l_scale*2 -l_scale/9);
+	wall.setPosition(l_scale*(l_p0pos.x-1), l_scale*(l_p0pos.y) -l_scale/9);
 	window.draw(wall);
 }
-{	// Down
+if (l_maze[l_p0pos.x][l_p0pos.y] & BOTTOM) {	// Down
 	sf::Sprite wall(l_shadowwalltex);
 	wall.setScale(l_scale/9, l_scale/9);
 	wall.setRotation(90);
 	wall.setPosition(l_scale*2, l_scale*2);
 	window.draw(wall);
 }
-{	// Left
+if (l_p0pos.x > 0 && l_maze[l_p0pos.x-1][l_p0pos.y] & RIGHT) {	// Left
 	sf::Sprite wall(l_shadowwalltex);
 	wall.setScale(l_scale/9, l_scale/9);
 	wall.setRotation(180);
@@ -244,4 +244,4 @@ if (!player2gameover && player2mode) {
 	wall.setPosition(l_scale*2 -l_scale/9, l_scale*2 -l_scale/9);
 	window.draw(wall);
 }
-#endif
+#endif // Game

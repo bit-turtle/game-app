@@ -45,11 +45,18 @@ class Maze {
 	Maze(unsigned int x, unsigned int y) {
 		init(x, y);
 	}
+	std::vector<mazetile>& operator[](int x) {
+		return maze[x];
+	}
 	bool testx(sf::Vector2u pos, int movement) {
-		return true;	// TODO
+		if (movement == 1 && maze[pos.x][pos.y] & RIGHT) return true;
+		if (movement == -1 && pos.x > 0 && maze[pos.x-1][pos.y] & RIGHT) return true;
+		return false;
 	}
 	bool testy(sf::Vector2u pos, int movement) {
-		return true;	// TODO
+		if (movement == 1 && maze[pos.x][pos.y] & BOTTOM) return true;
+		if (movement == -1 && pos.y > 0 && maze[pos.x][pos.y-1] & BOTTOM) return true;
+		return false;
 	}
 	bool gen() {
 		if (stack.empty()) return true;
