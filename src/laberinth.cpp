@@ -7,7 +7,49 @@
 #define MOVE_DELAY 0.1	// Delay in seconds
 //
 #ifdef LABERINTH_FUNC
+// Maze Library
 #include "maze.hpp"
+// Maze Render Functions
+void verticalwall(sf::RenderWindow& window, sf::Texture& texture, float l_scale, int x, int y, bool flip = false) {	// Create a rectangle shape at the location of the x wall
+	if (!flip) {	// Up
+		sf::Sprite wall(texture);
+		wall.setScale(l_scale/9, l_scale/9);
+		wall.setRotation(90);
+		wall.setPosition(l_scale*(x+1), l_scale*(y));
+		window.draw(wall);
+	}
+	else if (flip) {	// Down
+		sf::Sprite wall(texture);
+		wall.setScale(l_scale/9, l_scale/9);
+		wall.setRotation(270);
+		wall.setPosition(l_scale*(x+1) -l_scale/9, l_scale*(y+1) -l_scale/9);
+		window.draw(wall);
+	}
+}
+void horizontalwall(sf::RenderWindow& window, sf::Texture& texture, float l_scale, int x, int y, bool flip = false) {	// Create a rectangle shape at the location of the y wall
+	if (!flip) {	// Right
+		sf::Sprite wall(texture);
+		wall.setScale(l_scale/9, l_scale/9);
+		wall.setRotation(0);
+		wall.setPosition(l_scale*(x), l_scale*(y+1) -l_scale/9);
+		window.draw(wall);
+	}
+	else if (flip) {	// Left
+		sf::Sprite wall(texture);
+		wall.setScale(l_scale/9, l_scale/9);
+		wall.setRotation(180);
+		wall.setPosition(l_scale*(x+1) -l_scale/9, l_scale*(y+1));
+		window.draw(wall);
+	}
+}
+void centerwall(sf::RenderWindow& window, sf::Texture& texture, float l_scale, int x, int y) {	// Fill the gap between the walls
+	{	// Center
+		sf::Sprite wall(texture);
+		wall.setScale(l_scale/9, l_scale/9);
+		wall.setPosition(l_scale*(x+1) -l_scale/9, l_scale*(y+1) -l_scale/9);
+		window.draw(wall);
+	}
+}
 #undef LABERINTH_FUNC
 #endif
 
@@ -54,7 +96,7 @@ if (!l_cointex.loadFromFile("textures/coin.laberinth.png")) {
 
 #ifdef LABERINTH_VARS
 #undef LABERINTH_VARS
-unsigned l_scale = 64;
+float l_scale = 64;
 sf::Vector2u l_p0pos(0,0);
 float l_p0delay = 0;
 sf::Vector2u l_p1pos(0,0);
@@ -197,51 +239,20 @@ if (!player2gameover && player2mode) {
 	}
 }
 // Render
-if (!player2gameover) {	// Player 0
+if (!player1gameover) {	// Player 0
 	sf::Sprite p0(l_p0tex);
 	p0.setScale(l_scale/9,l_scale/9);
 	p0.setPosition(l_p0pos.x*l_scale, l_p0pos.y*l_scale);
 	window.draw(p0);
 }
-if (player2mode && !player2gameover) {	// Player 1
+if (!player2gameover && player2mode) {	// Player 1
 	sf::Sprite p1(l_p1tex);
 	p1.setScale(l_scale/9,l_scale/9);
 	p1.setPosition(l_p1pos.x*l_scale, l_p1pos.y*l_scale);
 	window.draw(p1);
 }
 // Wall Test
-if (l_maze[l_p0pos.x][l_p0pos.y] & RIGHT) {	// Right
-	sf::Sprite wall(l_shadowwalltex);
-	wall.setScale(l_scale/9, l_scale/9);
-	wall.setRotation(0);
-	wall.setPosition(l_scale*(l_p0pos.x-1), l_scale*(l_p0pos.y) -l_scale/9);
-	window.draw(wall);
-}
-if (l_maze[l_p0pos.x][l_p0pos.y] & BOTTOM) {	// Down
-	sf::Sprite wall(l_shadowwalltex);
-	wall.setScale(l_scale/9, l_scale/9);
-	wall.setRotation(90);
-	wall.setPosition(l_scale*2, l_scale*2);
-	window.draw(wall);
-}
-if (l_p0pos.x > 0 && l_maze[l_p0pos.x-1][l_p0pos.y] & RIGHT) {	// Left
-	sf::Sprite wall(l_shadowwalltex);
-	wall.setScale(l_scale/9, l_scale/9);
-	wall.setRotation(180);
-	wall.setPosition(l_scale*2 -l_scale/9, l_scale*2);
-	window.draw(wall);
-}
-{	// Up 
-	sf::Sprite wall(l_shadowwalltex);
-	wall.setScale(l_scale/9, l_scale/9);
-	wall.setRotation(270);
-	wall.setPosition(l_scale*2 -l_scale/9, l_scale*2 -l_scale/9);
-	window.draw(wall);
-}
-{	// Center
-	sf::Sprite wall(l_fillwalltex);
-	wall.setScale(l_scale/9, l_scale/9);
-	wall.setPosition(l_scale*2 -l_scale/9, l_scale*2 -l_scale/9);
-	window.draw(wall);
-}
+verticalwall(window, l_shadowwalltex, l_scale, l_p0pos.x, l_p0pos.y, false);
+horizontalwall(window, l_shadowwalltex, l_scale, l_p0pos.x, l_p0pos.y, false);
+centerwall(window, l_fillwalltex, l_scale, l_p0pos.x, l_p0pos.y);
 #endif // Game
