@@ -111,6 +111,15 @@ sf::Vector2u l_flag(MAZE_SIZE_X-1, MAZE_SIZE_Y-1);
 Maze l_maze(MAZE_SIZE_X, MAZE_SIZE_Y);
 int l_genguess = MAZE_SIZE_X * MAZE_SIZE_Y * 2 - 1;
 unsigned l_coinscore = 5;
+// Game over
+float l_gameovertime = 0;
+float l_gameoveranimtime = 5;
+// Win
+bool l_win = false;
+float l_wintime = 0;
+float l_winanimtime = 2;
+// Next minigame id
+int l_nextminigame = 0;
 #endif
 
 #ifdef LABERINTH_RESET
@@ -122,6 +131,9 @@ l_p1delay = 0;
 l_enpos = sf::Vector2u(rand()%(MAZE_SIZE_X/2) + (MAZE_SIZE_X/4),rand()%(MAZE_SIZE_Y/2) + (MAZE_SIZE_Y/4));
 l_endelay = 0;
 l_maze.init(MAZE_SIZE_X, MAZE_SIZE_Y);
+l_gameovertime = 0;
+l_win = false;
+l_wintime = 0;
 #endif
 
 #ifdef LABERINTH_INST
@@ -265,7 +277,11 @@ if (l_endelay <= 0) {
 	}
 
 }
-// Enemy Gameover TODO
+// Enemy Gameover
+if (!l_win) {
+	if (l_p0pos == l_enpos) player1gameover = true;
+	if (player2mode && l_p1pos == l_enpos) player2gameover = true;
+}
 // Coin pickup
 {
 	if (l_maze.coin(l_p0pos.x,l_p0pos.y)) {
@@ -276,6 +292,10 @@ if (l_endelay <= 0) {
 		score += l_coinscore;
 		l_maze.pickupcoin(l_p1pos.x,l_p1pos.y);
 	}
+}
+// Flag Win
+{
+	if (l_p0pos == l_flag || l_p1pos == l_flag) l_win = true;
 }
 // Render
 if (!player1gameover) {	// Player 0
@@ -437,5 +457,32 @@ if (!player2gameover && player2mode) { // Player 2
 					coin.setPosition(x*l_scale, y*l_scale);
 					window.draw(coin);
 				}
+}
+// Gameover fade
+if ( (player1gameover && !player2mode) || (player2gameover && player1gameover) ) {
+	l_gameovertime += deltatime;
+	extraDelayClock = time-5.f;	// Skip other animation
+	sf::RectangleShape fade((sf::Vector2f)windowsize);
+	sf::Color fill = sf::Color::Black;
+	fill.a = l_gameovertime/l_gameoveranimtime*255;
+	fade.setFillColor(fill);
+	window.draw(fade);
+	if (l_gameovertime >= l_gameoveranimtime) {
+		minigame = 0;
+		nextminigame = 0;
+	}
+}
+// Win fade
+if (l_win) {
+	l_wintime += deltatime;
+	sf::RectangleShape fade((sf::Vector2f)windowsize);
+	sf::Color fill = sf::Color::Black;
+	fill.a = l_wintime/l_winanimtime*255;
+	fade.setFillColor(fill);
+	window.draw(fade);
+	if (l_wintime >= l_winanimtime) {
+		minigame = l_nextminigame;
+		nextminigame = l_nextminigame;
+	}
 }
 #endif // Game

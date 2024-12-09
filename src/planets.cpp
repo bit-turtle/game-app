@@ -402,6 +402,7 @@ bool whooshed = false;
 // Remember to copy values to PLANET_RESET
 // Minigame 1 Mario Style Moving and Combat Variables ( 'm_' prefix )
 // Visual
+bool m_invulnerable = false;
 std::vector<YayText> m_yaytext;
 float m_gameoveranimtime = 5.f;	// 5 second fade
 float m_offset = 0;
@@ -478,6 +479,7 @@ TileMap m_initlevel = m_level;
 // Laberinth Reset
 #define LABERINTH_RESET
 #include "laberinth.cpp"
+m_invulnerable = false;
 // Whoosh
 whooshed = false;
 // Begin Mario
@@ -968,6 +970,8 @@ case 3: {	// Mario Mode
 						m_yaytext.push_back(text);
 						} break;
 					case LABERINTH: {	// Fall into laberinth
+						m_invulnerable = true;
+						planetanimtime = 0;
 						nextminigame = 4;
 						player1gameover = m_p0gameover;
 						player2gameover = m_p1gameover;

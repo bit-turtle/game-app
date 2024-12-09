@@ -38,7 +38,7 @@
 // Powerups
 #define PLANETANIMLENGTH 2
 #define PLANET_SIZE 80
-#define PLANETSPAWNCHANCE 1 // 1/x chance [Default: 16]
+#define PLANETSPAWNCHANCE 16 // 1/x chance [Default: 16]
 #define COLLECTRADIUS 40
 #define POWERUPCHANCE 20 // 1/ (x/2) chance
 #define BOMBCHANCE 5	 // 1/x chance
@@ -283,6 +283,9 @@ int main() {
 	unsigned int minigame = 0; // 0: main game, 1: game 1, etc
 	bool click = false;
 	bool player2mode = false;
+
+	// Invulnerable
+	bool invulnerable = false;
 
 	// Game
 	bool newhighscore = false;
@@ -712,7 +715,7 @@ int main() {
 // Reset Planet Variables
 #define PLANET_RESET
 #include "planets.cpp"
-
+			invulnerable = false;
 			nextminigame = 0;
 			minigame = 0;
 			newhighscore = false;
@@ -1649,7 +1652,7 @@ int main() {
 									.getElapsedTime()
 									.asSeconds();
 								;
-							} else {
+							} else if (!invulnerable) {
 								player1gameover =
 								    true;
 								// Explosion
@@ -1741,7 +1744,7 @@ int main() {
 									texttime
 									    .push_back(
 										0);
-								} else {
+								} else if (!invulnerable) {
 									player1gameover =
 									    true;
 									// Explosion
@@ -2283,7 +2286,7 @@ int main() {
 								    clock
 									.getElapsedTime()
 									.asSeconds();
-							} else {
+							} else if (!invulnerable) {
 								player2gameover =
 								    true;
 								// Explosion
@@ -2380,7 +2383,7 @@ int main() {
 									    clock
 										.getElapsedTime()
 										.asSeconds();
-								} else {
+								} else if (!invulnerable) {
 									player2gameover =
 									    true;
 									// Explosion
@@ -4004,6 +4007,33 @@ int main() {
 				planetanimtime += deltatime;
 				if (planetanimtime >= PLANETANIMLENGTH) {
 					minigame = nextminigame;
+					// Reset
+					// Clear Screen
+					asteroids = 0;
+					asteroidpositions.clear();
+					asteroidrotation.clear();
+					asteroidrotationvelocity.clear();
+					asteroidvelocity.clear();
+					asteroidsize.clear();
+					// Enemies
+					enemies = 0;
+					enemypositions.clear();
+					enemyvelocity.clear();
+					enemyrotation.clear();
+					enemyrotationvelocity.clear();
+					enemylazercooldown.clear();
+					// Powerups
+					powerups = 0;
+					poweruppositions.clear();
+					poweruptype.clear();
+					powerupsize.clear();
+					// Lazers
+					lazers = 0;
+					lazerpositions.clear();
+					lazerrotation.clear();
+					lazervelocity.clear();
+					//
+					invulnerable = false;
 					clock.restart();
 				}
 				// Fade Animation
