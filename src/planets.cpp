@@ -969,7 +969,6 @@ case 3: {	// Mario Mode
 						} break;
 					case LABERINTH: {	// Fall into laberinth
 						nextminigame = 4;
-						minigame = 4;
 						player1gameover = m_p0gameover;
 						player2gameover = m_p1gameover;
 						

@@ -1,7 +1,6 @@
 // Laberinth Minigame with a Procedural Maze
-#define MAZE_SIZE_X 64
-#define MAZE_SIZE_Y 32
-#define MAZE_TILE_SIZE 16
+#define MAZE_SIZE_X 16
+#define MAZE_SIZE_Y 8
 #define MAZE_GEN_RATE 16
 //
 #define MOVE_DELAY 0.1	// Delay in seconds
@@ -65,9 +64,14 @@ if (!l_p1tex.loadFromFile("textures/player1.laberinth.png")) {
 	std::cout << "Failed to load texture 'player1.laberinth'" << std::endl;
 	ok = false;
 }
-sf::Texture l_enemytex;	// Enemy Texture
-if (!l_enemytex.loadFromFile("textures/enemy.laberinth.png")) {
+sf::Texture l_entex;	// Enemy Texture
+if (!l_entex.loadFromFile("textures/enemy.laberinth.png")) {
 	std::cout << "Failed to load texture 'enemy.laberinth'" << std::endl;
+	ok = false;
+}
+sf::Texture l_flagtex;	// Flag Texture
+if (!l_flagtex.loadFromFile("textures/flag.laberinth.png")) {
+	std::cout << "Failed to load texture 'flag.laberinth'" << std::endl;
 	ok = false;
 }
 // Wall Textures
@@ -96,15 +100,17 @@ if (!l_cointex.loadFromFile("textures/coin.laberinth.png")) {
 
 #ifdef LABERINTH_VARS
 #undef LABERINTH_VARS
-float l_scale = 64;
+float l_scale = std::min(window.getSize().x/MAZE_SIZE_X,window.getSize().y/MAZE_SIZE_Y);
 sf::Vector2u l_p0pos(0,0);
 float l_p0delay = 0;
 sf::Vector2u l_p1pos(0,0);
 float l_p1delay = 0;
-sf::Vector2u l_enpos = sf::Vector2u(rand()%(MAZE_SIZE_X/2) + (MAZE_SIZE_X/4),rand()%(MAZE_SIZE_Y/2) + (MAZE_SIZE_Y/4));
+sf::Vector2u l_enpos(rand()%(MAZE_SIZE_X/2) + (MAZE_SIZE_X/4),rand()%(MAZE_SIZE_Y/2) + (MAZE_SIZE_Y/4));
 float l_endelay = 0;
+sf::Vector2u l_flag(MAZE_SIZE_X-1, MAZE_SIZE_Y-1);
 Maze l_maze(MAZE_SIZE_X, MAZE_SIZE_Y);
 int l_genguess = MAZE_SIZE_X * MAZE_SIZE_Y * 2 - 1;
+unsigned l_coinscore = 5;
 #endif
 
 #ifdef LABERINTH_RESET
@@ -142,7 +148,10 @@ if (click || enter) {
 #ifdef LABERINTH_GEN
 #undef LABERINTH_GEN
 // Generate Maze
-for (int i = 0; i < MAZE_GEN_RATE; i++) if(l_maze.gen()) break;
+for (int i = 0; i < MAZE_GEN_RATE; i++) {
+	l_maze.gen();
+	if(l_maze.done()) break;
+}
 // Loader
 switch ((int)(clock.getElapsedTime().asSeconds()*8)%4) {
 	case 0:
@@ -176,6 +185,8 @@ if (l_maze.done()) {
 
 #ifdef LABERINTH_CODE
 #undef LABERINTH_CODE
+message = "";
+tiptext = "";
 // Controls
 // Player 0
 int l_p0mx = 0;
@@ -238,6 +249,34 @@ if (!player2gameover && player2mode) {
 		}
 	}
 }
+// Enemy
+l_endelay -= deltatime;
+if (l_endelay <= 0) {
+	l_endelay = 0;
+	int l_enmx = rand()%2*2-1;
+	int l_enmy = rand()%2*2-1;
+	if (l_enmx != 0 && l_maze.testx(l_enpos, l_enmx)) {
+		l_enpos.x += l_enmx;
+		l_endelay = MOVE_DELAY;
+	}
+	if (l_enmy != 0 && l_maze.testy(l_enpos, l_enmy)) {
+		l_enpos.y += l_enmy;
+		l_endelay = MOVE_DELAY;
+	}
+
+}
+// Enemy Gameover TODO
+// Coin pickup
+{
+	if (l_maze.coin(l_p0pos.x,l_p0pos.y)) {
+		score += l_coinscore;
+		l_maze.pickupcoin(l_p0pos.x,l_p0pos.y);
+	}
+	if (l_maze.coin(l_p1pos.x,l_p1pos.y)) {
+		score += l_coinscore;
+		l_maze.pickupcoin(l_p1pos.x,l_p1pos.y);
+	}
+}
 // Render
 if (!player1gameover) {	// Player 0
 	sf::Sprite p0(l_p0tex);
@@ -251,8 +290,152 @@ if (!player2gameover && player2mode) {	// Player 1
 	p1.setPosition(l_p1pos.x*l_scale, l_p1pos.y*l_scale);
 	window.draw(p1);
 }
+{	// Enemy
+	sf::Sprite enemy(l_entex);
+	enemy.setScale(l_scale/9,l_scale/9);
+	enemy.setPosition((l_enpos.x)*l_scale, (l_enpos.y)*l_scale);
+	window.draw(enemy);
+}
+{	// Flag
+	sf::Sprite flag(l_flagtex);
+	flag.setScale(l_scale/9,l_scale/9);
+	flag.setPosition((l_flag.x)*l_scale, (l_flag.y)*l_scale);
+	window.draw(flag);
+}
 // Wall Test
+/* Example
 verticalwall(window, l_shadowwalltex, l_scale, l_p0pos.x, l_p0pos.y, false);
 horizontalwall(window, l_shadowwalltex, l_scale, l_p0pos.x, l_p0pos.y, false);
 centerwall(window, l_fillwalltex, l_scale, l_p0pos.x, l_p0pos.y);
+wow */
+// Render Walls
+if (!player1gameover) { // Player 0
+	// Lit Walls
+	if ( !(l_maze[l_p0pos.x][l_p0pos.y] & RIGHT) )	// Right Wall
+		verticalwall(window, l_litwalltex, l_scale, l_p0pos.x, l_p0pos.y, false);
+	if ( !(l_maze[l_p0pos.x][l_p0pos.y] & BOTTOM) )	// Bottom Wall
+		horizontalwall(window, l_litwalltex, l_scale, l_p0pos.x, l_p0pos.y, false);
+	if (l_p0pos.x==0 || !(l_maze[l_p0pos.x-1][l_p0pos.y] & RIGHT) )	// Left Wall
+		verticalwall(window, l_litwalltex, l_scale, l_p0pos.x-1, l_p0pos.y, false);
+	if (l_p0pos.y==0 || !(l_maze[l_p0pos.x][l_p0pos.y-1] & BOTTOM) )	// Top Wall
+		horizontalwall(window, l_litwalltex, l_scale, l_p0pos.x, l_p0pos.y-1, false);
+	// Shadow Walls
+	// Top
+	if (l_p0pos.x>0 && l_p0pos.y>0 && !(l_maze[l_p0pos.x-1][l_p0pos.y-1] & RIGHT) )	// Top Left
+		verticalwall(window, l_shadowwalltex, l_scale, l_p0pos.x-1, l_p0pos.y-1, false);
+	if (l_p0pos.y>0 && !(l_maze[l_p0pos.x][l_p0pos.y-1] & RIGHT) )	// Top Right
+		verticalwall(window, l_shadowwalltex, l_scale, l_p0pos.x, l_p0pos.y-1, false);
+	// Bottom
+	if (l_p0pos.x>0 && l_p0pos.y<l_maze.height()-1 && !(l_maze[l_p0pos.x-1][l_p0pos.y+1] & RIGHT) )	// Bottom Left
+		verticalwall(window, l_shadowwalltex, l_scale, l_p0pos.x-1, l_p0pos.y+1, true);
+	if (l_p0pos.y<l_maze.height()-1 && !(l_maze[l_p0pos.x][l_p0pos.y+1] & RIGHT) )	// Bottom Right
+		verticalwall(window, l_shadowwalltex, l_scale, l_p0pos.x, l_p0pos.y+1, true);
+	// Left
+	if (l_p0pos.x>0 && l_p0pos.y>0 && !(l_maze[l_p0pos.x-1][l_p0pos.y-1] & BOTTOM) )	// Left Top
+		horizontalwall(window, l_shadowwalltex, l_scale, l_p0pos.x-1, l_p0pos.y-1, false);
+	if (l_p0pos.x>0 && !(l_maze[l_p0pos.x-1][l_p0pos.y] & BOTTOM) )	// Left Bottom
+		horizontalwall(window, l_shadowwalltex, l_scale, l_p0pos.x-1, l_p0pos.y, false);
+	// Right
+	if (l_p0pos.x<l_maze.width()-1 && l_p0pos.y>0 && !(l_maze[l_p0pos.x+1][l_p0pos.y-1] & BOTTOM) )	// Right Top
+		horizontalwall(window, l_shadowwalltex, l_scale, l_p0pos.x+1, l_p0pos.y-1, true);
+	if (l_p0pos.x<l_maze.width()-1 && !(l_maze[l_p0pos.x+1][l_p0pos.y] & BOTTOM) )	// Right Bottom
+		horizontalwall(window, l_shadowwalltex, l_scale, l_p0pos.x+1, l_p0pos.y, true);
+	// Center Walls
+	if (	// Bottom Right
+		(l_p0pos.y==l_maze.height()-1) || (l_p0pos.x==l_maze.width()-1) ||	// Edge
+		!(l_maze[l_p0pos.x][l_p0pos.y] & RIGHT) && !(l_maze[l_p0pos.x][l_p0pos.y+1] & RIGHT) ||	// Vertical
+		!(l_maze[l_p0pos.x][l_p0pos.y] & BOTTOM) && !(l_maze[l_p0pos.x+1][l_p0pos.y] & BOTTOM)	// Horizontal
+	)	centerwall(window, l_fillwalltex, l_scale, l_p0pos.x, l_p0pos.y);	// Render
+	if (	// Bottom Left
+		(l_p0pos.y==l_maze.height()-1) || (l_p0pos.x==0) ||	// Edge
+		!(l_maze[l_p0pos.x-1][l_p0pos.y] & RIGHT) && !(l_maze[l_p0pos.x-1][l_p0pos.y+1] & RIGHT) ||	// Vertical
+		!(l_maze[l_p0pos.x-1][l_p0pos.y] & BOTTOM) && !(l_maze[l_p0pos.x][l_p0pos.y] & BOTTOM)		// Horizontal
+	)	centerwall(window, l_fillwalltex, l_scale, l_p0pos.x-1, l_p0pos.y);	// Render
+	if (	// Top Right
+		(l_p0pos.y==0) || (l_p0pos.x==l_maze.width()-1) ||	// Edge
+		!(l_maze[l_p0pos.x][l_p0pos.y-1] & RIGHT) && !(l_maze[l_p0pos.x][l_p0pos.y] & RIGHT) ||		// Vertical
+		!(l_maze[l_p0pos.x][l_p0pos.y-1] & BOTTOM) && !(l_maze[l_p0pos.x+1][l_p0pos.y-1] & BOTTOM)	// Horizontal
+	)	centerwall(window, l_fillwalltex, l_scale, l_p0pos.x, l_p0pos.y-1);	// Render
+	if (	// Bottom Right
+		(l_p0pos.y==0) || (l_p0pos.x==0) ||	// Edge
+		!(l_maze[l_p0pos.x-1][l_p0pos.y-1] & RIGHT) && !(l_maze[l_p0pos.x-1][l_p0pos.y] & RIGHT) ||	// Vertical
+		!(l_maze[l_p0pos.x-1][l_p0pos.y-1] & BOTTOM) && !(l_maze[l_p0pos.x][l_p0pos.y-1] & BOTTOM)	// Horizontal
+	)	centerwall(window, l_fillwalltex, l_scale, l_p0pos.x-1, l_p0pos.y-1);	// Render
+}
+if (!player2gameover && player2mode) { // Player 2
+	// Lit Walls
+	if ( !(l_maze[l_p1pos.x][l_p1pos.y] & RIGHT) )	// Right Wall
+		verticalwall(window, l_litwalltex, l_scale, l_p1pos.x, l_p1pos.y, false);
+	if ( !(l_maze[l_p1pos.x][l_p1pos.y] & BOTTOM) )	// Bottom Wall
+		horizontalwall(window, l_litwalltex, l_scale, l_p1pos.x, l_p1pos.y, false);
+	if (l_p1pos.x==0 || !(l_maze[l_p1pos.x-1][l_p1pos.y] & RIGHT) )	// Left Wall
+		verticalwall(window, l_litwalltex, l_scale, l_p1pos.x-1, l_p1pos.y, false);
+	if (l_p1pos.y==0 || !(l_maze[l_p1pos.x][l_p1pos.y-1] & BOTTOM) )	// Top Wall
+		horizontalwall(window, l_litwalltex, l_scale, l_p1pos.x, l_p1pos.y-1, false);
+	// Shadow Walls
+	// Top
+	if (l_p1pos.x>0 && l_p1pos.y>0 && !(l_maze[l_p1pos.x-1][l_p1pos.y-1] & RIGHT) )	// Top Left
+		verticalwall(window, l_shadowwalltex, l_scale, l_p1pos.x-1, l_p1pos.y-1, false);
+	if (l_p1pos.y>0 && !(l_maze[l_p1pos.x][l_p1pos.y-1] & RIGHT) )	// Top Right
+		verticalwall(window, l_shadowwalltex, l_scale, l_p1pos.x, l_p1pos.y-1, false);
+	// Bottom
+	if (l_p1pos.x>0 && l_p1pos.y<l_maze.height()-1 && !(l_maze[l_p1pos.x-1][l_p1pos.y+1] & RIGHT) )	// Bottom Left
+		verticalwall(window, l_shadowwalltex, l_scale, l_p1pos.x-1, l_p1pos.y+1, true);
+	if (l_p1pos.y<l_maze.height()-1 && !(l_maze[l_p1pos.x][l_p1pos.y+1] & RIGHT) )	// Bottom Right
+		verticalwall(window, l_shadowwalltex, l_scale, l_p1pos.x, l_p1pos.y+1, true);
+	// Left
+	if (l_p1pos.x>0 && l_p1pos.y>0 && !(l_maze[l_p1pos.x-1][l_p1pos.y-1] & BOTTOM) )	// Left Top
+		horizontalwall(window, l_shadowwalltex, l_scale, l_p1pos.x-1, l_p1pos.y-1, false);
+	if (l_p1pos.x>0 && !(l_maze[l_p1pos.x-1][l_p1pos.y] & BOTTOM) )	// Left Bottom
+		horizontalwall(window, l_shadowwalltex, l_scale, l_p1pos.x-1, l_p1pos.y, false);
+	// Right
+	if (l_p1pos.x<l_maze.width()-1 && l_p1pos.y>0 && !(l_maze[l_p1pos.x+1][l_p1pos.y-1] & BOTTOM) )	// Right Top
+		horizontalwall(window, l_shadowwalltex, l_scale, l_p1pos.x+1, l_p1pos.y-1, true);
+	if (l_p1pos.x<l_maze.width()-1 && !(l_maze[l_p1pos.x+1][l_p1pos.y] & BOTTOM) )	// Right Bottom
+		horizontalwall(window, l_shadowwalltex, l_scale, l_p1pos.x+1, l_p1pos.y, true);
+	// Center Walls
+	if (	// Bottom Right
+		(l_p1pos.y==l_maze.height()-1) || (l_p1pos.x==l_maze.width()-1) ||	// Edge
+		!(l_maze[l_p1pos.x][l_p1pos.y] & RIGHT) && !(l_maze[l_p1pos.x][l_p1pos.y+1] & RIGHT) ||	// Vertical
+		!(l_maze[l_p1pos.x][l_p1pos.y] & BOTTOM) && !(l_maze[l_p1pos.x+1][l_p1pos.y] & BOTTOM)	// Horizontal
+	)	centerwall(window, l_fillwalltex, l_scale, l_p1pos.x, l_p1pos.y);	// Render
+	if (	// Bottom Left
+		(l_p1pos.y==l_maze.height()-1) || (l_p1pos.x==0) ||	// Edge
+		!(l_maze[l_p1pos.x-1][l_p1pos.y] & RIGHT) && !(l_maze[l_p1pos.x-1][l_p1pos.y+1] & RIGHT) ||	// Vertical
+		!(l_maze[l_p1pos.x-1][l_p1pos.y] & BOTTOM) && !(l_maze[l_p1pos.x][l_p1pos.y] & BOTTOM)		// Horizontal
+	)	centerwall(window, l_fillwalltex, l_scale, l_p1pos.x-1, l_p1pos.y);	// Render
+	if (	// Top Right
+		(l_p1pos.y==0) || (l_p1pos.x==l_maze.width()-1) ||	// Edge
+		!(l_maze[l_p1pos.x][l_p1pos.y-1] & RIGHT) && !(l_maze[l_p1pos.x][l_p1pos.y] & RIGHT) ||		// Vertical
+		!(l_maze[l_p1pos.x][l_p1pos.y-1] & BOTTOM) && !(l_maze[l_p1pos.x+1][l_p1pos.y-1] & BOTTOM)	// Horizontal
+	)	centerwall(window, l_fillwalltex, l_scale, l_p1pos.x, l_p1pos.y-1);	// Render
+	if (	// Bottom Right
+		(l_p1pos.y==0) || (l_p1pos.x==0) ||	// Edge
+		!(l_maze[l_p1pos.x-1][l_p1pos.y-1] & RIGHT) && !(l_maze[l_p1pos.x-1][l_p1pos.y] & RIGHT) ||	// Vertical
+		!(l_maze[l_p1pos.x-1][l_p1pos.y-1] & BOTTOM) && !(l_maze[l_p1pos.x][l_p1pos.y-1] & BOTTOM)	// Horizontal
+	)	centerwall(window, l_fillwalltex, l_scale, l_p1pos.x-1, l_p1pos.y-1);	// Render
+}
+// Coins
+{	// Player 0
+	for (int x = l_p0pos.x -1; x<=l_p0pos.x+1; x++)
+		for (int y = l_p0pos.y -1; y<=l_p0pos.y+1; y++)
+			if (x>0 && x<l_maze.width() && y>0 && y<l_maze.height())
+				if (l_maze.coin(x,y)) {
+					sf::Sprite coin(l_cointex);
+					coin.setScale(l_scale/9,l_scale/9);
+					coin.setPosition(x*l_scale, y*l_scale);
+					window.draw(coin);
+				}
+}
+{	// Player 1
+	for (int x = l_p1pos.x -1; x<=l_p1pos.x+1; x++)
+		for (int y = l_p1pos.y -1; y<=l_p1pos.y+1; y++)
+			if (x>0 && x<l_maze.width() && y>0 && y<l_maze.height())
+				if (l_maze.coin(x,y)) {
+					sf::Sprite coin(l_cointex);
+					coin.setScale(l_scale/9,l_scale/9);
+					coin.setPosition(x*l_scale, y*l_scale);
+					window.draw(coin);
+				}
+}
 #endif // Game

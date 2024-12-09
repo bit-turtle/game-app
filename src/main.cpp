@@ -38,7 +38,7 @@
 // Powerups
 #define PLANETANIMLENGTH 2
 #define PLANET_SIZE 80
-#define PLANETSPAWNCHANCE 1 // 1/x chance
+#define PLANETSPAWNCHANCE 1 // 1/x chance [Default: 16]
 #define COLLECTRADIUS 40
 #define POWERUPCHANCE 20 // 1/ (x/2) chance
 #define BOMBCHANCE 5	 // 1/x chance
