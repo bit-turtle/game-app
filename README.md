@@ -11,8 +11,9 @@ A game like asteroids written in C++
    * On Windows use the Visual Studio Command Prompt
 2. `cmake .`
    * On Windows use the Visual Studio Command Prompt
-3. `make` or `msbuild`
+3. `make` or `msbuild PACKAGE.vcxproj -p:Configuration=Release`
    * On Windows use the Visual Studio Command Prompt
+4. `./bundle.sh` or `bundle.bat` to get important files in a folder called `bundle`
 
 ## How to Open The Terminal
 * Linux, usually [Ctrl+Alt+T] but you already knew that.
