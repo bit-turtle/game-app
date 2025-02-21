@@ -52,8 +52,8 @@ bool animationdone(unsigned int frames, unsigned int fps, float time, float star
 
 // Deltatime Vector
 sf::Vector2f smooth(float deltatime, sf::Vector2f vec) {
-	vec.x * deltatime;
-	vec.y * deltatime;
+	vec.x *= deltatime;
+	vec.y *= deltatime;
 	return vec;
 }
 
@@ -273,6 +273,10 @@ void yaytext(sf::RenderWindow* window, sf::Font* font, float deltatime, float of
 #define LABERINTH_FUNC
 #include "laberinth.cpp"
 
+//Stinger functions
+#define STINGER_FUNC
+#include "stinger.cpp"
+
 #endif
 
 #ifdef PLANET_ASSETS
@@ -394,9 +398,14 @@ Grid<uint8_t> m_map;
 
 #ifdef PLANET_VARS
 #undef PLANET_VARS
+// Planet Visited
+bool planetvisited = false;
 // Laberinth Variables
 #define LABERINTH_VARS
 #include "laberinth.cpp"
+// Stinger Vars
+#define STINGER_VARS
+#include "stinger.cpp"
 // Global Variables for Planets Go Here
 bool whooshed = false;
 // Remember to copy values to PLANET_RESET
@@ -476,9 +485,14 @@ TileMap m_initlevel = m_level;
 
 #ifdef PLANET_RESET
 #undef PLANET_RESET
+// Planet Visited Reset
+planetvisited = false;
 // Laberinth Reset
 #define LABERINTH_RESET
 #include "laberinth.cpp"
+// Stinger reset
+#define STINGER_RESET
+#include "stinger.cpp"
 m_invulnerable = false;
 // Whoosh
 whooshed = false;
@@ -517,6 +531,7 @@ m_level = m_initlevel;
 #ifdef PLANET_CODE
 #undef PLANET_CODE
 // Code for Planets Goes Here
+planetvisited = true;
 
 // Set Message Text
 std::string message = "Bob the fish"; // Default Text
@@ -584,6 +599,8 @@ case 2: {	// Animation of landing
 		message = "";
 		tiptext = "";
 } break;
+
+// End of mario minigame on line 1091
 
 case 3: {	// Mario Mode
 		// Player Controls
@@ -782,6 +799,10 @@ case 3: {	// Mario Mode
 			}
 		}
 
+		// Player move states
+		bool m_p0falling = (m_p0vel.y < 0) ? true : false;
+		bool m_p1falling = (m_p1vel.y < 0) ? true : false;
+
 		// Move and Draw enemies
 		for (unsigned int i = 0; i < m_enemies.size(); i++) {
 			Enemy enemy = m_enemies.at(i);
@@ -853,7 +874,7 @@ case 3: {	// Mario Mode
 				// Player 0
 				player.top = windowsize.y-m_p0pos.y-m_playersize.y;
 				player.left = m_p0pos.x-m_offset;
-				if (!m_p0land && hitenemy.intersects(player) && m_p0vel.y < 0) {
+				if (!m_p0land && hitenemy.intersects(player) && m_p0falling) {
 					enemy.squished = true;
 					m_p0vel.y = m_hitjump;	// Boing
 					score += 15;
@@ -873,14 +894,14 @@ case 3: {	// Mario Mode
 				// Player 1
 				player.top = windowsize.y-m_p1pos.y-m_playersize.y;
 				player.left = m_p1pos.x-m_offset;
-				if (!m_p1land && hitenemy.intersects(player) && m_p1vel.y < 0) {
+				if (!m_p1land && hitenemy.intersects(player) && m_p1falling) {
 					enemy.squished = true;
 					m_p1vel.y = m_hitjump;	// Boing
 					score += 15;
 					// YayText
 					YayText text;
 					text.text = "+15 Score!";
-					text.pos = m_p0pos;
+					text.pos = m_p1pos;
 					text.pos.y -= m_playersize.y / 2;
 					text.pos.x += m_playersize.x / 2;
 					m_yaytext.push_back(text);
@@ -1083,9 +1104,13 @@ case 3: {	// Mario Mode
 		}
 } break;
 
-case 4: {	// Animation of falling into laberinth
+// End of mario minigame
+
+case 4: {	// Animation of falling into laberinth TODO
 	if (true) nextminigame = 5;	
 } break;
+
+// Laberinth Minigame
 case 5: {
 #define LABERINTH_INST
 #include "laberinth.cpp"	
@@ -1097,6 +1122,30 @@ case 6: {
 case 7: {
 #define LABERINTH_CODE
 #include "laberinth.cpp"	
+} break;
+
+// Animation of getting out of laberinth
+case 8: {
+	if (true) nextminigame = 9;
+} break;
+
+// Stinger minigame
+case 9: {
+#define STINGER_CODE
+#include "stinger.cpp"
+} break;
+
+// Animation of escaping planet TODO
+
+case 10: {
+	if (true) nextminigame = 11;
+} break;
+
+// Return to main game
+case 11: {
+	// Reset Players TODO
+	// Return
+	nextminigame = 0;
 } break;
 
 default:  // Minigame does not exist

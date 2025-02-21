@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.28)
 project(AmazingGame LANGUAGES CXX)
-set(GameName "game-app")
+set(GameName "Asteroidal")
 
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 

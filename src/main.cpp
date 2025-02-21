@@ -1,6 +1,6 @@
 // A spaceship game where you try fly through an asteroid field while being
 // chased by enemy ships as you struggle to keep your ship under control
-#define GAMENAME "Amazing Game!"
+#define GAMENAME "Asteroidal"
 #include "highscore.h"
 
 // SFML Library for Rendering (apt-get libsfml-dev)
@@ -38,7 +38,7 @@
 // Powerups
 #define PLANETANIMLENGTH 2
 #define PLANET_SIZE 80
-#define PLANETSPAWNCHANCE 16 // 1/x chance [Default: 16]
+#define PLANETSPAWNCHANCE 1 // 1/x chance [Default: 16]
 #define COLLECTRADIUS 40
 #define POWERUPCHANCE 20 // 1/ (x/2) chance
 #define BOMBCHANCE 5	 // 1/x chance
@@ -125,6 +125,8 @@ int main() {
 	// Create Window
 	sf::RenderWindow window(sf::VideoMode::getFullscreenModes().at(0), GAMENAME,
 				sf::Style::Fullscreen);
+	window.clear();
+	window.display();
 
 	// Load Files From Memory
 
@@ -1195,7 +1197,7 @@ int main() {
 					}
 					if (rand() % (int)PLANETSPAWNCHANCE ==
 						0 &&
-					    !planetexists) {
+					    !planetexists && !planetvisited) {
 						planetexists = true;
 						powerups++;
 						poweruppositions.push_back(
@@ -3976,6 +3978,7 @@ int main() {
 					poweruppositions.clear();
 					poweruptype.clear();
 					powerupsize.clear();
+					planetexists = false;
 					// Lazers
 					lazers = 0;
 					lazerpositions.clear();
