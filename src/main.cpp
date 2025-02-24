@@ -125,6 +125,9 @@ int main() {
 	// Create Window
 	sf::RenderWindow window(sf::VideoMode::getFullscreenModes().at(0), GAMENAME,
 				sf::Style::Fullscreen);
+	window.setFramerateLimit(60);
+	bool vsync = true;
+	window.setVerticalSyncEnabled(vsync);
 	window.clear();
 	window.display();
 
@@ -281,7 +284,7 @@ int main() {
 	sf::Clock deltaClock;
 
 	// Variables
-	unsigned int screen = 0;
+	int screen = 0;
 	unsigned int minigame = 0; // 0: main game, 1: game 1, etc
 	bool click = false;
 	bool player2mode = false;
@@ -436,6 +439,101 @@ int main() {
 
 		// Draw To Window
 		switch (screen) {
+		// Settings Screen
+		case -1: {
+			// Title
+			sf::Text title("Settings", roboto, 80);
+			// Center Title, 10% from top
+			sf::FloatRect titlesize = title.getLocalBounds();
+			title.setPosition(sf::Vector2f(
+			    window.getSize().x / 2.f - titlesize.width / 2.f,
+			    window.getSize().y * 0.1));
+			title.setFillColor(sf::Color::White);
+			if (!ok) title.setFillColor(sf::Color::Red);
+			window.draw(title);
+			// Vertical Sync toggle Text
+			sf::Text vtext( (vsync) ? "Vertical Sync: Enabled" : "Vertical Sync: Disabled", roboto, 50);
+			sf::FloatRect vtextsize = vtext.getLocalBounds();
+			// Vsync toggle button
+			sf::RectangleShape vtoggle(sf::Vector2f(vtextsize.width + 20, vtextsize.height + 20));
+			// Center vsync Button, 33% from top
+			sf::FloatRect vsize = vtoggle.getLocalBounds();
+			vtoggle.setPosition(sf::Vector2f(
+			    window.getSize().x / 2.f - vsize.width / 2.f,
+			    window.getSize().y * 0.33));
+			// Detect Mouse Colision
+			sf::FloatRect vhitbox = vtoggle.getGlobalBounds();
+			if (
+			    vhitbox.contains(window.mapPixelToCoords(
+				sf::Mouse::getPosition(window)))) {
+				// Outline On Hover
+				vtoggle.setOutlineColor(sf::Color::White);
+				vtoggle.setOutlineThickness(10);
+				if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+					// Black On Press
+					vtoggle.setFillColor(
+					    sf::Color::Black);
+				if (click || enter) {
+					buttonclicksound.play();
+					vsync = !vsync;
+					window.setVerticalSyncEnabled(vsync);
+				}
+			} else
+				// White Otherwise
+				vtoggle.setFillColor(sf::Color::White);
+			window.draw(vtoggle);
+			// Center Text In Button
+			vtext.setPosition(sf::Vector2f(
+			    window.getSize().x / 2.f - vsize.width / 2.f,
+			    (vhitbox.top + vhitbox.height / 2.f) -
+				vtextsize.height / 2.f));
+			if (vtoggle.getFillColor() != sf::Color::White)
+				vtext.setFillColor(sf::Color::White);
+			else
+				vtext.setFillColor(sf::Color::Black);
+			window.draw(vtext);
+			// Back button
+			sf::RectangleShape playbutton(sf::Vector2f(400, 100));
+			// Center Play Button, 66% from top
+			sf::FloatRect buttonsize = playbutton.getLocalBounds();
+			playbutton.setPosition(sf::Vector2f(
+			    window.getSize().x / 2.f - buttonsize.width / 2.f,
+			    window.getSize().y * 0.66));
+			// Detect Mouse Colision
+			sf::FloatRect playhitbox = playbutton.getGlobalBounds();
+			if (enter ||
+			    playhitbox.contains(window.mapPixelToCoords(
+				sf::Mouse::getPosition(window)))) {
+				// Outline On Hover
+				playbutton.setOutlineColor(sf::Color::White);
+				playbutton.setOutlineThickness(10);
+				if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+					// Black On Press
+					playbutton.setFillColor(
+					    sf::Color::Black);
+				if (click || enter) {
+					buttonclicksound.play();
+					screen = 1; // Home Screen
+					clock.restart();
+				}
+			} else
+				// White Otherwise
+				playbutton.setFillColor(sf::Color::White);
+			window.draw(playbutton);
+			// Play Button Text
+			sf::Text playtext("Back", roboto, 50);
+			// Center Text In Button
+			sf::FloatRect textsize = playtext.getLocalBounds();
+			playtext.setPosition(sf::Vector2f(
+			    window.getSize().x / 2.f - textsize.width / 2.f,
+			    (playhitbox.top + playhitbox.height / 2.f) -
+				textsize.height / 2.f));
+			if (playbutton.getFillColor() != sf::Color::White)
+				playtext.setFillColor(sf::Color::White);
+			else
+				playtext.setFillColor(sf::Color::Black);
+			window.draw(playtext);
+		} break;
 		// Startup Animation
 		case 0: {
 			sf::Sprite logosprite(logo);
@@ -493,11 +591,11 @@ int main() {
 			window.draw(title);
 			// Play Button
 			sf::RectangleShape playbutton(sf::Vector2f(400, 100));
-			// Center Play Button, 50% from top
+			// Center Play Button, 33% from top
 			sf::FloatRect buttonsize = playbutton.getLocalBounds();
 			playbutton.setPosition(sf::Vector2f(
 			    window.getSize().x / 2.f - buttonsize.width / 2.f,
-			    window.getSize().y * 0.5));
+			    window.getSize().y * 0.5 - buttonsize.height * 1.15));
 			// Detect Mouse Colision
 			sf::FloatRect playhitbox = playbutton.getGlobalBounds();
 			if (enter ||
@@ -533,6 +631,47 @@ int main() {
 			else
 				playtext.setFillColor(sf::Color::Black);
 			window.draw(playtext);
+			// Settings Button
+			sf::RectangleShape sbutton(sf::Vector2f(400, 100));
+			// Center Settings Button, 66% from top
+			sf::FloatRect ssize = sbutton.getLocalBounds();
+			sbutton.setPosition(sf::Vector2f(
+			    window.getSize().x / 2.f - ssize.width / 2.f,
+			    window.getSize().y * 0.50 + ssize.height * 1.15));
+			// Detect Mouse Colision
+			sf::FloatRect shitbox = sbutton.getGlobalBounds();
+			if (
+			    shitbox.contains(window.mapPixelToCoords(
+				sf::Mouse::getPosition(window)))) {
+				// Outline On Hover
+				sbutton.setOutlineColor(sf::Color::White);
+				sbutton.setOutlineThickness(10);
+				if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+					// Black On Press
+					sbutton.setFillColor(
+					    sf::Color::Black);
+				if (click) {
+					buttonclicksound.play();
+					screen = -1; // Player Select
+					clock.restart();
+				}
+			} else
+				// White Otherwise
+				sbutton.setFillColor(sf::Color::White);
+			window.draw(sbutton);
+			// Settings Button Text
+			sf::Text stext("Settings", roboto, 50);
+			// Center Text In Button
+			sf::FloatRect stsize = stext.getLocalBounds();
+			stext.setPosition(sf::Vector2f(
+			    window.getSize().x / 2.f - textsize.width / 2.f,
+			    (shitbox.top + shitbox.height / 2.f) -
+				stsize.height / 2.f));
+			if (sbutton.getFillColor() != sf::Color::White)
+				stext.setFillColor(sf::Color::White);
+			else
+				stext.setFillColor(sf::Color::Black);
+			window.draw(stext);
 			// Tip Text
 			sf::Text tiptext("Press [esc] To Exit", roboto, 30);
 			if (!ok) tiptext = sf::Text("Press [esc] to exit, try running from game folder", roboto, 30);

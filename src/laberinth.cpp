@@ -2,8 +2,9 @@
 #define MAZE_SIZE_X 16
 #define MAZE_SIZE_Y 8
 #define MAZE_GEN_RATE 16
+#define SAFE_ENEMY_DIST 4	// Safe distance for the enemy to spawn
 //
-#define MOVE_DELAY 0.1	// Delay in seconds
+#define MOVE_DELAY 0.25	// Delay in seconds
 //
 #ifdef LABERINTH_FUNC
 // Maze Library
@@ -119,7 +120,7 @@ bool l_win = false;
 float l_wintime = 0;
 float l_winanimtime = 2;
 // Next minigame id
-int l_nextminigame = 0;
+int l_nextminigame = 8;
 #endif
 
 #ifdef LABERINTH_RESET
@@ -271,12 +272,36 @@ if (l_endelay <= 0) {
 		l_enpos.x += l_enmx;
 		l_endelay = MOVE_DELAY;
 	}
-	if (l_enmy != 0 && l_maze.testy(l_enpos, l_enmy)) {
+	else if (l_enmy != 0 && l_maze.testy(l_enpos, l_enmy)) {
 		l_enpos.y += l_enmy;
 		l_endelay = MOVE_DELAY;
 	}
 
 }
+
+// Enemy reset using bomb
+if ( bombs > 0 && sf::Keyboard::isKeyPressed(sf::Keyboard::Space) ) {
+	bombs--;
+	// Play Sound
+	explosionsound.play();
+	// Random Position
+	do {
+		l_enpos.x = rand()%MAZE_SIZE_X;
+		l_enpos.y = rand()%MAZE_SIZE_Y;
+	}
+	// Valid Location Condition
+	while (
+		// Player 0
+		!( l_enpos.x-SAFE_ENEMY_DIST < l_p0pos.x && l_enpos.x+SAFE_ENEMY_DIST > l_p0pos.x ) ||
+		!( l_enpos.y-SAFE_ENEMY_DIST < l_p0pos.y && l_enpos.y+SAFE_ENEMY_DIST > l_p0pos.y ) ||
+		// Player 1
+		( player2mode && (
+			!( l_enpos.x-SAFE_ENEMY_DIST < l_p0pos.x && l_enpos.x+SAFE_ENEMY_DIST > l_p0pos.x ) ||
+			!( l_enpos.y-SAFE_ENEMY_DIST < l_p0pos.y && l_enpos.y+SAFE_ENEMY_DIST > l_p0pos.y )
+		))
+	);
+}
+
 // Enemy Gameover
 if (!l_win) {
 	if (l_p0pos == l_enpos) player1gameover = true;
