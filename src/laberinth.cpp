@@ -141,8 +141,8 @@ l_wintime = 0;
 #undef LABERINTH_INST
 message = "Controls";
 tiptext = "Press [Enter] or Click to Continue";
-text.setString("Move: [WASD] or [^<v>]");
-if (player2mode) text.setString("Player 1: Move: [WASD]\n\nPlayer 2: Move: [^<v>]");
+text.setString("Move: [WASD] or [^<v>]\n\nMove Enemy: [Space] (Uses a Bomb)");
+if (player2mode) text.setString("Player 1: Move: [WASD]\n\nPlayer 2: Move: [^<v>]\n\nMove Enemy: [Space] (Uses a Bomb)");
 text.setOrigin(text.getLocalBounds().width/2,text.getLocalBounds().height/2);
 text.setPosition(windowsize.x*0.5,windowsize.y*0.5);	// 50% from top centered
 window.draw(text);
@@ -241,7 +241,7 @@ if (!player1gameover) {
 			l_p0pos.x += l_p0mx;
 			l_p0delay = MOVE_DELAY;
 		}
-		if (l_p0my != 0 && l_maze.testy(l_p0pos, l_p0my)) {
+		else if (l_p0my != 0 && l_maze.testy(l_p0pos, l_p0my)) {
 			l_p0pos.y += l_p0my;
 			l_p0delay = MOVE_DELAY;
 		}
@@ -256,7 +256,7 @@ if (!player2gameover && player2mode) {
 			l_p1pos.x += l_p1mx;
 			l_p1delay = MOVE_DELAY;
 		}
-		if (l_p1my != 0 && l_maze.testy(l_p1pos, l_p1my)) {
+		else if (l_p1my != 0 && l_maze.testy(l_p1pos, l_p1my)) {
 			l_p1pos.y += l_p1my;
 			l_p1delay = MOVE_DELAY;
 		}
@@ -292,12 +292,12 @@ if ( bombs > 0 && sf::Keyboard::isKeyPressed(sf::Keyboard::Space) ) {
 	// Valid Location Condition
 	while (
 		// Player 0
-		!( l_enpos.x-SAFE_ENEMY_DIST < l_p0pos.x && l_enpos.x+SAFE_ENEMY_DIST > l_p0pos.x ) ||
-		!( l_enpos.y-SAFE_ENEMY_DIST < l_p0pos.y && l_enpos.y+SAFE_ENEMY_DIST > l_p0pos.y ) ||
+		( l_enpos.x-SAFE_ENEMY_DIST < l_p0pos.x && l_enpos.x+SAFE_ENEMY_DIST > l_p0pos.x ) ||
+		( l_enpos.y-SAFE_ENEMY_DIST < l_p0pos.y && l_enpos.y+SAFE_ENEMY_DIST > l_p0pos.y ) ||
 		// Player 1
 		( player2mode && (
-			!( l_enpos.x-SAFE_ENEMY_DIST < l_p0pos.x && l_enpos.x+SAFE_ENEMY_DIST > l_p0pos.x ) ||
-			!( l_enpos.y-SAFE_ENEMY_DIST < l_p0pos.y && l_enpos.y+SAFE_ENEMY_DIST > l_p0pos.y )
+			( l_enpos.x-SAFE_ENEMY_DIST < l_p0pos.x && l_enpos.x+SAFE_ENEMY_DIST > l_p0pos.x ) ||
+			( l_enpos.y-SAFE_ENEMY_DIST < l_p0pos.y && l_enpos.y+SAFE_ENEMY_DIST > l_p0pos.y )
 		))
 	);
 }

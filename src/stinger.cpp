@@ -7,19 +7,37 @@
 class s_enemy {
 public:
 	sf::Vector2f pos;
+	sf::Vector2f initpos;
+	char variant;
 	sf::FloatRect hitbox;
-	s_enemy(sf::Vector2f startpos, sf::FloatRect hitboxoverride = sf::FloatRect(
-		sf::Vector2f(0,0),
-		sf::Vector2f(10,10))
-	) {
-		pos = startpos;
-		hitbox = hitboxoverride;
+
+	// Drawables
+	sf::RectangleShape rect;
+	// Functions
+	s_enemy(sf::Vector2f startpos, char var, sf::RenderWindow* window) {
+		initpos = sf::Vector2f(startpos.x * window->getSize().y/8, startpos.y * window->getSize().y/8);
+		pos = initpos;
+		variant = var;
+		hitbox.top = pos.y;
+		hitbox.left = pos.x;
+		hitbox.width = window->getSize().y/8;
+		hitbox.height = window->getSize().y/8;
+
+		// Drawable init
+		rect.setFillColor(sf::Color::White);
+		rect.setSize(sf::Vector2f(hitbox.width, hitbox.height));
 	}
 	void update(float delta) {
-		pos.x -= 1 * delta;
+		pos.x -= 200 * delta;
+		hitbox.left = pos.x;
 	}
 	void render(sf::RenderWindow* window) {
-		return;
+		rect.setPosition(sf::Vector2f(hitbox.left, hitbox.top));
+		window->draw(rect);
+	}
+	void reset() {
+		pos = initpos;
+		hitbox.left = pos.y;
 	}
 };
 
@@ -36,18 +54,18 @@ public:
 	// Drawables
 	sf::RectangleShape rect;
 	// Functions
-	s_player(int variant) {
+	s_player(int variant, sf::RenderWindow* window) {
 		var = variant;
-		reset();
+		reset(window);
 	}
-	void reset() {
-		height = 0;
+	void reset(sf::RenderWindow* window) {
+		height = window->getSize().y / 2.f;
 		vel = 0;
-		accel = 100;
+		accel = window->getSize().y / 2.f;
 		lives = 3;
 		invtimer = 0;
-		hitbox.width = 50;
-		hitbox.height = 50;
+		hitbox.width = window->getSize().x/16;
+		hitbox.height = window->getSize().y/16;
 		hitbox.top = height;
 		hitbox.left = 10;
 
@@ -91,10 +109,42 @@ public:
 #ifdef STINGER_VARS
 #undef STINGER_VARS
 
-s_player s_p0(0);
-s_player s_p1(1);
+s_player s_p0(0, &window);
+s_player s_p1(1, &window);
 
 std::vector<s_enemy> s_enemies;
+
+// Load stinger map
+{
+	std::ifstream file("assets/stinger.map.txt");
+	if (file.is_open()) {
+		std::string line;
+		unsigned int linenumber = 0;
+		while (getline(file, line)) {
+			std::stringstream sline(line);
+			char value;
+			unsigned int valuenumber = 0;
+			while (sline.get(value)){
+				valuenumber++;
+				// Add enemy
+				if (value == ' ') continue;
+				s_enemies.emplace_back(
+					sf::Vector2f(
+						valuenumber,
+						linenumber
+					),
+					value,
+					&window
+				);
+			}
+			linenumber++;
+		}
+	}
+	else {
+		std::cout << "Failed to Load Map 'stinger.map'" << std::endl;
+		ok = false;
+	}
+}
 
 #endif
 
@@ -102,10 +152,12 @@ std::vector<s_enemy> s_enemies;
 #ifdef STINGER_RESET
 #undef STINGER_RESET
 
-s_p0.reset();
-s_p1.reset();
+s_p0.reset(&window);
+s_p1.reset(&window);
 
-s_enemies.clear();
+for (s_enemy& enemy : s_enemies) {
+	enemy.reset();
+}
 
 #endif
 
@@ -142,5 +194,13 @@ for (s_enemy& enemy : s_enemies) {
 // Render
 s_p0.render(&window);
 s_p1.render(&window);
+
+// Return
+if (s_p0.dead() && s_p1.dead()) {
+	player1gameover = true;
+	player2gameover = true;
+	nextminigame = 0;
+	minigame = 0;
+}
 
 #endif

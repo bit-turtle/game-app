@@ -22,6 +22,9 @@
 
 #include <ctime>
 
+// Settings
+#define MARGIN 40
+
 #define MOVEMENTVEL 400
 #define ROTATIONVEL 400
 
@@ -125,6 +128,7 @@ int main() {
 	// Create Window
 	sf::RenderWindow window(sf::VideoMode::getFullscreenModes().at(0), GAMENAME,
 				sf::Style::Fullscreen);
+	bool fps60 = true;
 	window.setFramerateLimit(60);
 	bool vsync = true;
 	window.setVerticalSyncEnabled(vsync);
@@ -455,7 +459,7 @@ int main() {
 			sf::Text vtext( (vsync) ? "Vertical Sync: Enabled" : "Vertical Sync: Disabled", roboto, 50);
 			sf::FloatRect vtextsize = vtext.getLocalBounds();
 			// Vsync toggle button
-			sf::RectangleShape vtoggle(sf::Vector2f(vtextsize.width + 20, vtextsize.height + 20));
+			sf::RectangleShape vtoggle(sf::Vector2f(vtextsize.width + MARGIN, vtextsize.height + MARGIN));
 			// Center vsync Button, 33% from top
 			sf::FloatRect vsize = vtoggle.getLocalBounds();
 			vtoggle.setPosition(sf::Vector2f(
@@ -473,7 +477,7 @@ int main() {
 					// Black On Press
 					vtoggle.setFillColor(
 					    sf::Color::Black);
-				if (click || enter) {
+				if (click) {
 					buttonclicksound.play();
 					vsync = !vsync;
 					window.setVerticalSyncEnabled(vsync);
@@ -492,6 +496,47 @@ int main() {
 			else
 				vtext.setFillColor(sf::Color::Black);
 			window.draw(vtext);
+			// 60 fps limit toggle Text
+			sf::Text ftext( (fps60) ? "60 FPS Limit: Enabled" : "60 FPS Limit: Disabled", roboto, 50);
+			sf::FloatRect ftextsize = ftext.getLocalBounds();
+			// 60 fps toggle button
+			sf::RectangleShape ftoggle(sf::Vector2f(ftextsize.width + MARGIN, ftextsize.height + MARGIN));
+			// Center 60 fps Button, 50% from top
+			sf::FloatRect fsize = ftoggle.getLocalBounds();
+			ftoggle.setPosition(sf::Vector2f(
+			    window.getSize().x / 2.f - fsize.width / 2.f,
+			    window.getSize().y * 0.50));
+			// Detect Mouse Colision
+			sf::FloatRect fhitbox = ftoggle.getGlobalBounds();
+			if (
+			    fhitbox.contains(window.mapPixelToCoords(
+				sf::Mouse::getPosition(window)))) {
+				// Outline On Hover
+				ftoggle.setOutlineColor(sf::Color::White);
+				ftoggle.setOutlineThickness(10);
+				if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+					// Black On Press
+					ftoggle.setFillColor(
+					    sf::Color::Black);
+				if (click) {
+					buttonclicksound.play();
+					fps60 = !fps60;
+					window.setFramerateLimit( (fps60) ? 60 : 0 );
+				}
+			} else
+				// White Otherwise
+				ftoggle.setFillColor(sf::Color::White);
+			window.draw(ftoggle);
+			// Center Text In Button
+			ftext.setPosition(sf::Vector2f(
+			    window.getSize().x / 2.f - fsize.width / 2.f,
+			    (fhitbox.top + fhitbox.height / 2.f) -
+				ftextsize.height / 2.f));
+			if (ftoggle.getFillColor() != sf::Color::White)
+				ftext.setFillColor(sf::Color::White);
+			else
+				ftext.setFillColor(sf::Color::Black);
+			window.draw(ftext);
 			// Back button
 			sf::RectangleShape playbutton(sf::Vector2f(400, 100));
 			// Center Play Button, 66% from top
