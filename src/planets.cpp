@@ -1143,7 +1143,61 @@ case 10: {
 
 // Return to main game
 case 11: {
-	// Reset Players TODO
+	// Reset Players
+	if (player2mode) {
+		player1position = sf::Vector2f(
+		    window.getSize().x / 4.f,
+		    window.getSize().y / 2.f);
+		player1sheild = true;
+		player1rotation = 180;
+		player1velocity = sf::Vector2f(0, 0);
+		player1rotationVelocity = 0;
+		player2position = sf::Vector2f(
+		    window.getSize().x -
+			window.getSize().x / 4.f,
+		    window.getSize().y / 2.f);
+		player2sheild = true;
+		player2rotation = 180;
+		player2velocity = sf::Vector2f(0, 0);
+		player2rotationVelocity = 0;
+	}
+	else {
+
+		player1position = sf::Vector2f(
+		    window.getSize().x / 2.f,
+		    window.getSize().y / 2.f);
+		player1sheild = true;
+		player1rotation = 180;
+		player1velocity = sf::Vector2f(0, 0);
+		player1rotationVelocity = 0;
+		
+	}
+	clock.restart();
+	// Reset game
+	lazers = 0;
+	lazerpositions.clear();
+	lazerrotation.clear();
+	lazervelocity.clear();
+	explosions = 0;
+	explosionpositions.clear();
+	explosiontime.clear();
+	explosionsize.clear();
+	texts = 0;
+	textpositions.clear();
+	textstring.clear();
+	texttime.clear();
+	asteroids = 0;
+	asteroidsize.clear();
+	asteroidpositions.clear();
+	asteroidrotation.clear();
+	asteroidvelocity.clear();
+	asteroidrotationvelocity.clear();
+	enemies = 0;
+	enemypositions.clear();
+	enemyvelocity.clear();
+	enemyrotation.clear();
+	enemyrotationvelocity.clear();
+	enemylazercooldown.clear();
 	// Return
 	nextminigame = 0;
 } break;
