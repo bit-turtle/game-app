@@ -262,7 +262,7 @@ void yaytext(sf::RenderWindow* window, sf::Font* font, float deltatime, float of
 			continue;
 		}
 
-		sf::Text text(texts->at(i).text, *font, texts->at(i).size);
+		sf::Text text(texts->at(i).text, *font, texts->at(i).size*(window->getSize().x/1080));
 		text.setOrigin(text.getLocalBounds().width/2,text.getLocalBounds().height/2);
 		text.setPosition(texts->at(i).pos.x - offset, window->getSize().y - texts->at(i).pos.y);
 		window->draw(text);
@@ -293,12 +293,19 @@ if (!whooshbuffer.loadFromFile("sounds/whoosh.wav")) {
 sf::Sound whoosh;
 whoosh.setBuffer(whooshbuffer);
 
-// Mario ( 'm_' prefix )
+// Transition animations
 sf::Texture m_landinganim;	// Spaceship landing animation
 if (!m_landinganim.loadFromFile("textures/landing.anim.png")) {	// '.anim.png' for spritesheet animations
 	std::cout << "Falied to Load Texture 'landing.anim'!" << std::endl;
 	ok = false;
 }
+sf::Texture l_dooranim;	// Spaceship landing animation
+if (!l_dooranim.loadFromFile("textures/door.anim.png")) {	// '.anim.png' for spritesheet animations
+	std::cout << "Falied to Load Texture 'door.anim'!" << std::endl;
+	ok = false;
+}
+
+// Mario ( 'm_' prefix )
 // Player Assets
 sf::Texture m_playerwalk0anim;
 if (!m_playerwalk0anim.loadFromFile("textures/playerwalk0.anim.png")) {
@@ -540,7 +547,7 @@ std::string message = "Bob the fish"; // Default Text
 std::string tiptext = "Bob is a very good fish"; // Default Text
 
 // Reusable text sprite
-sf::Text text = sf::Text("",roboto,50);
+sf::Text text = sf::Text("",roboto,50*screen_scale);
 
 // Locations
 sf::Vector2f windowsize = sf::Vector2f(window.getSize().x,window.getSize().y);
@@ -1045,8 +1052,9 @@ case 3: {	// Mario Mode
 						m_yaytext.push_back(text);
 						} break;
 					case LABERINTH:	{ // Fall into laberinth
+						m_invulnerable = true;
+						planetanimtime = 0;
 						nextminigame = 4;
-						minigame = 4;
 						player1gameover = m_p0gameover;
 						player2gameover = m_p1gameover;
 						
@@ -1055,7 +1063,7 @@ case 3: {	// Mario Mode
 						doortext.pos = p1pos;
 						doortext.text = "The Door Slowly Opens";
 						m_yaytext.push_back(doortext);
-						} break;
+					} break;
 				}
 			}
 		}
@@ -1107,7 +1115,21 @@ case 3: {	// Mario Mode
 // End of mario minigame
 
 case 4: {	// Animation of falling into laberinth TODO
-	if (true) nextminigame = 5;	
+	sf::RectangleShape animation = sf::RectangleShape(sf::Vector2f(windowsize));
+	animation.setTexture(&l_dooranim);
+	animation.setTextureRect(animateframe(l_dooranim,42,13,time)); // 42 frames long at 13 fps using animation 'm_landinganim'
+
+	// Move on if done
+	if (animationdone(42,13,time)) {
+		animation.setTextureRect(animateframe(l_dooranim,42,1,41)); // Freeze on last frame
+		nextminigame = 5;
+		if (planetanimtime >= PLANETANIMLENGTH) planetanimtime = 0;
+	}
+
+	window.draw(animation);
+
+	message = "";
+	tiptext = "";
 } break;
 
 // Laberinth Minigame
@@ -1129,20 +1151,45 @@ case 8: {
 	if (true) nextminigame = 9;
 } break;
 
+	case 9: {	// Stinger instructions
+	message = "Controls";
+	tiptext = "Press [Enter] or Click to Continue";
+	text.setString("Fly Up: [W] or [^]");
+	text.setOrigin(text.getLocalBounds().width/2,text.getLocalBounds().height/2);
+	text.setPosition(windowsize.x*0.5,windowsize.y*0.30);	// 30% from top centered
+	window.draw(text);
+	text.setString("Fly Down: Release [W] or Release [^]");
+	text.setOrigin(text.getLocalBounds().width/2,text.getLocalBounds().height/2);
+	text.setPosition(windowsize.x*0.5,windowsize.y*0.50);	// 50% from top centered
+	window.draw(text);
+	text.setString("Shoot: [S] or [v]");
+	text.setOrigin(text.getLocalBounds().width/2,text.getLocalBounds().height/2);
+	text.setPosition(windowsize.x*0.5,windowsize.y*0.70);	// 70% from top centered
+	window.draw(text);
+
+	// Continue
+	if (click || enter) {
+		minigame = 10;
+		nextminigame = 10;	// Skip animation
+		clock.restart();
+	}
+		
+	} break;
+
 // Stinger minigame
-case 9: {
+case 10: {
 #define STINGER_CODE
 #include "stinger.cpp"
 } break;
 
 // Animation of escaping planet TODO
 
-case 10: {
-	if (true) nextminigame = 11;
+case 11: {
+	if (true) nextminigame = 12;
 } break;
 
 // Return to main game
-case 11: {
+case 12: {
 	// Reset Players
 	if (player2mode) {
 		player1position = sf::Vector2f(
@@ -1199,6 +1246,7 @@ case 11: {
 	enemyrotationvelocity.clear();
 	enemylazercooldown.clear();
 	// Return
+	minigame = 0;
 	nextminigame = 0;
 } break;
 
@@ -1208,13 +1256,13 @@ default:  // Minigame does not exist
 }
 
 // Bob the messenger
-sf::Text bob = sf::Text(message, roboto, 60);
+sf::Text bob = sf::Text(message, roboto, 60*screen_scale);
 bob.setOrigin(bob.getLocalBounds().width/2,bob.getLocalBounds().height/2);	// Center
 bob.setPosition(window.getSize().x/2, window.getSize().y*0.05); // 5% from top
 window.draw(bob);
 
 // Tip the text
-sf::Text tip = sf::Text(tiptext, roboto, 30);
+sf::Text tip = sf::Text(tiptext, roboto, 30*screen_scale);
 tip.setOrigin(tip.getLocalBounds().width/2,tip.getLocalBounds().height/2);
 tip.setPosition(windowsize.x/2,windowsize.y*0.9);	// 10% from bottom
 window.draw(tip);

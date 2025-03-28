@@ -128,6 +128,7 @@ int main() {
 	// Create Window
 	sf::RenderWindow window(sf::VideoMode::getFullscreenModes().at(0), GAMENAME,
 				sf::Style::Fullscreen);
+	float screen_scale = window.getSize().x/1080;
 	bool fps60 = true;
 	window.setFramerateLimit(60);
 	bool vsync = true;
@@ -446,7 +447,7 @@ int main() {
 		// Settings Screen
 		case -1: {
 			// Title
-			sf::Text title("Settings", roboto, 80);
+			sf::Text title("Settings", roboto, 80*screen_scale);
 			// Center Title, 10% from top
 			sf::FloatRect titlesize = title.getLocalBounds();
 			title.setPosition(sf::Vector2f(
@@ -456,10 +457,10 @@ int main() {
 			if (!ok) title.setFillColor(sf::Color::Red);
 			window.draw(title);
 			// Vertical Sync toggle Text
-			sf::Text vtext( (vsync) ? "Vertical Sync: Enabled" : "Vertical Sync: Disabled", roboto, 50);
+			sf::Text vtext( (vsync) ? "Vertical Sync: Enabled" : "Vertical Sync: Disabled", roboto, 50*screen_scale);
 			sf::FloatRect vtextsize = vtext.getLocalBounds();
 			// Vsync toggle button
-			sf::RectangleShape vtoggle(sf::Vector2f(vtextsize.width + MARGIN, vtextsize.height + MARGIN));
+			sf::RectangleShape vtoggle(sf::Vector2f(vtextsize.width + MARGIN*screen_scale, vtextsize.height + MARGIN*screen_scale));
 			// Center vsync Button, 33% from top
 			sf::FloatRect vsize = vtoggle.getLocalBounds();
 			vtoggle.setPosition(sf::Vector2f(
@@ -472,7 +473,7 @@ int main() {
 				sf::Mouse::getPosition(window)))) {
 				// Outline On Hover
 				vtoggle.setOutlineColor(sf::Color::White);
-				vtoggle.setOutlineThickness(10);
+				vtoggle.setOutlineThickness(10*screen_scale);
 				if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 					// Black On Press
 					vtoggle.setFillColor(
@@ -497,10 +498,10 @@ int main() {
 				vtext.setFillColor(sf::Color::Black);
 			window.draw(vtext);
 			// 60 fps limit toggle Text
-			sf::Text ftext( (fps60) ? "60 FPS Limit: Enabled" : "60 FPS Limit: Disabled", roboto, 50);
+			sf::Text ftext( (fps60) ? "60 FPS Limit: Enabled" : "60 FPS Limit: Disabled", roboto, 50*screen_scale);
 			sf::FloatRect ftextsize = ftext.getLocalBounds();
 			// 60 fps toggle button
-			sf::RectangleShape ftoggle(sf::Vector2f(ftextsize.width + MARGIN, ftextsize.height + MARGIN));
+			sf::RectangleShape ftoggle(sf::Vector2f(ftextsize.width + MARGIN*screen_scale, ftextsize.height + MARGIN*screen_scale));
 			// Center 60 fps Button, 50% from top
 			sf::FloatRect fsize = ftoggle.getLocalBounds();
 			ftoggle.setPosition(sf::Vector2f(
@@ -513,7 +514,7 @@ int main() {
 				sf::Mouse::getPosition(window)))) {
 				// Outline On Hover
 				ftoggle.setOutlineColor(sf::Color::White);
-				ftoggle.setOutlineThickness(10);
+				ftoggle.setOutlineThickness(10*screen_scale);
 				if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 					// Black On Press
 					ftoggle.setFillColor(
@@ -538,7 +539,7 @@ int main() {
 				ftext.setFillColor(sf::Color::Black);
 			window.draw(ftext);
 			// Back button
-			sf::RectangleShape playbutton(sf::Vector2f(400, 100));
+			sf::RectangleShape playbutton(sf::Vector2f(400*screen_scale, 100*screen_scale));
 			// Center Play Button, 66% from top
 			sf::FloatRect buttonsize = playbutton.getLocalBounds();
 			playbutton.setPosition(sf::Vector2f(
@@ -551,7 +552,7 @@ int main() {
 				sf::Mouse::getPosition(window)))) {
 				// Outline On Hover
 				playbutton.setOutlineColor(sf::Color::White);
-				playbutton.setOutlineThickness(10);
+				playbutton.setOutlineThickness(10*screen_scale);
 				if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 					// Black On Press
 					playbutton.setFillColor(
@@ -566,7 +567,7 @@ int main() {
 				playbutton.setFillColor(sf::Color::White);
 			window.draw(playbutton);
 			// Play Button Text
-			sf::Text playtext("Back", roboto, 50);
+			sf::Text playtext("Back", roboto, 50*screen_scale);
 			// Center Text In Button
 			sf::FloatRect textsize = playtext.getLocalBounds();
 			playtext.setPosition(sf::Vector2f(
@@ -624,8 +625,8 @@ int main() {
 		// Home Screen
 		case 1: {
 			// Title
-			sf::Text title(GAMENAME, roboto, 80);
-			if (!ok) title = sf::Text("Files Failed To Load!", roboto, 80);
+			sf::Text title(GAMENAME, roboto, 80*screen_scale);
+			if (!ok) title = sf::Text("Files Failed To Load!", roboto, 80*screen_scale);
 			// Center Title, 10% from top
 			sf::FloatRect titlesize = title.getLocalBounds();
 			title.setPosition(sf::Vector2f(
@@ -635,7 +636,7 @@ int main() {
 			if (!ok) title.setFillColor(sf::Color::Red);
 			window.draw(title);
 			// Play Button
-			sf::RectangleShape playbutton(sf::Vector2f(400, 100));
+			sf::RectangleShape playbutton(sf::Vector2f(400*screen_scale, 100*screen_scale));
 			// Center Play Button, 33% from top
 			sf::FloatRect buttonsize = playbutton.getLocalBounds();
 			playbutton.setPosition(sf::Vector2f(
@@ -648,7 +649,7 @@ int main() {
 				sf::Mouse::getPosition(window)))) {
 				// Outline On Hover
 				playbutton.setOutlineColor(sf::Color::White);
-				playbutton.setOutlineThickness(10);
+				playbutton.setOutlineThickness(10*screen_scale);
 				if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 					// Black On Press
 					playbutton.setFillColor(
@@ -663,8 +664,8 @@ int main() {
 				playbutton.setFillColor(sf::Color::White);
 			window.draw(playbutton);
 			// Play Button Text
-			sf::Text playtext("Play Game", roboto, 50);
-			if (!ok) playtext = sf::Text("Play Anyways", roboto, 50);
+			sf::Text playtext("Play Game", roboto, 50*screen_scale);
+			if (!ok) playtext = sf::Text("Play Anyways", roboto, 50*screen_scale);
 			// Center Text In Button
 			sf::FloatRect textsize = playtext.getLocalBounds();
 			playtext.setPosition(sf::Vector2f(
@@ -677,7 +678,7 @@ int main() {
 				playtext.setFillColor(sf::Color::Black);
 			window.draw(playtext);
 			// Settings Button
-			sf::RectangleShape sbutton(sf::Vector2f(400, 100));
+			sf::RectangleShape sbutton(sf::Vector2f(400*screen_scale, 100*screen_scale));
 			// Center Settings Button, 66% from top
 			sf::FloatRect ssize = sbutton.getLocalBounds();
 			sbutton.setPosition(sf::Vector2f(
@@ -690,7 +691,7 @@ int main() {
 				sf::Mouse::getPosition(window)))) {
 				// Outline On Hover
 				sbutton.setOutlineColor(sf::Color::White);
-				sbutton.setOutlineThickness(10);
+				sbutton.setOutlineThickness(10*screen_scale);
 				if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 					// Black On Press
 					sbutton.setFillColor(
@@ -705,7 +706,7 @@ int main() {
 				sbutton.setFillColor(sf::Color::White);
 			window.draw(sbutton);
 			// Settings Button Text
-			sf::Text stext("Settings", roboto, 50);
+			sf::Text stext("Settings", roboto, 50*screen_scale);
 			// Center Text In Button
 			sf::FloatRect stsize = stext.getLocalBounds();
 			stext.setPosition(sf::Vector2f(
@@ -718,8 +719,8 @@ int main() {
 				stext.setFillColor(sf::Color::Black);
 			window.draw(stext);
 			// Tip Text
-			sf::Text tiptext("Press [esc] To Exit", roboto, 30);
-			if (!ok) tiptext = sf::Text("Press [esc] to exit, try running from game folder", roboto, 30);
+			sf::Text tiptext("Press [esc] To Exit", roboto, 30*screen_scale);
+			if (!ok) tiptext = sf::Text("Press [esc] to exit, try running from game folder", roboto, 30*screen_scale);
 			// Center Tip Text, 10% from bottom
 			sf::FloatRect tipsize = tiptext.getLocalBounds();
 			tiptext.setPosition(
@@ -731,11 +732,11 @@ int main() {
 			// Asteroid animation
 
 			// Asteroid Shape
-			sf::CircleShape asteroid = sf::CircleShape(50, 4);
+			sf::CircleShape asteroid = sf::CircleShape(50*screen_scale, 4);
 			asteroid.setFillColor(sf::Color::Transparent);
 			asteroid.setRotation(
 			    clock.getElapsedTime().asSeconds());
-			asteroid.setOutlineThickness(2);
+			asteroid.setOutlineThickness(2*screen_scale);
 			asteroid.setOutlineColor(sf::Color::White);
 
 			animtime += deltatime;
@@ -748,13 +749,13 @@ int main() {
 			} break;
 			case 1: {
 				sf::Vector2f pos =
-				    sf::Vector2f(-100 + animtime * 50,
+				    sf::Vector2f(-100*screen_scale + animtime * 50*screen_scale,
 						 window.getSize().y * 0.7);
 				asteroid.setPosition(pos);
-				asteroid.setRotation(animtime * 20);
+				asteroid.setRotation(animtime * 20*screen_scale);
 				window.draw(asteroid);
 				// Offscreen continue
-				if (pos.x > window.getSize().x + 100) {
+				if (pos.x > window.getSize().x + 100*screen_scale) {
 					animstage = 2;
 					animtime = 0;
 				}
@@ -765,24 +766,24 @@ int main() {
 				    6); // Triangle shaped player with
 					// rectangular tip
 				player.setPoint(0,
-						sf::Vector2f(-2, 10)); //     **
+						sf::Vector2f(-2*screen_scale, 10*screen_scale)); //     **
 				player.setPoint(1,
-						sf::Vector2f(-2, 15)); //     **
+						sf::Vector2f(-2*screen_scale, 15*screen_scale)); //     **
 				player.setPoint(2,
-						sf::Vector2f(2, 15)); //     **
+						sf::Vector2f(2*screen_scale, 15*screen_scale)); //     **
 				player.setPoint(3,
-						sf::Vector2f(2, 10)); //    *  *
+						sf::Vector2f(2*screen_scale, 10*screen_scale)); //    *  *
 				player.setPoint(4,
-						sf::Vector2f(10, -10)); //   * *
+						sf::Vector2f(10*screen_scale, -10*screen_scale)); //   * *
 				player.setPoint(
-				    5, sf::Vector2f(-10, -10)); //  ********
+				    5, sf::Vector2f(-10*screen_scale, -10*screen_scale)); //  ********
 				player.setFillColor(
 				    sf::Color::Transparent); // Transparent Fill
 				player.setOutlineColor(
 				    sf::Color::White); // White Outline
-				player.setOutlineThickness(2);
+				player.setOutlineThickness(2*screen_scale);
 
-				player.setRotation(animtime * 500);
+				player.setRotation(animtime * 500*screen_scale);
 				sf::Vector2f startpos =
 				    sf::Vector2f(window.getSize().x + 20,
 						 window.getSize().y / 2.f);
@@ -816,7 +817,7 @@ int main() {
 				float animlength = EXPLOSIONTIME;
 				sf::CircleShape c(0, 16);
 				c.setRadius(
-				    PLAYEREXPLOSIONSIZE /
+				    PLAYEREXPLOSIONSIZE*screen_scale /
 				    (EXPLOSIONTIME /
 				     (animlength - animtime))); // Grows to size
 				c.setPosition(pos);
@@ -846,23 +847,23 @@ int main() {
 				    8); // Square shaped enemy with rectangular
 					// tip
 				enemy.setPoint(0,
-					       sf::Vector2f(-2, 10)); //     **
+					       sf::Vector2f(-2*screen_scale, 10*screen_scale)); //     **
 				enemy.setPoint(1,
-					       sf::Vector2f(-2, 15)); //     **
+					       sf::Vector2f(-2*screen_scale, 15*screen_scale)); //     **
 				enemy.setPoint(
-				    2, sf::Vector2f(2, 15)); //  ********
-				enemy.setPoint(3, sf::Vector2f(2, 10));	 //  * *
-				enemy.setPoint(4, sf::Vector2f(10, 10)); //  * *
+				    2, sf::Vector2f(2*screen_scale, 15*screen_scale)); //  ********
+				enemy.setPoint(3, sf::Vector2f(2*screen_scale, 10*screen_scale));	 //  * *
+				enemy.setPoint(4, sf::Vector2f(10*screen_scale, 10*screen_scale)); //  * *
 				enemy.setPoint(5,
-					       sf::Vector2f(10, -10)); //  * *
+					       sf::Vector2f(10*screen_scale, -10*screen_scale)); //  * *
 				enemy.setPoint(
-				    6, sf::Vector2f(-10, -10)); //  ********
-				enemy.setPoint(7, sf::Vector2f(-10, 10));
+				    6, sf::Vector2f(-10*screen_scale, -10*screen_scale)); //  ********
+				enemy.setPoint(7, sf::Vector2f(-10*screen_scale, 10*screen_scale));
 				enemy.setFillColor(
 				    sf::Color::Transparent); // Black Fill
 				enemy.setOutlineColor(
 				    sf::Color::White); // White Outline
-				enemy.setOutlineThickness(2);
+				enemy.setOutlineThickness(2*screen_scale);
 
 				enemy.setRotation((sin(animtime) * (PI / 2)) *
 						  (180 / PI));
@@ -960,7 +961,7 @@ int main() {
 			lazervelocity.clear();
 			lazerrotation.clear();
 			// Title
-			sf::Text title("Select Players", roboto, 80);
+			sf::Text title("Select Players", roboto, 80*screen_scale);
 			// Center Title, 10% from top
 			sf::FloatRect titlesize = title.getLocalBounds();
 			title.setPosition(sf::Vector2f(
@@ -969,7 +970,7 @@ int main() {
 			title.setFillColor(sf::Color::White);
 			window.draw(title);
 			// 1 Player Button
-			sf::RectangleShape button1(sf::Vector2f(400, 100));
+			sf::RectangleShape button1(sf::Vector2f(400*screen_scale, 100*screen_scale));
 			// Center 1 Player Button, 50% - button height from top
 			sf::FloatRect button1size = button1.getLocalBounds();
 			button1.setPosition(sf::Vector2f(
@@ -992,7 +993,7 @@ int main() {
 				}
 				// Outline On Hover
 				button1.setOutlineColor(sf::Color::White);
-				button1.setOutlineThickness(10);
+				button1.setOutlineThickness(10*screen_scale);
 				if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 					// Black On Press
 					button1.setFillColor(sf::Color::Black);
@@ -1022,7 +1023,7 @@ int main() {
 				button1.setFillColor(sf::Color::White);
 			window.draw(button1);
 			// 1 Player Button Text
-			sf::Text button1text("1 Player", roboto, 50);
+			sf::Text button1text("1 Player", roboto, 50*screen_scale);
 			// Center Text In Button
 			sf::FloatRect button1textsize =
 			    button1text.getLocalBounds();
@@ -1037,7 +1038,7 @@ int main() {
 				button1text.setFillColor(sf::Color::Black);
 			window.draw(button1text);
 			// 2 Player Button
-			sf::RectangleShape button2(sf::Vector2f(400, 100));
+			sf::RectangleShape button2(sf::Vector2f(400*screen_scale, 100*screen_scale));
 			// Center 2 Player Button, 50% + button height from top
 			sf::FloatRect button2size = button2.getLocalBounds();
 			button2.setPosition(sf::Vector2f(
@@ -1059,7 +1060,7 @@ int main() {
 				}
 				// Outline On Hover
 				button2.setOutlineColor(sf::Color::White);
-				button2.setOutlineThickness(10);
+				button2.setOutlineThickness(10*screen_scale);
 				if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 					// Black On Press
 					button2.setFillColor(sf::Color::Black);
@@ -1097,7 +1098,7 @@ int main() {
 				button2.setFillColor(sf::Color::White);
 			window.draw(button2);
 			// 2 Player Button Text
-			sf::Text button2text("2 Player", roboto, 50);
+			sf::Text button2text("2 Player", roboto, 50*screen_scale);
 			// Center Text In Button
 			sf::FloatRect button2textsize =
 			    button2text.getLocalBounds();
@@ -1115,7 +1116,7 @@ int main() {
 		// 1 Player Controls
 		case 3: {
 			// Title
-			sf::Text title("Controls", roboto, 80);
+			sf::Text title("Controls", roboto, 80*screen_scale);
 			// Center Title, 10% from top
 			sf::FloatRect titlesize = title.getLocalBounds();
 			title.setPosition(sf::Vector2f(
@@ -1124,7 +1125,7 @@ int main() {
 			title.setFillColor(sf::Color::White);
 			window.draw(title);
 			// Engine Controls 30% from top
-			sf::Text enginetext("Engine: [W] Or [^]", roboto, 50);
+			sf::Text enginetext("Engine: [W] Or [^]", roboto, 50*screen_scale);
 			enginetext.setFillColor(sf::Color::White);
 			enginetext.setPosition(
 			    window.getSize().x / 2.f -
@@ -1134,7 +1135,7 @@ int main() {
 			window.draw(enginetext);
 			// Steering Controls 45% from top
 			sf::Text steeringtext("Steering: [A][S] Or [<][>]",
-					      roboto, 50);
+					      roboto, 50*screen_scale);
 			steeringtext.setFillColor(sf::Color::White);
 			steeringtext.setPosition(
 			    window.getSize().x / 2.f -
@@ -1143,7 +1144,7 @@ int main() {
 				steeringtext.getLocalBounds().height / 2.f);
 			window.draw(steeringtext);
 			// Firing Controls 60% from top
-			sf::Text firingtext("Firing: [S] Or [v]", roboto, 50);
+			sf::Text firingtext("Firing: [S] Or [v]", roboto, 50*screen_scale);
 			firingtext.setFillColor(sf::Color::White);
 			firingtext.setPosition(
 			    window.getSize().x / 2.f -
@@ -1152,7 +1153,7 @@ int main() {
 				firingtext.getLocalBounds().height / 2.f);
 			window.draw(firingtext);
 			// Bomb Controls 75% from top
-			sf::Text bombtext("Bomb: [Space]", roboto, 50);
+			sf::Text bombtext("Bomb: [Space]", roboto, 50*screen_scale);
 			bombtext.setFillColor(sf::Color::White);
 			bombtext.setPosition(
 			    window.getSize().x / 2.f -
@@ -1162,7 +1163,7 @@ int main() {
 			window.draw(bombtext);
 			// Tip Text
 			sf::Text tiptext("Click or Press [Enter] To Continue",
-					 roboto, 30);
+					 roboto, 30*screen_scale);
 			// Center Tip Text, 10% from bottom
 			sf::FloatRect tipsize = tiptext.getLocalBounds();
 			tiptext.setPosition(
@@ -1179,7 +1180,7 @@ int main() {
 		// 2 Player Player 1 Controls
 		case 4: {
 			// Title
-			sf::Text title("Player 1 Controls", roboto, 80);
+			sf::Text title("Player 1 Controls", roboto, 80*screen_scale);
 			// Center Title, 10% from top
 			sf::FloatRect titlesize = title.getLocalBounds();
 			title.setPosition(sf::Vector2f(
@@ -1188,7 +1189,7 @@ int main() {
 			title.setFillColor(sf::Color::White);
 			window.draw(title);
 			// Engine Controls 30% from top
-			sf::Text enginetext("Engine: [W]", roboto, 50);
+			sf::Text enginetext("Engine: [W]", roboto, 50*screen_scale);
 			enginetext.setFillColor(sf::Color::White);
 			enginetext.setPosition(
 			    window.getSize().x / 2.f -
@@ -1197,7 +1198,7 @@ int main() {
 				enginetext.getLocalBounds().height / 2.f);
 			window.draw(enginetext);
 			// Steering Controls 45% from top
-			sf::Text steeringtext("Steering: [A][D]", roboto, 50);
+			sf::Text steeringtext("Steering: [A][D]", roboto, 50*screen_scale);
 			steeringtext.setFillColor(sf::Color::White);
 			steeringtext.setPosition(
 			    window.getSize().x / 2.f -
@@ -1206,7 +1207,7 @@ int main() {
 				steeringtext.getLocalBounds().height / 2.f);
 			window.draw(steeringtext);
 			// Firing Controls 60% from top
-			sf::Text firingtext("Firing: [S]", roboto, 50);
+			sf::Text firingtext("Firing: [S]", roboto, 50*screen_scale);
 			firingtext.setFillColor(sf::Color::White);
 			firingtext.setPosition(
 			    window.getSize().x / 2.f -
@@ -1215,7 +1216,7 @@ int main() {
 				firingtext.getLocalBounds().height / 2.f);
 			window.draw(firingtext);
 			// Bomb Controls 75% from top
-			sf::Text bombtext("Bomb: [Space]", roboto, 50);
+			sf::Text bombtext("Bomb: [Space]", roboto, 50*screen_scale);
 			bombtext.setFillColor(sf::Color::White);
 			bombtext.setPosition(
 			    window.getSize().x / 2.f -
@@ -1225,7 +1226,7 @@ int main() {
 			window.draw(bombtext);
 			// Tip Text
 			sf::Text tiptext("Click or Press [Enter] To Continue",
-					 roboto, 30);
+					 roboto, 30*screen_scale);
 			// Center Tip Text, 10% from bottom
 			sf::FloatRect tipsize = tiptext.getLocalBounds();
 			tiptext.setPosition(
@@ -1243,7 +1244,7 @@ int main() {
 		// 2 Player Player 2 Controls
 		case 5: {
 			// Title
-			sf::Text title("Player 2 Controls", roboto, 80);
+			sf::Text title("Player 2 Controls", roboto, 80*screen_scale);
 			// Center Title, 10% from top
 			sf::FloatRect titlesize = title.getLocalBounds();
 			title.setPosition(sf::Vector2f(
@@ -1252,7 +1253,7 @@ int main() {
 			title.setFillColor(sf::Color::White);
 			window.draw(title);
 			// Engine Controls 30% from top
-			sf::Text enginetext("Engine: [^]", roboto, 50);
+			sf::Text enginetext("Engine: [^]", roboto, 50*screen_scale);
 			enginetext.setFillColor(sf::Color::White);
 			enginetext.setPosition(
 			    window.getSize().x / 2.f -
@@ -1261,7 +1262,7 @@ int main() {
 				enginetext.getLocalBounds().height / 2.f);
 			window.draw(enginetext);
 			// Steering Controls 45% from top
-			sf::Text steeringtext("Steering: [<][>]", roboto, 50);
+			sf::Text steeringtext("Steering: [<][>]", roboto, 50*screen_scale);
 			steeringtext.setFillColor(sf::Color::White);
 			steeringtext.setPosition(
 			    window.getSize().x / 2.f -
@@ -1270,7 +1271,7 @@ int main() {
 				steeringtext.getLocalBounds().height / 2.f);
 			window.draw(steeringtext);
 			// Firing Controls 60% from top
-			sf::Text firingtext("Firing: [v]", roboto, 50);
+			sf::Text firingtext("Firing: [v]", roboto, 50*screen_scale);
 			firingtext.setFillColor(sf::Color::White);
 			firingtext.setPosition(
 			    window.getSize().x / 2.f -
@@ -1279,7 +1280,7 @@ int main() {
 				firingtext.getLocalBounds().height / 2.f);
 			window.draw(firingtext);
 			// Bomb Controls 75% from top
-			sf::Text bombtext("Bomb: [Space]", roboto, 50);
+			sf::Text bombtext("Bomb: [Space]", roboto, 50*screen_scale);
 			bombtext.setFillColor(sf::Color::White);
 			bombtext.setPosition(
 			    window.getSize().x / 2.f -
@@ -1289,7 +1290,7 @@ int main() {
 			window.draw(bombtext);
 			// Tip Text
 			sf::Text tiptext("Click or Press [Enter] To Continue",
-					 roboto, 30);
+					 roboto, 30*screen_scale);
 			// Center Tip Text, 10% from bottom
 			sf::FloatRect tipsize = tiptext.getLocalBounds();
 			tiptext.setPosition(
@@ -1309,7 +1310,7 @@ int main() {
 			std::stringstream scorebuffer;
 			scorebuffer << "Score: " << score;
 			std::string scorestring = scorebuffer.str();
-			sf::Text scoretext(scorestring.c_str(), roboto, 50);
+			sf::Text scoretext(scorestring.c_str(), roboto, 50*screen_scale);
 			scoretext.setFillColor(sf::Color::White);
 			scoretext.setPosition(
 			    window.getSize().y * 0.05,
@@ -1321,7 +1322,7 @@ int main() {
 			std::stringstream bombbuffer;
 			bombbuffer << "Bombs: " << bombs;
 			std::string bombstring = bombbuffer.str();
-			sf::Text bombtext(bombstring.c_str(), roboto, 50);
+			sf::Text bombtext(bombstring.c_str(), roboto, 50*screen_scale);
 			bombtext.setFillColor(sf::Color::White);
 			bombtext.setPosition(
 			    window.getSize().x -
@@ -1465,11 +1466,11 @@ int main() {
 							player1velocity.x -=
 							    sin(player1rotation *
 								PI / 180) *
-							    (deltatime)*MOVEMENTVEL;
+							    (deltatime)*MOVEMENTVEL*screen_scale;
 							player1velocity.y +=
 							    cos(player1rotation *
 								PI / 180) *
-							    (deltatime)*MOVEMENTVEL;
+							    (deltatime)*MOVEMENTVEL*screen_scale;
 						}
 						float direction = 0;
 						if (sf::Keyboard::isKeyPressed(
@@ -1525,10 +1526,10 @@ int main() {
 							    sf::Vector2f(
 								sin(-player1rotation *
 								    PI / 180) *
-								    LAZERSPEED,
+								    LAZERSPEED*screen_scale,
 								cos(-player1rotation *
 								    PI / 180) *
-								    LAZERSPEED));
+								    LAZERSPEED*screen_scale));
 							lazervelocity.at(
 							    lazervelocity
 								.size() -
@@ -1565,7 +1566,7 @@ int main() {
 								cos(-player1rotation *
 								    PI / 180)) *
 							    (float)
-								HITRADIUS; // Get
+								HITRADIUS*screen_scale; // Get
 									   // Lazer
 									   // out
 									   // of
@@ -1583,11 +1584,11 @@ int main() {
 							player1velocity.x -=
 							    sin(player1rotation *
 								PI / 180) *
-							    (deltatime)*MOVEMENTVEL;
+							    (deltatime)*MOVEMENTVEL*screen_scale;
 							player1velocity.y +=
 							    cos(player1rotation *
 								PI / 180) *
-							    (deltatime)*MOVEMENTVEL;
+							    (deltatime)*MOVEMENTVEL*screen_scale;
 						}
 						float direction = 0;
 						if (sf::Keyboard::isKeyPressed(
@@ -1629,10 +1630,10 @@ int main() {
 							    sf::Vector2f(
 								sin(-player1rotation *
 								    PI / 180) *
-								    LAZERSPEED,
+								    LAZERSPEED*screen_scale,
 								cos(-player1rotation *
 								    PI / 180) *
-								    LAZERSPEED));
+								    LAZERSPEED*screen_scale));
 							lazervelocity.at(
 							    lazervelocity
 								.size() -
@@ -1649,7 +1650,7 @@ int main() {
 									    .size() -
 									1)
 								    .y) <
-							    LAZERSPEED)
+							    LAZERSPEED*screen_scale)
 								lazervelocity.at(
 								    lazervelocity
 									.size() -
@@ -1739,13 +1740,13 @@ int main() {
 								     apos.x) /
 									asteroidsize
 									    .at(a) *
-									SHEILDREPELSTRENGTH,
+									SHEILDREPELSTRENGTH*screen_scale,
 								    (player1position
 									 .y -
 								     apos.y) /
 									asteroidsize
 									    .at(a) *
-									SHEILDREPELSTRENGTH);
+									SHEILDREPELSTRENGTH*screen_scale);
 
 								// Push out if
 								// in asteroid
@@ -1886,7 +1887,7 @@ int main() {
 									.y -
 								    player1position
 									.y) <=
-							    HITRADIUS) {
+							    HITRADIUS*screen_scale) {
 
 								// Delete Lazer
 								lazerpositions.erase(
@@ -1945,7 +1946,7 @@ int main() {
 										EXPLOSIONTIME);
 									explosionsize
 									    .push_back(
-										PLAYEREXPLOSIONSIZE);
+										PLAYEREXPLOSIONSIZE*screen_scale);
 
 									// Text
 									texts++;
@@ -1998,25 +1999,25 @@ int main() {
 					    6); // Triangle shaped player with
 						// rectangular tip
 					player.setPoint(
-					    0, sf::Vector2f(-2, 10)); //     **
+					    0, sf::Vector2f(-2*screen_scale, 10*screen_scale)); //     **
 					player.setPoint(
-					    1, sf::Vector2f(-2, 15)); //     **
+					    1, sf::Vector2f(-2*screen_scale, 15*screen_scale)); //     **
 					player.setPoint(
-					    2, sf::Vector2f(2, 15)); //     **
+					    2, sf::Vector2f(2*screen_scale, 15*screen_scale)); //     **
 					player.setPoint(
-					    3, sf::Vector2f(2, 10)); //    *  *
+					    3, sf::Vector2f(2*screen_scale, 10*screen_scale)); //    *  *
 					player.setPoint(
-					    4, sf::Vector2f(10, -10)); //   * *
+					    4, sf::Vector2f(10*screen_scale, -10*screen_scale)); //   * *
 					player.setPoint(
-					    5, sf::Vector2f(-10,
-							    -10)); //  ********
+					    5, sf::Vector2f(-10*screen_scale,
+							    -10*screen_scale)); //  ********
 					player.setFillColor(
 					    sf::Color::
 						Transparent); // Transparent
 							      // Fill
 					player.setOutlineColor(
 					    sf::Color::White); // White Outline
-					player.setOutlineThickness(2);
+					player.setOutlineThickness(2*screen_scale);
 
 					player.setPosition(
 					    player1position); // Position
@@ -2028,16 +2029,16 @@ int main() {
 
 					// Draw Fire
 					sf::ConvexShape fire(5);
-					fire.setPoint(0, sf::Vector2f(-8, -15));
-					fire.setPoint(1, sf::Vector2f(-5, -20));
-					fire.setPoint(2, sf::Vector2f(0, -18));
-					fire.setPoint(3, sf::Vector2f(5, -20));
-					fire.setPoint(4, sf::Vector2f(8, -15));
+					fire.setPoint(0, sf::Vector2f(-8*screen_scale, -15*screen_scale));
+					fire.setPoint(1, sf::Vector2f(-5*screen_scale, -20*screen_scale));
+					fire.setPoint(2, sf::Vector2f(0*screen_scale, -18*screen_scale));
+					fire.setPoint(3, sf::Vector2f(5*screen_scale, -20*screen_scale));
+					fire.setPoint(4, sf::Vector2f(8*screen_scale, -15*screen_scale));
 
 					fire.setFillColor(
 					    sf::Color::Transparent);
 					fire.setOutlineColor(sf::Color::White);
-					fire.setOutlineThickness(2);
+					fire.setOutlineThickness(2*screen_scale);
 
 					fire.setPosition(
 					    player1position); // Position
@@ -2050,7 +2051,7 @@ int main() {
 					if (player2mode) {
 						// Player indicator
 						sf::RectangleShape indicator(
-						    sf::Vector2f(4, 4));
+						    sf::Vector2f(4*screen_scale, 4*screen_scale));
 
 						indicator.setOrigin(
 						    indicator.getLocalBounds()
@@ -2073,7 +2074,7 @@ int main() {
 						    sf::Color::
 							White); // White Outline
 						indicator.setOutlineThickness(
-						    2);
+						    2*screen_scale);
 
 						// Draw
 						window.draw(indicator);
@@ -2084,7 +2085,7 @@ int main() {
 					    clock.getElapsedTime().asSeconds() -
 					    player1time;
 					sf::CircleShape sheild;
-					float sheildThickness = 2;
+					float sheildThickness = 2*screen_scale;
 					for (int i = 0; i < player1sheilds;
 					     i++) {
 						sheild = sf::CircleShape(
@@ -2112,14 +2113,14 @@ int main() {
 						if (ptime >
 						    SHEILDANIMATIONLENGTH) {
 							sheild = sf::CircleShape(
-							    SHEILDSIZE +
-								(SHEILDSPACE *
+							    SHEILDSIZE*screen_scale +
+								(SHEILDSPACE*screen_scale *
 								 player1sheilds),
 							    16);
 						} else {
 							sheild = sf::CircleShape(
-							    SHEILDSIZE +
-								(SHEILDSPACE *
+							    SHEILDSIZE*screen_scale +
+								(SHEILDSPACE*screen_scale *
 								 player1sheilds) +
 								SHEILDRANGE *
 								    ((SHEILDANIMATIONLENGTH -
@@ -2129,7 +2130,7 @@ int main() {
 							sheildThickness =
 							    ptime /
 							    SHEILDANIMATIONLENGTH *
-							    2;
+							    2*screen_scale;
 						}
 						sheild.setFillColor(
 						    sf::Color::Transparent);
@@ -2151,8 +2152,8 @@ int main() {
 						if (ptime <=
 						    SHEILDANIMATIONLENGTH) {
 							sheild = sf::CircleShape(
-							    SHEILDSIZE +
-								SHEILDSPACE *
+							    SHEILDSIZE*screen_scale +
+								SHEILDSPACE*screen_scale *
 								    player1sheilds +
 								SHEILDRANGE *
 								    (ptime /
@@ -2162,7 +2163,7 @@ int main() {
 							    (SHEILDANIMATIONLENGTH -
 							     ptime) /
 							    SHEILDANIMATIONLENGTH *
-							    2;
+							    2*screen_scale;
 							sheild.setFillColor(
 							    sf::Color::
 								Transparent);
@@ -2199,11 +2200,11 @@ int main() {
 							player2velocity.x -=
 							    sin(player2rotation *
 								PI / 180) *
-							    (deltatime)*MOVEMENTVEL;
+							    (deltatime)*MOVEMENTVEL*screen_scale;
 							player2velocity.y +=
 							    cos(player2rotation *
 								PI / 180) *
-							    (deltatime)*MOVEMENTVEL;
+							    (deltatime)*MOVEMENTVEL*screen_scale;
 						}
 						float direction = 0;
 						if (sf::Keyboard::isKeyPressed(
@@ -2245,10 +2246,10 @@ int main() {
 							    sf::Vector2f(
 								sin(-player2rotation *
 								    PI / 180) *
-								    LAZERSPEED,
+								    LAZERSPEED*screen_scale,
 								cos(-player2rotation *
 								    PI / 180) *
-								    LAZERSPEED));
+								    LAZERSPEED*screen_scale));
 							lazervelocity.at(
 							    lazervelocity
 								.size() -
@@ -2269,7 +2270,7 @@ int main() {
 									    .size() -
 									1)
 								    .y) <
-							    LAZERSPEED)
+							    LAZERSPEED*screen_scale)
 								lazervelocity.at(
 								    lazervelocity
 									.size() -
@@ -2285,7 +2286,7 @@ int main() {
 								cos(-player2rotation *
 								    PI / 180)) *
 							    (float)
-								HITRADIUS; // Get
+								HITRADIUS*screen_scale; // Get
 									   // Lazer
 									   // out
 									   // of
@@ -2376,13 +2377,13 @@ int main() {
 								     apos.x) /
 									asteroidsize
 									    .at(a) *
-									SHEILDREPELSTRENGTH,
+									SHEILDREPELSTRENGTH*screen_scale,
 								    (player2position
 									 .y -
 								     apos.y) /
 									asteroidsize
 									    .at(a) *
-									SHEILDREPELSTRENGTH);
+									SHEILDREPELSTRENGTH*screen_scale);
 
 								// Push out if
 								// in asteroid
@@ -2487,7 +2488,7 @@ int main() {
 									EXPLOSIONTIME);
 								explosionsize
 								    .push_back(
-									PLAYEREXPLOSIONSIZE);
+									PLAYEREXPLOSIONSIZE*screen_scale);
 
 								// Text
 								texts++;
@@ -2521,7 +2522,7 @@ int main() {
 									.y -
 								    player2position
 									.y) <=
-							    HITRADIUS) {
+							    HITRADIUS*screen_scale) {
 
 								// Delete Lazer
 								lazerpositions.erase(
@@ -2584,7 +2585,7 @@ int main() {
 										EXPLOSIONTIME);
 									explosionsize
 									    .push_back(
-										PLAYEREXPLOSIONSIZE);
+										PLAYEREXPLOSIONSIZE*screen_scale);
 
 									// Text
 									texts++;
@@ -2636,24 +2637,24 @@ int main() {
 					    6); // Triangle shaped player with
 						// rectangular tip
 					player.setPoint(
-					    0, sf::Vector2f(-2, 10)); //     **
+					    0, sf::Vector2f(-2*screen_scale, 10*screen_scale)); //     **
 					player.setPoint(
-					    1, sf::Vector2f(-2, 15)); //     **
+					    1, sf::Vector2f(-2*screen_scale, 15*screen_scale)); //     **
 					player.setPoint(
-					    2, sf::Vector2f(2, 15)); //     **
+					    2, sf::Vector2f(2*screen_scale, 15*screen_scale)); //     **
 					player.setPoint(
-					    3, sf::Vector2f(2, 10)); //    *  *
+					    3, sf::Vector2f(2*screen_scale, 10*screen_scale)); //    *  *
 					player.setPoint(
-					    4, sf::Vector2f(10, -10)); //   * *
+					    4, sf::Vector2f(10*screen_scale, -10*screen_scale)); //   * *
 					player.setPoint(
-					    5, sf::Vector2f(-10,
-							    -10)); //  ********
+					    5, sf::Vector2f(-10*screen_scale,
+							    -10*screen_scale)); //  ********
 					player.setFillColor(
 					    sf::Color::Transparent); // Black
 								     // Fill
 					player.setOutlineColor(
 					    sf::Color::White); // White Outline
-					player.setOutlineThickness(2);
+					player.setOutlineThickness(2*screen_scale);
 
 					player.setPosition(
 					    player2position); // Position
@@ -2665,16 +2666,16 @@ int main() {
 
 					// Draw Fire
 					sf::ConvexShape fire(5);
-					fire.setPoint(0, sf::Vector2f(-8, -15));
-					fire.setPoint(1, sf::Vector2f(-5, -20));
-					fire.setPoint(2, sf::Vector2f(0, -18));
-					fire.setPoint(3, sf::Vector2f(5, -20));
-					fire.setPoint(4, sf::Vector2f(8, -15));
+					fire.setPoint(0, sf::Vector2f(-8*screen_scale, -15*screen_scale));
+					fire.setPoint(1, sf::Vector2f(-5*screen_scale, -20*screen_scale));
+					fire.setPoint(2, sf::Vector2f(0*screen_scale, -18*screen_scale));
+					fire.setPoint(3, sf::Vector2f(5*screen_scale, -20*screen_scale));
+					fire.setPoint(4, sf::Vector2f(8*screen_scale, -15*screen_scale));
 
 					fire.setFillColor(
 					    sf::Color::Transparent);
 					fire.setOutlineColor(sf::Color::White);
-					fire.setOutlineThickness(2);
+					fire.setOutlineThickness(2*screen_scale);
 
 					fire.setPosition(
 					    player2position); // Position
@@ -2686,14 +2687,14 @@ int main() {
 
 					// Player indicator
 					sf::RectangleShape indicator(
-					    sf::Vector2f(2, 8));
+					    sf::Vector2f(2*screen_scale, 8*screen_scale));
 
 					indicator.setOrigin(
 					    indicator.getLocalBounds().width /
 						2,
 					    indicator.getLocalBounds().height /
 						    2 +
-						2); // Shift 2px down from
+						2*screen_scale); // Shift 2px down from
 						    // center
 					indicator.setPosition(player2position);
 					indicator.setRotation(player2rotation);
@@ -2706,12 +2707,12 @@ int main() {
 					    clock.getElapsedTime().asSeconds() -
 					    player2time;
 					sf::CircleShape sheild;
-					float sheildThickness = 2;
+					float sheildThickness = 2*screen_scale;
 					for (int i = 0; i < player2sheilds;
 					     i++) {
 						sheild = sf::CircleShape(
-						    SHEILDSIZE +
-							SHEILDSPACE * i,
+						    SHEILDSIZE*screen_scale +
+							SHEILDSPACE*screen_scale * i,
 						    16);
 						sheild.setFillColor(
 						    sf::Color::Transparent);
@@ -2734,14 +2735,14 @@ int main() {
 						if (ptime >
 						    SHEILDANIMATIONLENGTH) {
 							sheild = sf::CircleShape(
-							    SHEILDSIZE +
-								(SHEILDSPACE *
+							    SHEILDSIZE*screen_scale +
+								(SHEILDSPACE*screen_scale *
 								 player2sheilds),
 							    16);
 						} else {
 							sheild = sf::CircleShape(
-							    SHEILDSIZE +
-								(SHEILDSPACE *
+							    SHEILDSIZE*screen_scale +
+								(SHEILDSPACE*screen_scale *
 								 player2sheilds) +
 								SHEILDRANGE *
 								    ((SHEILDANIMATIONLENGTH -
@@ -2751,7 +2752,7 @@ int main() {
 							sheildThickness =
 							    ptime /
 							    SHEILDANIMATIONLENGTH *
-							    2;
+							    2*screen_scale;
 						}
 						sheild.setFillColor(
 						    sf::Color::Transparent);
@@ -2773,10 +2774,10 @@ int main() {
 						if (ptime <=
 						    SHEILDANIMATIONLENGTH) {
 							sheild = sf::CircleShape(
-							    SHEILDSIZE +
-								SHEILDSPACE *
+							    SHEILDSIZE*screen_scale +
+								SHEILDSPACE*screen_scale *
 								    player2sheilds +
-								SHEILDRANGE *
+								SHEILDRANGE*screen_scale *
 								    (ptime /
 								     SHEILDANIMATIONLENGTH),
 							    16);
@@ -2784,7 +2785,7 @@ int main() {
 							    (SHEILDANIMATIONLENGTH -
 							     ptime) /
 							    SHEILDANIMATIONLENGTH *
-							    2;
+							    2*screen_scale;
 							sheild.setFillColor(
 							    sf::Color::
 								Transparent);
@@ -2814,7 +2815,7 @@ int main() {
 					    lazervelocity.at(i) * (deltatime);
 					// Render Lazer
 					sf::RectangleShape lazer(
-					    sf::Vector2f(2, 10));
+					    sf::Vector2f(2*screen_scale, 10*screen_scale));
 					lazer.setOrigin(
 					    lazer.getLocalBounds().width / 2,
 					    lazer.getLocalBounds().height / 2);
@@ -2825,15 +2826,15 @@ int main() {
 
 					// Delete offscreen lazers
 					if (lazerpositions.at(i).x <
-						0 - LAZERDESPAWNDISTANCE ||
+						0 - LAZERDESPAWNDISTANCE*screen_scale ||
 					    lazerpositions.at(i).x >
 						window.getSize().x +
-						    LAZERDESPAWNDISTANCE ||
+						    LAZERDESPAWNDISTANCE*screen_scale ||
 					    lazerpositions.at(i).y <
-						0 - LAZERDESPAWNDISTANCE ||
+						0 - LAZERDESPAWNDISTANCE*screen_scale ||
 					    lazerpositions.at(i).y >
 						window.getSize().y +
-						    LAZERDESPAWNDISTANCE) {
+						    LAZERDESPAWNDISTANCE*screen_scale) {
 						lazerrotation.erase(
 						    lazerrotation.begin() + i);
 						lazervelocity.erase(
@@ -2977,7 +2978,7 @@ int main() {
 							explosionpositions
 							    .push_back(pos);
 							explosionsize.push_back(
-							    EXPLOSIONSIZE);
+							    EXPLOSIONSIZE*screen_scale);
 							explosiontime.push_back(
 							    EXPLOSIONTIME);
 							// Delete Lazer
@@ -3004,11 +3005,11 @@ int main() {
 				// Explosions
 				// Generate Explosion shape
 				sf::CircleShape explosion(
-				    10.f);		     // Radius 10 circle
+				    10.f*screen_scale);		     // Radius 10 circle
 				explosion.setPointCount(16); // 16 Points
 				explosion.setFillColor(sf::Color::Transparent);
 				explosion.setOutlineColor(sf::Color::White);
-				explosion.setOutlineThickness(2);
+				explosion.setOutlineThickness(2*screen_scale);
 				for (int i = 0; i < explosions; i++) {
 					explosiontime.at(i) -= deltatime;
 					explosion.setRadius(
@@ -3050,7 +3051,7 @@ int main() {
 					    asteroidrotation.at(i));
 					asteroid.setFillColor(
 					    sf::Color::Transparent);
-					asteroid.setOutlineThickness(2);
+					asteroid.setOutlineThickness(2*screen_scale);
 					asteroid.setOutlineColor(
 					    sf::Color::White);
 					asteroid.setOrigin(
@@ -3176,7 +3177,7 @@ int main() {
 					asteroidvelocity.at(i) = tavel;
 					// Delete small asteroids
 					if (asteroidsize.at(i) <
-					    MINASTEROIDSIZE) { // Delete
+					    MINASTEROIDSIZE*screen_scale) { // Delete
 							       // Asteroid if it
 							       // is too small
 
@@ -3327,27 +3328,27 @@ int main() {
 							    sin(erot * PI /
 								180) *
 								(deltatime) *
-								(MOVEMENTVEL) >=
-							ENEMYMAXVELOCITY ||
+								(MOVEMENTVEL*screen_scale) >=
+							ENEMYMAXVELOCITY*screen_scale ||
 						    evel.x -
 							    sin(erot * PI /
 								180) *
 								(deltatime) *
-								(MOVEMENTVEL) <=
-							-ENEMYMAXVELOCITY)
+								(MOVEMENTVEL*screen_scale) <=
+							-ENEMYMAXVELOCITY*screen_scale)
 							engine = false;
 						if (evel.y +
 							    cos(erot * PI /
 								180) *
 								(deltatime) *
-								(MOVEMENTVEL) >=
-							ENEMYMAXVELOCITY ||
+								(MOVEMENTVEL*screen_scale) >=
+							ENEMYMAXVELOCITY*screen_scale ||
 						    evel.y +
 							    cos(erot * PI /
 								180) *
 								(deltatime) *
-								(MOVEMENTVEL) <=
-							-ENEMYMAXVELOCITY)
+								(MOVEMENTVEL*screen_scale) <=
+							-ENEMYMAXVELOCITY*screen_scale)
 							engine = false;
 
 						// Lazer
@@ -3368,10 +3369,10 @@ int main() {
 					if (engine) {
 						evel.x -= sin(erot * PI / 180) *
 							  (deltatime) *
-							  (MOVEMENTVEL);
+							  (MOVEMENTVEL*screen_scale);
 						evel.y += cos(erot * PI / 180) *
 							  (deltatime) *
-							  (MOVEMENTVEL);
+							  (MOVEMENTVEL*screen_scale);
 					}
 
 					// Steer enemy
@@ -3401,9 +3402,9 @@ int main() {
 						lazervelocity.push_back(
 						    sf::Vector2f(
 							sin(-erot * PI / 180) *
-							    LAZERSPEED,
+							    LAZERSPEED*screen_scale,
 							cos(-erot * PI / 180) *
-							    LAZERSPEED));
+							    LAZERSPEED*screen_scale));
 						lazervelocity.at(
 						    lazervelocity.size() - 1) +=
 						    evel; // Add enemy velocity
@@ -3418,7 +3419,7 @@ int main() {
 							    .at(lazervelocity
 								    .size() -
 								1)
-							    .y) < LAZERSPEED)
+							    .y) < LAZERSPEED*screen_scale)
 							lazervelocity.at(
 							    lazervelocity
 								.size() -
@@ -3430,7 +3431,7 @@ int main() {
 							sin(-erot * PI / 180),
 							cos(-erot * PI / 180)) *
 						    (float)
-							E_HITRADIUS; // Get Lazer
+							E_HITRADIUS*screen_scale; // Get Lazer
 								   // out of hit
 								   // radius
 						// Update Lazer Cooldown
@@ -3478,7 +3479,7 @@ int main() {
 							explosiontime.push_back(
 							    EXPLOSIONTIME);
 							explosionsize.push_back(
-							    PLAYEREXPLOSIONSIZE);
+							    PLAYEREXPLOSIONSIZE*screen_scale);
 
 							// Delete Enemy
 							enemypositions.erase(
@@ -3540,7 +3541,7 @@ int main() {
 									.at(l)
 									.y -
 								    epos.y) <=
-							    E_HITRADIUS) {
+							    E_HITRADIUS*screen_scale) {
 
 								// Delete Lazer
 								lazerpositions.erase(
@@ -3570,7 +3571,7 @@ int main() {
 									EXPLOSIONTIME);
 								explosionsize
 								    .push_back(
-									PLAYEREXPLOSIONSIZE);
+									PLAYEREXPLOSIONSIZE*screen_scale);
 
 								// Delete Enemy
 								enemypositions.erase(
@@ -3634,29 +3635,29 @@ int main() {
 					    8); // Square shaped enemy with
 						// rectangular tip
 					enemy.setPoint(
-					    0, sf::Vector2f(-2, 10)); //     **
+					    0, sf::Vector2f(-2*screen_scale, 10*screen_scale)); //     **
 					enemy.setPoint(
-					    1, sf::Vector2f(-2, 15)); //     **
+					    1, sf::Vector2f(-2*screen_scale, 15*screen_scale)); //     **
 					enemy.setPoint(
 					    2,
-					    sf::Vector2f(2, 15)); //  ********
+					    sf::Vector2f(2*screen_scale, 15*screen_scale)); //  ********
 					enemy.setPoint(
-					    3, sf::Vector2f(2, 10)); //  * *
+					    3, sf::Vector2f(2*screen_scale, 10*screen_scale)); //  * *
 					enemy.setPoint(
-					    4, sf::Vector2f(10, 10)); //  * *
+					    4, sf::Vector2f(10*screen_scale, 10*screen_scale)); //  * *
 					enemy.setPoint(
-					    5, sf::Vector2f(10, -10)); //  * *
+					    5, sf::Vector2f(10*screen_scale, -10*screen_scale)); //  * *
 					enemy.setPoint(
-					    6, sf::Vector2f(-10,
-							    -10)); //  ********
+					    6, sf::Vector2f(-10*screen_scale,
+							    -10*screen_scale)); //  ********
 					enemy.setPoint(7,
-						       sf::Vector2f(-10, 10));
+						       sf::Vector2f(-10*screen_scale, 10*screen_scale));
 					enemy.setFillColor(
 					    sf::Color::Transparent); // Black
 								     // Fill
 					enemy.setOutlineColor(
 					    sf::Color::White); // White Outline
-					enemy.setOutlineThickness(2);
+					enemy.setOutlineThickness(2*screen_scale);
 
 					enemy.setPosition(epos); // Position
 					enemy.setRotation(erot); // Rotate
@@ -3666,16 +3667,16 @@ int main() {
 
 					// Draw Fire
 					sf::ConvexShape fire(5);
-					fire.setPoint(0, sf::Vector2f(-8, -15));
-					fire.setPoint(1, sf::Vector2f(-5, -20));
-					fire.setPoint(2, sf::Vector2f(0, -18));
-					fire.setPoint(3, sf::Vector2f(5, -20));
-					fire.setPoint(4, sf::Vector2f(8, -15));
+					fire.setPoint(0, sf::Vector2f(-8*screen_scale, -15*screen_scale));
+					fire.setPoint(1, sf::Vector2f(-5*screen_scale, -20*screen_scale));
+					fire.setPoint(2, sf::Vector2f(0*screen_scale, -18*screen_scale));
+					fire.setPoint(3, sf::Vector2f(5*screen_scale, -20*screen_scale));
+					fire.setPoint(4, sf::Vector2f(8*screen_scale, -15*screen_scale));
 
 					fire.setFillColor(
 					    sf::Color::Transparent);
 					fire.setOutlineColor(sf::Color::White);
-					fire.setOutlineThickness(2);
+					fire.setOutlineThickness(2*screen_scale);
 
 					fire.setPosition(epos); // Position
 					fire.setRotation(erot); // Rotate
@@ -3689,7 +3690,7 @@ int main() {
 				for (int i = 0; i < texts; i++) {
 					sf::Text text(textstring.at(i).c_str(),
 						      roboto,
-						      TEXTSIZE); // Size 20 text
+						      TEXTSIZE*screen_scale); // Size 20 text
 					sf::Vector2f pos = textpositions.at(i);
 					pos.y += TEXTRISE *
 						 (texttime.at(i) /
@@ -3769,20 +3770,20 @@ int main() {
 					if (distance(pos.x - player1position.x,
 						     pos.y -
 							 player1position.y) <=
-						COLLECTRADIUS ||
+						COLLECTRADIUS*screen_scale ||
 					    poweruptype.at(i) == PLANET &&
 						distance(
 						    pos.x - player1position.x,
 						    pos.y -
 							player1position.y) <=
-						    PLANET_SIZE) {
+						    PLANET_SIZE*screen_scale) {
 						collect = 1;
 					} else if (distance(
 						       pos.x -
 							   player2position.x,
 						       pos.y -
 							   player2position.y) <=
-						       COLLECTRADIUS ||
+						       COLLECTRADIUS*screen_scale ||
 						   poweruptype.at(i) ==
 							   PLANET &&
 						       distance(
@@ -3792,7 +3793,7 @@ int main() {
 							   pos.y -
 							       player2position
 								   .y) <=
-							   PLANET_SIZE) {
+							   PLANET_SIZE*screen_scale) {
 						collect = 2;
 					}
 					if (powerupsize.at(i) != 1)
@@ -3801,12 +3802,12 @@ int main() {
 					sf::CircleShape radius;
 					if (poweruptype.at(i) != PLANET)
 						radius = sf::CircleShape(
-						    COLLECTRADIUS *
+						    COLLECTRADIUS*screen_scale *
 							powerupsize.at(i),
 						    16);
 					else
 						radius = sf::CircleShape(
-						    PLANET_SIZE *
+						    PLANET_SIZE*screen_scale *
 							powerupsize.at(i),
 						    16);
 					radius.setFillColor(
@@ -3824,7 +3825,7 @@ int main() {
 						case SHEILD: {
 							sf::CircleShape sheild =
 							    sf::CircleShape(
-								COLLECTRADIUS /
+								COLLECTRADIUS*screen_scale /
 								    2.f *
 								    powerupsize
 									.at(i),
@@ -3834,7 +3835,7 @@ int main() {
 								Transparent);
 							sheild
 							    .setOutlineThickness(
-								2);
+								2*screen_scale);
 							sheild.setOutlineColor(
 							    sf::Color::White);
 							sheild.setOrigin(
@@ -3887,7 +3888,7 @@ int main() {
 						case BOMB: {
 							sf::CircleShape bomb =
 							    sf::CircleShape(
-								COLLECTRADIUS /
+								COLLECTRADIUS*screen_scale /
 								    2.f *
 								    powerupsize
 									.at(i),
@@ -3928,7 +3929,7 @@ int main() {
 							// Minigame Planet
 							sf::CircleShape crater1 =
 							    sf::CircleShape(
-								PLANET_SIZE *
+								PLANET_SIZE*screen_scale *
 								    powerupsize
 									.at(i) /
 								    4,
@@ -3951,18 +3952,18 @@ int main() {
 							crater1.setPosition(
 							    pos +
 							    sf::Vector2f(
-								-PLANET_SIZE *
+								-PLANET_SIZE*screen_scale *
 								    powerupsize
 									.at(i) /
 								    3,
-								PLANET_SIZE *
+								PLANET_SIZE*screen_scale *
 								    powerupsize
 									.at(i) /
 								    2));
 							window.draw(crater1);
 							sf::CircleShape crater2 =
 							    sf::CircleShape(
-								PLANET_SIZE *
+								PLANET_SIZE*screen_scale *
 								    powerupsize
 									.at(i) /
 								    3,
@@ -3985,25 +3986,25 @@ int main() {
 							crater2.setPosition(
 							    pos -
 							    sf::Vector2f(
-								PLANET_SIZE *
+								PLANET_SIZE*screen_scale *
 								    powerupsize
 									.at(i) /
 								    3,
-								PLANET_SIZE *
+								PLANET_SIZE*screen_scale *
 								    powerupsize
 									.at(i) /
 								    3));
 							window.draw(crater2);
 							sf::CircleShape crater3 =
 							    sf::CircleShape(
-								PLANET_SIZE *
+								PLANET_SIZE*screen_scale *
 								    powerupsize
 									.at(i) /
 								    5,
 								16);
 							crater3
 							    .setOutlineThickness(
-								2);
+								2*screen_scale);
 							crater3.setOutlineColor(
 							    sf::Color::White);
 							crater3.setFillColor(
@@ -4019,7 +4020,7 @@ int main() {
 							crater3.setPosition(
 							    pos +
 							    sf::Vector2f(
-								PLANET_SIZE *
+								PLANET_SIZE*screen_scale *
 								    powerupsize
 									.at(i) /
 								    2,
@@ -4242,7 +4243,7 @@ int main() {
 			tab = false;
 			tabused = false;
 			// Title
-			sf::Text title("Game Over", roboto, 80);
+			sf::Text title("Game Over", roboto, 80*screen_scale);
 			if (newhighscore)
 				title.setString("New Highscore!");
 			// Center Title, 10% from top
@@ -4256,7 +4257,7 @@ int main() {
 			std::stringstream scorebuffer;
 			scorebuffer << "Score: " << score;
 			std::string scorestring = scorebuffer.str();
-			sf::Text scoretext(scorestring.c_str(), roboto, 80);
+			sf::Text scoretext(scorestring.c_str(), roboto, 80*screen_scale);
 			// Center Score, 30% from top
 			sf::FloatRect scoresize = scoretext.getLocalBounds();
 			scoretext.setPosition(sf::Vector2f(
@@ -4268,7 +4269,7 @@ int main() {
 			std::stringstream bombbuffer;
 			bombbuffer << "Bombs: " << bombs;
 			std::string bombstring = bombbuffer.str();
-			sf::Text bombtext(bombstring.c_str(), roboto, 80);
+			sf::Text bombtext(bombstring.c_str(), roboto, 80*screen_scale);
 			// Center Bomb, 40% from top
 			sf::FloatRect bombsize = scoretext.getLocalBounds();
 			bombtext.setPosition(sf::Vector2f(
@@ -4281,7 +4282,7 @@ int main() {
 			finalscorebuffer << "Final Score: " << finalscore;
 			std::string finalscorestring = finalscorebuffer.str();
 			sf::Text finalscoretext(finalscorestring.c_str(),
-						roboto, 80);
+						roboto, 80*screen_scale);
 			// Center Final Score, 60% from top
 			sf::FloatRect finalscoresize =
 			    finalscoretext.getLocalBounds();
@@ -4315,7 +4316,7 @@ int main() {
 				}
 			}
 			// Play Button
-			sf::RectangleShape playbutton(sf::Vector2f(400, 100));
+			sf::RectangleShape playbutton(sf::Vector2f(400*screen_scale, 100*screen_scale));
 			// Center Play Button, 75% from top
 			sf::FloatRect buttonsize = playbutton.getLocalBounds();
 			playbutton.setPosition(sf::Vector2f(
@@ -4328,7 +4329,7 @@ int main() {
 				sf::Mouse::getPosition(window)))) {
 				// Outline On Hover
 				playbutton.setOutlineColor(sf::Color::White);
-				playbutton.setOutlineThickness(10);
+				playbutton.setOutlineThickness(10*screen_scale);
 				if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 					// Black On Press
 					playbutton.setFillColor(
@@ -4343,7 +4344,7 @@ int main() {
 				playbutton.setFillColor(sf::Color::White);
 			window.draw(playbutton);
 			// Play Button Text
-			sf::Text playtext("Play Again", roboto, 50);
+			sf::Text playtext("Play Again", roboto, 50*screen_scale);
 			// Center Text In Button
 			sf::FloatRect textsize = playtext.getLocalBounds();
 			playtext.setPosition(sf::Vector2f(
@@ -4356,7 +4357,7 @@ int main() {
 				playtext.setFillColor(sf::Color::Black);
 			window.draw(playtext);
 			// Tip Text
-			sf::Text tiptext("Press [esc] To Exit", roboto, 30);
+			sf::Text tiptext("Press [esc] To Exit", roboto, 30*screen_scale);
 			// Center Tip Text, 10% from bottom
 			sf::FloatRect tipsize = tiptext.getLocalBounds();
 			tiptext.setPosition(
@@ -4367,7 +4368,7 @@ int main() {
 		} break;
 		default: {
 			sf::Text error("Error: Screen Does Not Exist!!!",
-				       roboto, 60);
+				       roboto, 60*screen_scale);
 			error.setFillColor(sf::Color::Red);
 			window.draw(error);
 			if (clock.getElapsedTime().asSeconds() > 10) {
@@ -4384,18 +4385,18 @@ int main() {
 				    sf::Mouse::getPosition(window));
 			else
 				tooltipvec =
-				    sf::Vector2f(window.getSize().x - 200,
-						 window.getSize().y - 200);
-			sf::Text text(tooltiptext, roboto, 40);
+				    sf::Vector2f(window.getSize().x - 200*screen_scale,
+						 window.getSize().y - 200*screen_scale);
+			sf::Text text(tooltiptext, roboto, 40*screen_scale);
 			text.setPosition(tooltipvec);
-			text.move(20, 20);
+			text.move(20*screen_scale, 20*screen_scale);
 			sf::RectangleShape box(
-			    sf::Vector2f(text.getLocalBounds().width + 40,
-					 text.getLocalBounds().height + 40));
+			    sf::Vector2f(text.getLocalBounds().width + 40*screen_scale,
+					 text.getLocalBounds().height + 40*screen_scale));
 			box.setPosition(tooltipvec);
 			text.setFillColor(sf::Color::White);
 			box.setFillColor(sf::Color::Black);
-			box.setOutlineThickness(10);
+			box.setOutlineThickness(10*screen_scale);
 			box.setOutlineColor(sf::Color::White);
 			text.move(-box.getLocalBounds().width,
 				  -box.getLocalBounds().height);

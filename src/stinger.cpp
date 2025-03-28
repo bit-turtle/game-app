@@ -33,6 +33,7 @@ public:
 	}
 	void render(sf::RenderWindow* window) {
 		rect.setPosition(sf::Vector2f(hitbox.left, hitbox.top));
+
 		window->draw(rect);
 	}
 	void reset() {
@@ -75,11 +76,13 @@ public:
 		// Drawable init
 		rect.setSize(sf::Vector2f(hitbox.width, hitbox.height));
 		rect.setFillColor(sf::Color::White);
+		rect.setOrigin(rect.getSize().x/2, rect.getSize().y/2);	
 	}
 	void render(sf::RenderWindow* window) {
 		if (lives <= 0)
 			return;
 		rect.setPosition(sf::Vector2f(hitbox.left, hitbox.top));
+		rect.setRotation(50);
 		window->draw(rect);
 	}
 	void update(float delta, bool input, sf::RenderWindow* window) {

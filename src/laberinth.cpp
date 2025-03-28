@@ -181,7 +181,7 @@ switch ((int)(clock.getElapsedTime().asSeconds()*8)%4) {
 } 
 std::stringstream percentagedone;
 if (l_genguess > 0) percentagedone << (l_maze.iter() / l_genguess * 100);
-else percentagedone << "NaN";
+else percentagedone << "Strange%";
 percentagedone << "% Generated (";
 percentagedone << l_maze.iter();
 percentagedone << "/";
